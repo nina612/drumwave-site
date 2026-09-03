@@ -145,7 +145,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* ACT 3 */
 /* Figma 3198-49275: flat #101010, copy at left 121/1920, baseline 936/1080,
    140px on a 1214px measure, -4.2 tracking */
-#time{background:#101010;opacity:0}
+/* its own section rather than a layer inside act 1, so it is opaque: the reader
+   scrolls onto a finished screen and the copy arrives on it */
+#time{background:#101010}
 /* Figma 3198-49275: the photograph is bled past every edge — 2239x1679 dropped at
    0,-156 on the 1920x1080 frame — under a 10% black wash. It covers the layer's own
    #101010, so dropping it later is what switches the screen to black. */
@@ -391,8 +393,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <span class="ln"><span class="dim">its value?</span></span>
   </div>
   </div>
-  <!-- and the what-if screen, so the whole opening runs without a scroll -->
-  <div class="act-layer" id="time">
+</section>
+
+<!-- ACT 3 : EVERY TAP. EVERY STEP. — a screen of its own, reached by scrolling
+     rather than played out of the opening run, so it starts whenever the reader
+     arrives at it and plays again if they come back up to it. -->
+<section class="act" id="time" aria-label="Every tap, every step, every choice creates value">
   <div class="time-photo" aria-hidden="true"><img src="assets/img/every-tap-hero.jpg" alt="" loading="lazy"></div>
   <div class="whatif display">
     <span class="ln"><span>Every tap. Every step.</span></span>
@@ -404,7 +410,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <span class="ln"><span class="dim">The question is:</span></span>
     <span class="ln"><span>How much is your</span></span>
     <span class="ln"><span>data worth?</span></span>
-  </div>
   </div>
 </section>
 
@@ -627,7 +632,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   const XIMG = 1.0, TXT = .6, TXT_E = 'power2.out';
   // The copy's clock on the final cut: the lead-out and the brighten. The photo itself
   // cuts, so this times only the text that rides over the change.
-  const BF = .55, BF_E = 'none';
+  const BF = .5, BF_E = 'none';   // fits inside the last frame
   // The zoom-out beat: the photo eases out of a slight push over one second, then
   // holds. Only three screens take it — the two hero frames and the baby frame; the
   // rest arrive at rest and simply cut.
@@ -642,41 +647,43 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // the timeline itself owns the tags' hidden start state at t=0, so however the
   // playhead is rendered they begin cleared rather than painted on the hero
   tl1.set($$('.marker'), {opacity:0, x:-8}, 0);
-  arrive(tl1, f1(0), 0, true);
-  tl1.set(f1(1), {opacity:1}, 1.2);
-  tl1.set(f1(0), {opacity:0}, 1.2);
-  tl1.to('#act1 .hero-h .ln > span', {yPercent:-112, duration:.5, stagger:.06}, 7.8);
-  tl1.to('#act1 .cue', {opacity:0, duration:.3}, 1.0);
-  // the runner's tag lives on the hero frame, in and out with it
-  tl1.fromTo('#markerRun i', {scale:0}, {scale:1, duration:.22, ease:'back.out(2)', immediateRender:false}, 1.7);
-  tl1.fromTo('#markerRun', {opacity:0, x:-8}, {opacity:1, x:0, duration:.3, immediateRender:false}, 1.7);
-  tl1.to('#markerRun', {opacity:0, duration:.3}, 2.6);
-  // Every. Single. Day.
-  // the coffee, card and delivery frames, all under "Your life creates data."
+  // ACT 1'S CLOCK, straight off the timing notes: a second on the opening image,
+  // half a second each on the running and coffee frames, a full second on the tap
+  // frame where the pacing slows, then half a second on the delivery frame.
+  const HERO = 1.5, QUICK = .9, TAP = 1.5;
+  const T_RUN = HERO, T_COFFEE = T_RUN + QUICK, T_TAP = T_COFFEE + QUICK, T_PKG = T_TAP + TAP;
+  const ACT1_END = T_PKG + QUICK;   // act 2 begins here, whatever the tag tails do
 
-  // the coffee, card and delivery frames, all under "Your life creates data."
-  const TAP_HOLD = 2.4, TAP_ZOOM = 2.2;
-  const esdFrames = [[9,3.0],[10,4.6],[11,4.6 + TAP_HOLD]];
-  // The tap frame is the one that lingers: it holds for TAP_HOLD and eases out of its
-  // push across nearly all of it, so the zoom reads as a slow drift instead of a
-  // settle. The coffee and delivery frames cut in at rest.
-  esdFrames.forEach(([fi, at], k) => {
+  // A tag lives and dies inside its own frame, so a half-second frame gets a
+  // half-second tag. fromTo with immediateRender off rather than a set plus a to: a
+  // zero-duration set reverts to its pre-set value when the timeline sits before it,
+  // which left every tag painted on screen until the first one fired.
+  const tagOn = (sel, at, span) => {
+    const inD = Math.min(.3, span * .5), outD = Math.min(.25, span * .3);
+    tl1.fromTo(sel + ' i', {scale:0},
+      {scale:1, duration:Math.min(.22, span * .4), ease:'back.out(2)', immediateRender:false}, at);
+    tl1.fromTo(sel, {opacity:0, x:-8},
+      {opacity:1, x:0, duration:inD, immediateRender:false}, at);
+    tl1.to(sel, {opacity:0, duration:outD}, at + span - outD);
+  };
+
+  // the opening image eases out of its push across the whole second it holds
+  arrive(tl1, f1(0), 0, true, HERO);
+  tl1.to('#act1 .cue', {opacity:0, duration:.3}, .4);
+
+  // running, coffee, tap, delivery — each an instant cut, and the tap frame the only
+  // one that moves once it lands
+  const act1Frames = [[1, T_RUN, QUICK], [9, T_COFFEE, QUICK], [10, T_TAP, TAP], [11, T_PKG, QUICK]];
+  const act1Tags = ['#markerRun', '#markerCoffee', '#markerTap', '#markerPackage'];
+  act1Frames.forEach(([fi, at, span], k) => {
+    tl1.set(f1(k ? act1Frames[k-1][0] : 0), {opacity:0}, at);
     tl1.set(f1(fi), {opacity:1}, at);
-    tl1.set(f1(k ? esdFrames[k-1][0] : 1), {opacity:0}, at);
-    if(fi === 10) arrive(tl1, f1(fi), at, false, TAP_ZOOM);
+    if(fi === 10) arrive(tl1, f1(fi), at, false, TAP);
+    tagOn(act1Tags[k], at, span);
   });
 
-  // one marker per frame, in and out with the frame it sits on
-  const esdMarkers = [['#markerCoffee', 3.0], ['#markerTap', 4.6], ['#markerPackage', 4.6 + TAP_HOLD]];
-  // fromTo with immediateRender off, rather than a set plus a to: a zero-duration
-  // set reverts to its pre-set value when the timeline sits before it, which left
-  // every tag painted on screen until the first one fired
-  esdMarkers.forEach(([sel, at]) => {
-    tl1.fromTo(sel + ' i', {scale:0}, {scale:1, duration:.22, ease:'back.out(2)', immediateRender:false}, at);
-    tl1.fromTo(sel, {opacity:0, x:-8}, {opacity:1, x:0, duration:.3, immediateRender:false}, at);
-    tl1.to(sel, {opacity:0, duration:.3}, at + 1.3);
-  });
-
+  // "Your life creates data." stands over the whole run and clears on the last frame
+  tl1.to('#act1 .hero-h .ln > span', {yPercent:-112, duration:.3, stagger:.05}, T_PKG + .1);
 
   /* ---------- ACT 2 ---------- */
   // No trigger of its own: it is appended to act 1 below so the hero runs
@@ -690,14 +697,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // the last of them has been up for a beat. The shopping and charging frames then
   // flash past in quick succession, and the baby frame is where the act slows again.
   const WORD_IN = .8;             // one word to the next
-  const HOLD0 = 3.2;              // frame 0's whole time on screen
-  const RAPID = 1.0;              // the frames that cut past in rapid succession
-  const BABY = HOLD0 + RAPID * 2, FAMILY = BABY + 2.6, T2_IN = BABY + 1.05, END = FAMILY + 1.5;
+  // the headphones frame holds only as long as the words need: the last of the three
+  // is up at .15 + 2*WORD_IN + WIN, and the frame cuts a beat after that
+  const HOLD0 = 2.4;              // frame 0's whole time on screen
+  const RAPID = .9;               // shopping and charging
+  // the run ends on the family photo with the question in white, holds there, and
+  // then simply starts over — no fade to black, no clearing the copy
+  const BABY_HOLD = 2.0, LAST = .9, FINAL_HOLD = 2.0;
+  const BABY = HOLD0 + RAPID * 2, FAMILY = BABY + BABY_HOLD, END = FAMILY + FINAL_HOLD;
+  const T2_IN = BABY + .45;
   // The words aren't tied to the frame they arrived on: they stay up across the
   // shopping and charging frames, then all three leave together as the baby frame
   // cuts in. They are clear of the screen before the question begins to show, so the
   // two never share it — which is what the baby text's own delay below is for.
-  const WORDS_OUT = BABY, WORDS_OUT_DUR = .4;
+  const WORDS_OUT = BABY, WORDS_OUT_DUR = .3;
   const ESD2 = [[0, 0], [4, HOLD0], [5, HOLD0 + RAPID]];
   // Every swap in the act is an instant cut, the final image included. The dissolve
   // that used to sit on baby -> family is gone: what made that cut read as a jolt was
@@ -707,11 +720,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     if(k) tl2.set(f2(arr[k-1][0]), {opacity:0}, at);
     tl2.set(f2(i), {opacity:1}, at);
   });
-  // The baby frame is where the act slows down, and it is the one image that drifts
-  // INTO a slight push rather than easing out of one. Everything else arrives at rest
-  // — the two rapid frames especially, which have no time to move.
-  tl2.fromTo(f2(6) + ' img', {scale:1},
-    {scale:1.06, duration:2.2, ease:'power1.inOut', immediateRender:false}, BABY);
+  // The baby frame is where the act slows down, and it is the one image in act 2 that
+  // moves: it eases out of a slight push across the whole time it holds. Everything
+  // else arrives at rest — the half-second frames especially, which have no time to.
+  tl2.fromTo(f2(6) + ' img', {scale:1.06},
+    {scale:1, duration:BABY_HOLD, ease:'power2.out', immediateRender:false}, BABY);
   // The family photo is full-bleed 1920x1080, and the frame it first composites on
   // costs enough to drop one. Left alone that lands on the head of the dissolve, which
   // is precisely where it reads as a hitch. Put the photo on screen at a hair of
@@ -732,17 +745,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // ease-in it used to carry held it near-invisible for over a second, which is what
   // made the fade feel slow — at a constant rate it is legible far sooner and still
   // takes the same beat to land.
-  const T2_Q_IN = BABY + .5;   // after WORDS_OUT + WORDS_OUT_DUR, never during
+  const T2_Q_IN = BABY + .35;  // after WORDS_OUT + WORDS_OUT_DUR, never during
   const t2Q = $$('#act2 .t2 .dim');
   tl2.set(t2Q, {yPercent:0}, T2_Q_IN);
   tl2.fromTo(t2Q, {opacity:0},
-    {opacity:1, duration:(FAMILY + BF) - T2_Q_IN, ease:'none', immediateRender:false}, T2_Q_IN);
+    {opacity:1, duration:FAMILY - T2_Q_IN, ease:'none', immediateRender:false}, T2_Q_IN);
   // The photo swap here is the same cut as the others; what sets the beat apart is
   // the text riding on it — an eased lead-out and a brighten. Both are kept short so
   // they land with the cut rather than running long past it.
-  tl2.to('#act2 .t2 .q-lead', {opacity:0, duration:BF, ease:BF_E}, FAMILY);
-  tl2.to('#act2 .t2 .dim', {color:'#ffffff', duration:BF, ease:BF_E}, FAMILY);
-  tl2.to('#act2 .line-veil', {opacity:.94, duration:.4}, END);
+  tl2.to('#act2 .t2 .q-lead', {opacity:0, duration:BF, ease:BF_E}, FAMILY - BF);
+  tl2.to('#act2 .t2 .dim', {color:'#ffffff', duration:BF, ease:BF_E}, FAMILY - BF);
   // one marker per frame, in and out with the frame it sits on
   // a word per frame — headphones, shopping bag, charger — in the same corners
   // they used to occupy, each arriving with its own image
@@ -760,130 +772,107 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   });
   // one tag per photo, in and out with the photo it sits on — the two rapid frames
   // get a shorter stay than frame 0, having only a second of photo to sit on
-  const tags = [['#markerStream', .15, 2.0],
-                ['#markerShop', HOLD0 + .1, HOLD0 + .7],
-                ['#markerCharge', HOLD0 + RAPID + .1, HOLD0 + RAPID + .7]];
+  const tags = [['#markerStream', .15, HOLD0 - .35],
+                ['#markerShop', HOLD0 + .06, HOLD0 + RAPID - .16],
+                ['#markerCharge', HOLD0 + RAPID + .06, HOLD0 + RAPID * 2 - .16]];
   tags.forEach(([sel, tin, tout]) => {
     tl2.fromTo(sel + ' i', {scale:0}, {scale:1, duration:.22, ease:'back.out(2)', immediateRender:false}, tin);
-    tl2.fromTo(sel, {opacity:0, x:-8}, {opacity:1, x:0, duration:WIN, ease:TXT_E, immediateRender:false}, tin);
-    tl2.to(sel, {opacity:0, duration:.25}, tout);
+    tl2.fromTo(sel, {opacity:0, x:-8},
+      {opacity:1, x:0, duration:Math.min(WIN, (tout - tin) * .6), ease:TXT_E, immediateRender:false}, tin);
+    tl2.to(sel, {opacity:0, duration:Math.min(.25, (tout - tin) * .35)}, tout);
   });
   tl2.to(lines('#act2 .esd'), {yPercent:-112, duration:WORDS_OUT_DUR, ease:'power2.in'}, WORDS_OUT);
   // the grocery tag belongs to the baby frame, which carries no word
-  tl2.fromTo('#markerGrocery i', {scale:0}, {scale:1, duration:.22, ease:'back.out(2)', immediateRender:false}, BABY + .25);
-  tl2.fromTo('#markerGrocery', {opacity:0, x:-8}, {opacity:1, x:0, duration:WIN, ease:TXT_E, immediateRender:false}, BABY + .25);
-  tl2.to('#markerGrocery', {opacity:0, duration:.4}, BABY + 1.6);
-  // clear the question before the what-if leg: act 2 is a layer now, so unlike
-  // a section it never scrolls away on its own
-  tl2.to(lines('#act2 .t2'), {yPercent:-112, duration:.35, stagger:.05}, END + .15);
-  tl2.to({}, {duration:.2}, END + .3);
+  tl2.fromTo('#markerGrocery i', {scale:0}, {scale:1, duration:.2, ease:'back.out(2)', immediateRender:false}, BABY + .1);
+  tl2.fromTo('#markerGrocery', {opacity:0, x:-8}, {opacity:1, x:0, duration:.28, ease:TXT_E, immediateRender:false}, BABY + .1);
+  tl2.to('#markerGrocery', {opacity:0, duration:.22}, BABY + BABY_HOLD - .22);
+  // The run just stops here, on the family photo with the question in white, and holds
+  // for FINAL_HOLD before starting over. Nothing is faded out and nothing is cleared:
+  // the restart re-states every baseline itself (see resetRun), so the loop point is a
+  // straight cut back to the hero.
+  tl2.to({}, {duration:.05}, END - .05);
 
-  // one run: act 2 starts the moment act 1 finishes, no scroll in between
-  tl1.add(tl2, '>');
+  // One run: act 2 starts the moment act 1 finishes, no scroll in between. Positioned
+  // explicitly rather than with '>', which in GSAP means the end of the PREVIOUSLY
+  // ADDED animation — so it was landing on the headline's clear and cutting the
+  // delivery frame short of its own time.
+  tl1.add(tl2, ACT1_END);
 
   /* ---------- ACT 3 : WHAT IF YOUR DATA COULD GROW WITH YOU ---------- */
-  const tl4 = gsap.timeline({defaults:{ease:'none'}});
-  tl4.fromTo('#time', {opacity:0}, {opacity:1, duration:.8, ease:'power2.out', immediateRender:false}, 0.1);
+  // Its own screen, on its own trigger: it plays when the reader reaches it, pauses
+  // if they leave, and starts over from the top if they come back up onto it. The
+  // section is opaque, so there is nothing to fade the screen itself in from — the
+  // photograph is simply already there when you arrive.
+  const resetTime = () => {
+    gsap.set('#time .time-photo', {opacity:1});
+    gsap.set($$('#time .ln > span'), {yPercent:112});
+  };
+  const tl4 = gsap.timeline({
+    defaults:{ease:'none'},
+    paused:true,
+    scrollTrigger:{
+      trigger:'#time', start:'top top', end:'+=100%', pin:true,
+      onEnter:      self => self.animation.play(),
+      onEnterBack:  () => restartTime(),
+      onLeave:      self => self.animation.pause(),
+      onLeaveBack:  self => { self.animation.invalidate().pause(0); resetTime(); }
+    }
+  });
   // the copy falls in: each line drops from above its mask and lands with a short
   // overshoot, one after the other, rather than rising the way the other lines do
   // The sentence arrives in two halves, on two grounds. "Every tap. Every step."
   // lands on the photograph; then the photograph goes and the rest of it bounces in
   // on the black underneath — one block throughout, so the lines stay set as a
   // paragraph rather than re-flowing when the ground changes.
+  function restartTime(){
+    tl4.invalidate().pause(0);
+    resetTime();
+    tl4.play();
+  }
+  loopWhileHere(tl4, restartTime);
+
   const whatifLn = lines('#time .whatif');
   tl4.fromTo(whatifLn[0], {yPercent:-118},
-    {yPercent:0, duration:.72, ease:'back.out(1.5)', immediateRender:false}, 0.6);
-  tl4.to({}, {duration:1.0}, 1.4);
+    {yPercent:0, duration:.72, ease:'back.out(1.5)', immediateRender:false}, 0.1);
+  tl4.to({}, {duration:1.0}, 0.9);
   // the ground switches to black
-  tl4.to('#time .time-photo', {opacity:0, duration:.5, ease:'power1.inOut'}, 2.4);
+  tl4.to('#time .time-photo', {opacity:0, duration:.5, ease:'power1.inOut'}, 1.9);
   // and the rest of the sentence bounces onto it, a touch springier than the first
   // line so the second half reads as the answer to it
   tl4.fromTo(whatifLn.slice(1), {yPercent:-118},
-    {yPercent:0, duration:.72, stagger:.14, ease:'back.out(1.8)', immediateRender:false}, 2.75);
-  tl4.to({}, {duration:1.4}, 3.65);
+    {yPercent:0, duration:.72, stagger:.14, ease:'back.out(1.8)', immediateRender:false}, 2.25);
+  tl4.to({}, {duration:1.4}, 3.15);
   // and keeps falling on the way out
-  tl4.to(whatifLn, {yPercent:118, duration:.45, stagger:.08, ease:'power2.in'}, 5.05);
+  tl4.to(whatifLn, {yPercent:118, duration:.45, stagger:.08, ease:'power2.in'}, 4.55);
   // the question falls into the same panel as the first line is still clearing, so
   // the copy hands over without the screen itself changing
   tl4.fromTo(lines('#time .worth'), {yPercent:-118},
-    {yPercent:0, duration:.72, stagger:.14, ease:'back.out(1.5)', immediateRender:false}, 5.3);
-  tl4.to({}, {duration:1.7}, 6.45);
-  tl4.to(lines('#time .worth'), {yPercent:118, duration:.45, stagger:.08, ease:'power2.in'}, 8.15);
-  tl1.add(tl4, '>');   // the third and last leg of the one auto run
+    {yPercent:0, duration:.72, stagger:.14, ease:'back.out(1.5)', immediateRender:false}, 4.8);
+  tl4.to({}, {duration:1.7}, 5.95);
+  tl4.to(lines('#time .worth'), {yPercent:118, duration:.45, stagger:.08, ease:'power2.in'}, 7.65);
 
   // These three were paced as scrub distances, so at 1x they would each run for
   // nine or ten seconds on their own. Speed them up to land around five, and
   // under reduced motion run them out instantly to their end state.
-  if(RM) tl1.timeScale(100);
+  if(RM){ tl1.timeScale(100); tl4.timeScale(100); }
   else tl1.timeScale(1.0);    // 24.2 units -> ~24s, close to the authored pace
 
   // The opening runs on its own clock, so when it ends the reader is still parked at
   // the top with a pinned section under them. Carry them to the timeline; everything
   // from there down is an ordinary scroll. Only ever done once.
-  const agesTop = () => {
-    const ages = ScrollTrigger.getAll().find(t => t.trigger && t.trigger.id === 'ages');
-    const to = ages ? ages.start : (document.getElementById('ages') || {}).offsetTop;
-    return to == null ? null : to;
-  };
-  let handedOff = false;
-  const handOff = () => {
-    dropSkip();
-    const to = agesTop();
-    if(to == null) return;
-    window.scrollTo({top: to, behavior: RM ? 'auto' : 'smooth'});
-  };
-
-  // A reader who wants to move on mid-run gets nothing back from a scroll: the run
-  // is on its own clock and #act1 is pinned, so the screen sits still for two
-  // viewport heights before the timeline arrives. Take the first downward gesture
-  // as that request — land the run on its end state and hand off early, so a
-  // scroll during the opening does what it does everywhere else on the page.
-  const skipIntro = () => {
-    if(handedOff) return false;
-    handedOff = true;     // set first: the jump below fires onComplete inline
-    tl1.progress(1);      // the run's end state, not a half-finished frame
-    handOff();
-    return true;
-  };
-  // Every run arms its own skip, so a replay can be skipped the same way the first
-  // one was; the hand-off drops it again the moment it fires.
-  function armSkip(){
-    handedOff = false;
-    window.addEventListener('wheel', wheelSkip, {passive:false});
-    window.addEventListener('keydown', keySkip);
-    window.addEventListener('touchstart', touchStart, {passive:true});
-    window.addEventListener('touchmove', touchSkip, {passive:true});
+  // Nothing is handed off, and nothing scrolls the reader anywhere. Both of the
+  // screens that play on their own clock — the opening and the every-tap screen — are
+  // reached by scrolling to them, and neither is started on the reader's behalf. If
+  // the reader stays put, the screen they are on simply runs again.
+  // a function declaration, not a const: the every-tap screen wires itself up
+  // earlier in this file than this line runs
+  function loopWhileHere(tl, restart){
+    tl.eventCallback('onComplete', () => {
+      const st = tl.scrollTrigger;
+      if(st && !st.isActive) return; // they have scrolled on; leave it as it ended
+      restart();
+    });
   }
-  const wheelSkip = e => { if(e.deltaY > 0 && skipIntro()) e.preventDefault(); };
-  const KEY_DOWN = {ArrowDown:1, PageDown:1, End:1, ' ':1, Spacebar:1};
-  const keySkip = e => {
-    // only the page's own scroll keys: space on a focused nav button belongs to
-    // the button, not to us
-    const t = e.target;
-    if(t && t !== document.body && t !== document.documentElement) return;
-    if(KEY_DOWN[e.key] && skipIntro()) e.preventDefault();
-  };
-  let touchY = null;
-  const touchStart = e => { touchY = e.touches[0].clientY; };
-  // touchmove stays passive — cancelling it would fight the browser's own scroll,
-  // which is welcome to carry on underneath the hand-off
-  const touchSkip = e => { if(touchY != null && touchY - e.touches[0].clientY > 8) skipIntro(); };
-  function dropSkip(){
-    window.removeEventListener('wheel', wheelSkip, {passive:false});
-    window.removeEventListener('keydown', keySkip);
-    window.removeEventListener('touchstart', touchStart);
-    window.removeEventListener('touchmove', touchSkip);
-  }
-  armSkip();
-
-  tl1.eventCallback('onComplete', () => {
-    if(handedOff) { dropSkip(); return; }   // the skip already handed off
-    handedOff = true;
-    dropSkip();
-    // never yank someone who is already scrolling for themselves
-    if(window.scrollY > 4) return;
-    handOff();
-  });
 
   // Give the run back from the top: rewind, re-state the baseline the rewind cannot
   // be trusted to restore on its own, then play. Same three steps the load handler
@@ -892,9 +881,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   function restartRun(){
     tl1.invalidate().pause(0);
     resetRun();
-    armSkip();
     tl1.play();
   }
+  loopWhileHere(tl1, restartRun);
 
   /* ---------- ACT 4 : AGE TRACK ---------- */
   const AGE_DATA = [
@@ -1078,11 +1067,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     gsap.set($$('.marker'), {opacity:0, x:-8});
     gsap.set($$('#act1 > .frame, #act2 .frame'), {opacity:0});
     gsap.set($$('#act1 > .frame[data-i="0"]'), {opacity:1});
-    // The two panels the run darkens the screen with. Neither is ever tweened back
-    // down — the veil ends at .94 and the act 3 panel at 1 — so a rewind leaves the
-    // pair holding their end values over the hero and the screen reads as black.
-    gsap.set('#time', {opacity:0});
-    gsap.set('#time .time-photo', {opacity:1});
+    // The veil the run darkens the screen with is never tweened back down — it ends
+    // at .94 — so a rewind would leave it holding that value over the hero and the
+    // screen would read as black. (#time keeps its own baseline; see resetTime.)
     gsap.set('#act2 .line-veil', {opacity:0});
     // and the copy, back behind its masks, the hero's own lines being the one set
     // that starts already in view. Same two statements the run opens with.
