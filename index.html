@@ -1,0 +1,1163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DrumWave: Your life creates data</title>
+<meta name="description" content="Your life creates data. What if its value grew with you?">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@200;300;400;600&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#070707;
+  --bone:#F3F2EE;
+  --cobalt:#1F5BFF;
+  --mute:#8A8A86;
+  --line:rgba(243,242,238,.14);
+  --scrim:rgba(7,7,7,.42);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--ink);color:var(--bone)}
+body{
+  /* set on body as well as html: a host stylesheet targeting body would
+     otherwise beat what body inherits from html, and drop text to its color */
+  background:var(--ink);
+  color:var(--bone);
+  font-family:'Open Sans',system-ui,-apple-system,sans-serif;
+  font-size:16px;
+  font-weight:300;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  overflow-x:hidden;
+  line-height:1.3;
+}
+img{display:block;user-select:none;-webkit-user-drag:none}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* type */
+.mono{
+  font-family:'Open Sans',system-ui,sans-serif;
+  font-size:11px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--mute);
+  font-weight:400;
+}
+.display{
+  font-family:'Titillium Web',system-ui,sans-serif;
+  font-weight:300;
+  letter-spacing:-.025em;
+  line-height:.98;
+}
+.xl{font-size:clamp(3rem,9.6vw,11rem)}
+.lg{font-size:clamp(2.3rem,6.8vw,7.6rem)}
+.md{font-size:clamp(1.8rem,5.4vw,5.6rem)}
+.ln{display:block;overflow:hidden;padding-bottom:.08em;margin-bottom:-.08em}
+.ln>span{display:block;will-change:transform}
+.cob{color:var(--cobalt)}
+
+/* chrome */
+/* Figma 3068-141400: 1058px pill, 24/16 padding, 100px radius, 70% ink under a
+   10px blur, 1px hairline at 30% grey. Type is Titillium 18 throughout. */
+.nav{
+  position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:50;
+  width:min(1058px,94vw);height:70px;padding:10px 24px;
+  display:flex;align-items:center;gap:40px;
+  border:1px solid rgba(139,139,139,.3);border-radius:100px;
+  background:rgba(7,7,7,.7);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  font-family:'Titillium Web',system-ui,sans-serif;font-size:18px;line-height:1;
+}
+.nav .logo{display:flex;align-items:center;gap:24px;margin-right:auto}
+.nav .logo .mark{width:36px;height:36px;display:block;object-fit:contain;flex:none}
+.nav .logo .rule{width:1px;height:35px;background:rgba(243,242,238,.3);flex:none}
+.nav .logo b{font-weight:600;font-size:32px;letter-spacing:-.01em}
+.nav .links{display:flex;align-items:center;gap:40px}
+.nav .links a{font-weight:400;color:#fff}
+.nav .links a.cur{font-weight:600}
+.nav .sep{width:1px;height:40.5px;background:rgba(243,242,238,.3);flex:none}
+.nav .ctas{display:flex;align-items:center;gap:14px}
+.nav .pill{
+  display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;
+  padding:12px 24px;border-radius:500px;border:1px solid #fff;
+  font-weight:400;line-height:24px;color:#fff;transition:background .25s,filter .25s;
+}
+.nav .pill:hover{background:rgba(243,242,238,.12)}
+/* the CTA carries the brand gradient rather than a flat fill */
+.nav .pill.p{border:1px solid transparent;border-radius:56px;font-weight:600;background:linear-gradient(138.73deg,#4B27FF 1.94%,#0091FF 100.59%)}
+.nav .pill.p:hover{background:linear-gradient(138.73deg,#4B27FF 1.94%,#0091FF 100.59%);filter:brightness(1.12)}
+@media (max-width:900px){
+  .nav{gap:20px;height:56px;padding:8px 16px}
+  .nav .links,.nav .sep{display:none}
+  .nav .logo{gap:14px}
+  .nav .logo .rule{height:28px}
+  .nav .logo b{font-size:22px}
+  .nav .pill{padding:10px 16px;font-size:15px}
+  .nav .pill:not(.p){display:none}
+}
+
+/* scenes */
+.act{position:relative;height:100vh;height:100svh;overflow:hidden;background:var(--ink)}
+.act-layer{position:absolute;inset:0;overflow:hidden}
+.frame{position:absolute;inset:0;opacity:0;will-change:opacity,transform}
+.frame img{width:100%;height:100%;object-fit:cover}
+#act1 > .frame::after,#act2 .frame::after{content:none}
+.photo-veil{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(7,7,7,.12) 0%,rgba(7,7,7,.28) 55%,rgba(7,7,7,.62) 100%)}
+#act2 .photo-veil{background:linear-gradient(180deg,rgba(7,7,7,.05),rgba(7,7,7,.4))}
+.frame::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,7,7,.12) 0%,rgba(7,7,7,.28) 55%,rgba(7,7,7,.62) 100%)}
+.frame.on{opacity:1}
+.pad{position:absolute;left:5vw;right:5vw}
+
+/* ACT 1 */
+#act1 .hero-h{position:absolute;left:5vw;bottom:4vh;max-width:92vw;color:#fff}
+#act1 .cue{position:absolute;right:5vw;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:14px;writing-mode:vertical-rl}
+#act1 .cue i{display:block;width:1px;height:64px;background:var(--line)}
+
+/* marker: blue pulsing dot + pill tag */
+.marker{position:absolute;display:flex;align-items:center;gap:6px;opacity:0;transform:translateX(-8px);z-index:5}
+.marker i{width:39px;height:39px;display:block;position:relative;transform:scale(0)}
+.marker i::before{content:"";position:absolute;left:50%;top:50%;width:24px;height:24px;border-radius:50%;background:#244AFF;transform:translate(-50%,-50%)}
+.marker i::after{content:"";position:absolute;left:50%;top:50%;width:39px;height:39px;border-radius:50%;background:#244AFF;opacity:.5;transform:translate(-50%,-50%) scale(1);z-index:-1}
+.marker i.pulse::after{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.5}50%{transform:translate(-50%,-50%) scale(1.25);opacity:.22}}
+.marker .tag{color:#fff;background:rgba(36,74,255,.3);padding:6px 16px;border-radius:19px;font-family:'Open Sans',sans-serif;font-size:20px;font-weight:400}
+
+/* ACT 2 */
+#act2 .frame::after{background:linear-gradient(180deg,rgba(7,7,7,.05),rgba(7,7,7,.4))}
+/* Figma 3157-67721 gives the charging frame a flat scrim; the shared layer already
+   carries the bottom, so this only lifts the top back to that level */
+#act2 .frame[data-i="5"]::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,7,7,.26) 0%,rgba(7,7,7,0) 62%)}
+/* Figma 3157-67710: right edge 1801/1920, top 521/1080, 140px, -4.2 tracking */
+#act2 .t2{position:absolute;z-index:2;right:6.2vw;top:48.2vh;width:54.6vw;text-align:right;font-size:clamp(2.2rem,7.29vw,8.75rem);line-height:.99;letter-spacing:-.03em;color:#fff}
+#act2 .t2 .dim{color:rgba(255,255,255,.3)}
+/* Figma 3157-67631: 1148px circle centred at 1362,1125 on a 1920x1080 frame */
+#act2 .esd{position:absolute;inset:0;pointer-events:none}
+#act2 .esd .w{position:absolute;color:var(--bone)}
+/* placements measured off the three reference frames: Every high-left, Single
+   right and lower, Day indented near the bottom — and set smaller than the hero */
+#act2 .esd .w{font-size:clamp(2rem,6.25vw,7.5rem)}
+#act2 .esd .w:nth-child(1){left:5.5vw;top:22vh}
+#act2 .esd .w:nth-child(2){left:auto;right:8.8vw;top:66vh;text-align:right}
+#act2 .esd .w:nth-child(3){left:17vw;top:80vh}
+#act2 .line-veil{position:absolute;inset:0;background:var(--ink);opacity:0}
+
+/* ACT 3 */
+/* Figma 3198-49275: flat #101010, copy at left 121/1920, baseline 936/1080,
+   140px on a 1214px measure, -4.2 tracking */
+#time{background:#101010;opacity:0}
+#time .whatif{position:absolute;left:6.3vw;bottom:13.3vh;text-align:left;width:63.2vw;z-index:6;
+  font-size:clamp(2.2rem,7.29vw,8.75rem);line-height:.9;letter-spacing:-.03em;color:#fff;transform-origin:0 100%}
+/* Figma 3214-2823: same panel and same measure, copy top-anchored at 569/1080 */
+#time .worth{position:absolute;left:6.3vw;top:52.7vh;text-align:left;width:63.2vw;z-index:6;
+  font-size:clamp(2.2rem,7.29vw,8.75rem);line-height:.9;letter-spacing:-.03em;color:#fff}
+#time .worth .dim{color:rgba(255,255,255,.4)}
+
+/* AGE SCENES (Age 0, Age 2, ...) */
+.age-scene .frames{position:absolute;inset:0}
+.age-scene .frame::after{background:linear-gradient(180deg,rgba(7,7,7,0) 60%,rgba(7,7,7,.55) 85%,rgba(7,7,7,.7) 100%)}
+.age-scene .num-wrap{position:absolute;left:5vw;bottom:24vh;z-index:5;pointer-events:none}
+.age-scene .num-wrap .lab{display:flex;align-items:center;gap:12px;margin-bottom:1.2em;margin-left:.3em;color:var(--bone)}
+.age-scene .num-wrap .lab i{width:6px;height:6px;background:var(--cobalt);display:block}
+.age-scene .bignum{color:var(--bone);font-weight:200;font-size:clamp(3rem,15.625vw,300px);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.age-scene .stage-tag{position:absolute;right:5vw;top:11vh;text-align:right;z-index:6}
+.age-scene .stage-tag .age{font-size:clamp(2rem,7vw,7rem);color:var(--bone);font-variant-numeric:tabular-nums;font-weight:200}
+.age-scene .stage-tag .cap{margin-top:.6em;color:var(--bone);opacity:.7;letter-spacing:.1em}
+
+/* AGE PICKER (cobalt scrub track) */
+.age-scene .ctl{position:absolute;left:5vw;right:5vw;bottom:8vh;z-index:7;touch-action:none;user-select:none}
+.age-scene .ctl .hint{display:flex;justify-content:space-between;margin-bottom:14px}
+.age-scene .ctl .hint b{font-weight:500;color:var(--bone)}
+.age-scene .track{position:relative;height:44px;cursor:grab}
+.age-scene .track:active{cursor:grabbing}
+.age-scene .track .rail{position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line);transform:translateY(-50%)}
+.age-scene .track .fill{position:absolute;left:0;top:50%;height:1px;background:var(--cobalt);transform:translateY(-50%);width:0}
+.age-scene .track .ticks{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);display:flex;justify-content:space-between;pointer-events:none}
+.age-scene .track .ticks i{display:block;width:2px;height:2px;background:var(--mute);opacity:.35;transform:translateY(-8px)}
+.age-scene .track .ticks i.hit{background:var(--cobalt);opacity:1;height:6px;transform:translateY(-10px)}
+.age-scene .track .handle{position:absolute;top:50%;left:0;width:18px;height:18px;border-radius:50%;background:var(--cobalt);transform:translate(-50%,-50%);box-shadow:0 0 0 6px rgba(31,59,255,.18)}
+.age-scene .ctl .ages{position:relative;display:flex;justify-content:space-between;margin-top:10px}
+.age-scene .ctl .ages span{position:absolute;transform:translateX(-50%);color:var(--mute);transition:color .3s;font-size:11px}
+.age-scene .ctl .ages span.cur{color:var(--bone)}
+
+/* ACT 6 : THE SOLUTION — fades up on black at the end of the #ages pin */
+.solution-preview{position:absolute;inset:0;z-index:9;pointer-events:none}
+.solution-preview .sol-state{position:absolute;left:5.83vw;max-width:49vw;z-index:2}
+/* Figma 3260-117245: the copy block is vertically centred on the frame and 849px
+   wide on a 1920 measure, with the body 37px under the headline */
+.solution-preview #solStateA{top:50%;transform:translateY(-50%);width:44.22vw;max-width:none}
+.solution-preview #solStateB{top:30.8vh}
+.solution-preview .sol-headline{font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2.2rem,6.25vw,7.5rem);line-height:.99;letter-spacing:-.03em;color:#E3E3E3}
+.solution-preview .sol-blue{color:#278EFF}
+.solution-preview .sol-body{margin-top:1.93vw;max-width:none;font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.95rem,1.04vw,1.25rem);line-height:1.5;color:#fff;opacity:0}
+.solution-preview .sol-cta{position:absolute;left:5.75vw;top:69.8vh;z-index:2;pointer-events:auto;display:inline-flex;align-items:center;padding:12px 24px;border-radius:100px;background:#fff;color:#090908;font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(.85rem,.94vw,1.125rem);line-height:1;opacity:0;transition:background .25s}
+.solution-preview .sol-cta:hover{background:#E3E3E3}
+.solution-preview .sol-link{position:absolute;left:5.75vw;top:78.3vh;transform:translateY(-50%);z-index:2;pointer-events:auto;font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(.85rem,.94vw,1.125rem);line-height:1;color:#278EFF;opacity:0}
+/* THE DSP CARD — Figma 3260-117245, measured off the 1920x1080 frame.
+   Built the way the design builds it: a photo bled past the clip, two blurred
+   colour casts over it, and the branding set on top — not one flat export, which
+   is why the old artwork could not carry the balance, the name or the number.
+   .sol-card is the positioning wrapper so the light spill can sit outside the
+   card's own clip and still travel with it when act 6 lifts the card. */
+.solution-preview .sol-card{position:absolute;left:58.59vw;top:34.44vh;width:32.14vw;aspect-ratio:617/386.076;opacity:0;container-type:inline-size}
+/* the spill of light the card throws onto the page beneath it */
+.solution-preview .sol-card-glow{position:absolute;left:-10.7%;top:102.31%;width:118.48%;height:34.71%;pointer-events:none}
+/* the spill image overruns its own box top and bottom — 214px of artwork in a
+   134px slot. Squashing it to fit compresses the blur into a hard-edged band. */
+.solution-preview .sol-card-glow img{position:absolute;display:block;left:1.76%;top:-29.85%;width:98.74%;height:159.7%}
+.solution-preview .sol-card-face{position:absolute;inset:0;overflow:hidden;border:.29cqw solid rgba(255,255,255,.4);border-radius:4.68%/7.48%}
+/* the photo runs past every edge of the clip — left -43.8, top -15.8 at 844x474
+   inside a 617x386 face */
+.solution-preview .sol-card-photo{position:absolute;left:-7.1%;top:-4.09%;width:136.79%;height:122.77%}
+.solution-preview .sol-card-photo img{width:100%;height:100%;object-fit:cover}
+/* two casts thrown across the photo, both the same rotated blurred slab */
+.solution-preview .sol-cast{position:absolute;width:60.6%;height:61.68%;transform:rotate(-30.1deg);filter:blur(12.17cqw);pointer-events:none}
+.solution-preview .sol-cast-warm{left:-11.99%;top:-24.24%;background:#400202;opacity:.7}
+.solution-preview .sol-cast-cool{left:63.97%;top:-21.27%;background:rgba(19,56,158,.8);opacity:.6}
+/* branding, inset 36px on a 617 face = 5.83% */
+.solution-preview .sol-card-brand{position:absolute;left:5.83%;top:9.32%;right:5.83%;display:flex;align-items:center;gap:1.94cqw}
+.solution-preview .sol-card-brand .dsp-logo{flex:none;width:10.7%;aspect-ratio:1}
+.solution-preview .sol-card-brand .dsp-logo img{display:block;width:100%;height:100%}
+/* the wordmark is measured against "horizon" rather than the card, so the pair
+   stays locked together: 77.345 wide on a 50.515 type size */
+.solution-preview .sol-card-mark{display:flex;flex-direction:column;gap:.1em;font-size:8.19cqw}
+.solution-preview .sol-card-mark .dsp-word{display:block;width:1.531em;aspect-ratio:77.345/21.065}
+.solution-preview .sol-card-mark .dsp-word img{display:block;width:100%;height:100%}
+.solution-preview .sol-card-mark b{display:block;font-family:'Titillium Web',sans-serif;font-weight:600;font-size:1em;line-height:1.1;color:#fff}
+.solution-preview .sol-card-bal{position:absolute;right:5.83%;top:9.32%;font-family:'Open Sans',sans-serif;font-weight:600;font-size:5.85cqw;line-height:1.32;letter-spacing:-.02em;color:#fff}
+.solution-preview .sol-card-holder{position:absolute;left:5.83%;top:75.89%;display:flex;flex-direction:column;gap:2.27cqw;font-family:'Open Sans',sans-serif;font-weight:600;line-height:.99}
+.solution-preview .sol-card-holder span{font-size:3.89cqw;letter-spacing:.1em;color:#fff}
+.solution-preview .sol-card-holder em{font-style:normal;font-size:2.92cqw;letter-spacing:.1em;color:rgba(255,255,255,.5)}
+/* THE GLOWS BEHIND EVERYTHING — two #2731B6 discs of r419.5 under a 200 blur,
+   at .4 and .2. Drawn rather than shipped as SVG: the source is a plain blurred
+   circle, so CSS reproduces it exactly and scales with the viewport. */
+.solution-preview .sol-glow{position:absolute;width:43.7vw;aspect-ratio:1;border-radius:50%;background:#2731B6;filter:blur(10.42vw);pointer-events:none;opacity:0;z-index:0}
+.solution-preview .sol-glow-l{left:-11.77vw;top:-7.5vh}
+.solution-preview .sol-glow-r{left:71.35vw;top:1.48vh}
+
+/* ACT 7 : HOW IT WORKS + FAQ + FOOTER — one long scrolling screen */
+.how-scene{position:relative;background:var(--ink);overflow:hidden}
+.how-scene::before{content:"";position:absolute;left:-28vw;top:-42vw;width:86vw;height:86vw;border-radius:50%;background:radial-gradient(circle,rgba(39,142,255,.09),rgba(39,142,255,0) 62%);pointer-events:none}
+.how-scene::after{content:"";position:absolute;right:-30vw;top:-48vw;width:90vw;height:90vw;border-radius:50%;background:radial-gradient(circle,rgba(75,39,255,.09),rgba(75,39,255,0) 62%);pointer-events:none}
+/* the heading's left edge lines up with the step copy in the first column below */
+.how-title{position:relative;z-index:2;max-width:none;margin:0;padding:15vh 5vw 9vh 2.125vw;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,3.33vw,4rem);line-height:.93;letter-spacing:-.04em;color:#fff}
+
+.how-steps{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);--p:25vw}
+.step{position:relative;height:min(984px,88vh);overflow:hidden}
+.step-bg{position:absolute;inset:0}
+.step-bg img{width:100%;height:100%;object-fit:cover}
+.step-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 56.6%,#000 100%)}
+#step2 .step-bg::after{background:linear-gradient(180deg,rgba(0,0,0,0) 56.6%,#000 100%),linear-gradient(90deg,rgba(0,0,0,.6),rgba(0,0,0,.6))}
+#step3 .step-bg{background:#1C1C1C}
+#step3 .step-bg img{opacity:.7}
+#step4 .step-bg img{opacity:.8}
+#step4 .step-bg::after{background:linear-gradient(180deg,rgba(0,0,0,0) 56.6%,#000 86.6%)}
+.step-copy{position:absolute;left:8.5%;right:8.5%;bottom:9.5%;z-index:3;display:flex;flex-direction:column;gap:calc(var(--p)*.025)}
+.step-eyebrow{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:calc(var(--p)*.0333);letter-spacing:.1em;line-height:1.1;color:#fff}
+.step-h{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:calc(var(--p)*.0667);letter-spacing:-.03em;line-height:1.1;color:#fff}
+.step-body{font-family:'Open Sans',sans-serif;font-weight:400;font-size:calc(var(--p)*.0292);line-height:1.4;color:#999}
+.step-mock{position:absolute;z-index:3;font-family:'Titillium Web',sans-serif;color:#E3E3E3}
+
+/* step 1 — deposit receipt */
+.mock-deposit{left:20.2%;top:38.7%;width:59.5%;padding:7.4% 0;border:1px solid #666;border-radius:calc(var(--p)*.0295);background:rgba(41,41,41,.1);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+.mock-deposit .m-title{padding:0 7.4%;font-weight:600;font-size:calc(var(--p)*.0442);line-height:1.2}
+.mock-deposit .m-row{display:flex;align-items:center;gap:calc(var(--p)*.0147);padding:0 7.4%;margin-top:calc(var(--p)*.0442)}
+.mock-deposit .m-row img{flex:none;width:calc(var(--p)*.0884);height:calc(var(--p)*.0884);border-radius:50%;object-fit:cover}
+.mock-deposit b{display:block;font-family:'Open Sans',sans-serif;font-weight:700;font-size:calc(var(--p)*.0295);line-height:1.5;color:#fff}
+.mock-deposit em{display:block;font-family:'Open Sans',sans-serif;font-style:normal;font-size:calc(var(--p)*.0221);line-height:1.3}
+
+/* step 2 — category toggles */
+.mock-pill{display:flex;align-items:center;gap:calc(var(--p)*.0163);width:69.6%;padding:calc(var(--p)*.0266) calc(var(--p)*.0355);border:1px solid rgba(169,169,169,.4);border-radius:calc(var(--p)*.0355);background:rgba(255,255,255,.1);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px)}
+.mock-pill img{flex:none;width:calc(var(--p)*.0488);height:calc(var(--p)*.0488)}
+.mock-pill .m-label{flex:1;font-weight:600;font-size:calc(var(--p)*.0326);line-height:1.2;white-space:nowrap}
+.mock-pill .m-toggle{flex:none;display:flex;align-items:center;justify-content:flex-end;width:calc(var(--p)*.1139);height:calc(var(--p)*.0651);padding:calc(var(--p)*.0041);border-radius:999px;background:#16BE76}
+.mock-pill .m-toggle i{display:block;width:calc(var(--p)*.057);height:calc(var(--p)*.057);border-radius:50%;background:#fff;box-shadow:0 0 calc(var(--p)*.0318) rgba(7,7,7,.24)}
+#pill1{left:19%;top:29.5%}
+#pill2{left:10.8%;top:38%}
+#pill3{left:19.7%;top:46%}
+#pill4{left:17.4%;top:53.5%}
+
+/* step 3 — offer card */
+.mock-offer{left:50%;top:44.8%;transform:translate(-50%,-50%);width:57.8%;padding:calc(var(--p)*.049) 0 calc(var(--p)*.062);border:1px solid #B4B4B4;border-radius:calc(var(--p)*.0413);background:rgba(41,41,41,.1);backdrop-filter:blur(31px);-webkit-backdrop-filter:blur(31px)}
+.mock-offer .m-deals{display:inline-flex;align-items:center;gap:calc(var(--p)*.0135);margin-left:4.7%;padding:calc(var(--p)*.0152) calc(var(--p)*.0288) calc(var(--p)*.0152) calc(var(--p)*.0152);border:1px solid rgba(101,117,156,.3);border-radius:999px;background:linear-gradient(90deg,rgba(0,0,0,.4),#482F42)}
+.mock-offer .m-deals img{width:calc(var(--p)*.0451);height:calc(var(--p)*.0451)}
+.mock-offer .m-deals span{font-weight:600;font-size:calc(var(--p)*.0271);line-height:1.2}
+.mock-offer .m-offer-h{margin:calc(var(--p)*.058) 4.7% 0;font-weight:400;font-size:calc(var(--p)*.0542);line-height:1.1;letter-spacing:-.02em;color:#fff}
+.mock-offer .m-cta{display:flex;align-items:center;justify-content:center;height:calc(var(--p)*.0609);margin:calc(var(--p)*.058) 4.7% 0;border-radius:999px;background:linear-gradient(90deg,#4B27FF,#0091FF);font-weight:600;font-size:calc(var(--p)*.0305);letter-spacing:.02em;color:#fff}
+
+/* step 4 — pay with data */
+.mock-pay{left:26.5%;top:30.8%;width:57%;padding:calc(var(--p)*.0368);border:2px solid rgba(223,223,223,.1);border-radius:calc(var(--p)*.0245);background:rgba(41,41,41,.7);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:flex;flex-direction:column;align-items:center;gap:calc(var(--p)*.0368)}
+.mock-pay .m-qr{position:relative;width:calc(var(--p)*.2896);height:calc(var(--p)*.2896);border-radius:calc(var(--p)*.0308)}
+.mock-pay .m-qr>img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.mock-pay .m-qr .m-logo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(var(--p)*.1);height:calc(var(--p)*.1);border-radius:50%;background:#fff;padding:calc(var(--p)*.012)}
+.mock-pay .m-qr .m-logo img{width:100%;height:100%;object-fit:contain}
+.mock-pay .m-paying{width:100%;font-family:'Open Sans',sans-serif;font-size:calc(var(--p)*.0148);color:#fff}
+.mock-pay .m-bank{width:100%;margin-top:calc(var(--p)*.0179);padding:calc(var(--p)*.0205);border:1px solid rgba(42,42,42,.4);border-radius:calc(var(--p)*.0103);background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:space-between;gap:calc(var(--p)*.0103)}
+.mock-pay .m-bank img.m-mark{width:calc(var(--p)*.0205);height:calc(var(--p)*.0205);object-fit:contain}
+.mock-pay .m-bank .m-brand{display:flex;align-items:center;gap:calc(var(--p)*.0051);font-family:'Open Sans',sans-serif;font-size:calc(var(--p)*.0154);color:#B8B8B8}
+.mock-pay .m-bank .m-amount{margin-top:calc(var(--p)*.0051);font-family:'Open Sans',sans-serif;font-size:calc(var(--p)*.0205);line-height:1.2;color:#E3E3E3}
+.mock-pay .m-edit{flex:none;display:flex;align-items:center;justify-content:center;width:calc(var(--p)*.0564);height:calc(var(--p)*.0564);border:1px solid #2A2A2A;border-radius:50%;background:#4A4242}
+.mock-pay .m-edit img{width:calc(var(--p)*.0308);height:calc(var(--p)*.0308)}
+
+/* FAQ */
+.faq{position:relative;z-index:2;display:flex;gap:80px;max-width:1200px;margin:0 auto;padding:17vh 5vw 12vh}
+.faq-head{flex:1;min-width:0}
+.faq-label{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(1rem,1.04vw,1.25rem);line-height:1.1;color:#fff}
+.faq-title{margin-top:20px;max-width:385px;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,3.33vw,4rem);line-height:.93;letter-spacing:-.04em;color:#fff}
+.faq-list{display:flex;flex-direction:column;gap:12px;width:min(626px,52%)}
+.faq-row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:28px;border:1px solid rgba(237,240,242,.1);border-radius:16px;background:rgba(255,255,255,.05);box-shadow:0 4px 8px rgba(0,0,0,.02);transition:background .25s,border-color .25s}
+.faq-row:hover{background:rgba(255,255,255,.08);border-color:rgba(237,240,242,.2)}
+.faq-row p{flex:1;min-width:0;font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(1rem,1.04vw,1.25rem);line-height:1.1;letter-spacing:-.03em;color:#E3E3E3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.faq-row i{flex:none;width:24px;font-family:'Open Sans',sans-serif;font-style:normal;font-size:18px;text-align:center;color:#6E7680}
+
+/* footer */
+.site-footer{position:relative;z-index:2;display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:40px;padding:9vh 8.9vw 10vh;background:var(--ink)}
+.site-footer .foot-logo{display:flex;align-items:center;gap:12px}
+.site-footer .foot-logo img{width:30px;height:30px;object-fit:contain}
+.site-footer .foot-logo b{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:22px;letter-spacing:-.01em;color:#fff}
+.site-footer .foot-tag{margin-top:26px;font-family:'Open Sans',sans-serif;font-size:clamp(1rem,1.04vw,1.25rem);line-height:1.2;color:#B4B4B4}
+.site-footer .foot-copy{margin-top:20px;max-width:282px;font-family:'Open Sans',sans-serif;font-size:clamp(.9rem,.94vw,1.125rem);line-height:1.34;color:#666}
+.site-footer .foot-h{font-family:'Open Sans',sans-serif;font-weight:700;font-size:clamp(.9rem,.94vw,1.125rem);line-height:1.2;color:#E3E3E3}
+.site-footer .foot-col a{display:block;margin-top:25px;font-family:'Open Sans',sans-serif;font-size:clamp(.9rem,.94vw,1.125rem);line-height:1.5;color:#B4B4B4;transition:color .25s}
+.site-footer .foot-col a:hover{color:#fff}
+
+@media (max-width:980px){
+  .how-steps{grid-template-columns:repeat(2,1fr);--p:50vw}
+  .how-title{padding-left:4.25vw}
+  .faq{flex-direction:column;gap:40px}
+  .faq-list{width:100%}
+  .faq-row p{white-space:normal}
+}
+@media (max-width:760px){
+  .how-steps{grid-template-columns:1fr;--p:100vw}
+  .how-title{padding-left:8.5vw}
+  .step{height:min(760px,80vh)}
+  .site-footer{grid-template-columns:1fr;gap:32px}
+  .brand{top:16px;left:16px}
+  #act1 .cue{display:none}
+  /* a tag has no width of its own — it fills whatever room its left offset leaves,
+     so on a narrow screen one placed well left grows until it meets the edge */
+  .marker .tag{max-width:52vw}
+  #act2 .esd .w:nth-child(2){top:60vh;right:6vw}
+  #act2 .esd .w:nth-child(3){left:10vw}
+  #time .whatif{left:5vw;bottom:9vh;width:90vw}
+  #time .worth{left:5vw;top:38vh;width:90vw}
+  .age-scene .ctl{bottom:10vh}
+  .solution-preview .sol-state{left:8vw;max-width:84vw}
+  .solution-preview #solStateA,
+  .solution-preview #solStateB{top:20vh}
+  /* the centred, fixed-width block is a desktop composition only */
+  .solution-preview #solStateA{transform:none;width:auto;max-width:84vw}
+  .solution-preview .sol-body{max-width:84vw;margin-top:1.4em}
+  .solution-preview .sol-cta{left:8vw;top:auto;bottom:22vh}
+  .solution-preview .sol-link{left:8vw;top:auto;bottom:17vh;transform:none}
+  .solution-preview .sol-card{right:auto;left:8vw;top:auto;bottom:30vh;width:84vw}
+}
+@media (prefers-reduced-motion:reduce){
+  .marker i.pulse{animation:none}
+}
+</style>
+</head>
+<body>
+
+<header class="nav" aria-label="dWallet">
+  <a class="logo" href="#">
+    <img class="mark" src="assets/img/logo.png" alt="" width="36" height="36">
+    <span class="rule" aria-hidden="true"></span>
+    <b>dWallet.</b>
+  </a>
+  <nav class="links"><a class="cur" href="#">Personal</a><a href="#">Business</a></nav>
+  <span class="sep" aria-hidden="true"></span>
+  <div class="ctas">
+    <a class="pill" href="#">Log in</a>
+    <a class="pill p" href="#">Open an Account &amp; get $25</a>
+  </div>
+</header>
+
+<!-- ACT 1 : YOUR LIFE CREATES DATA -->
+<section class="act" id="act1" aria-label="Your life creates data">
+  <div class="frame on" data-i="0"><img src="assets/img/website_hero_image_1.jpg" alt="A woman looking at her phone beneath a canopy of flowers against a blue sky"></div>
+  <div class="frame" data-i="1"><img src="assets/img/website_hero_image_2.jpg" alt="A man running through a park with city skyscrapers in the background" loading="lazy"></div>
+
+  <!-- every single day frames -->
+  <div class="frame" data-i="9"><img src="assets/img/website_hero_image3.jpg" alt="" loading="lazy"></div>
+  <div class="frame" data-i="10"><img src="assets/img/website_hero_image4.jpg" alt="" loading="lazy"></div>
+  <div class="frame" data-i="11"><img src="assets/img/website_hero_image5.jpg" alt="" loading="lazy"></div>
+  <div class="photo-veil" aria-hidden="true"></div>
+
+  <div class="marker" id="markerRun" style="left:calc(59% - 19.5px);top:calc(21% - 19.5px)"><i class="pulse"></i><span class="tag">7:45 MORNING RUN</span></div>
+
+  <!-- one marker per "every / single / day" frame: the cup, the card, the box -->
+  <div class="marker" id="markerCoffee" style="left:calc(31% - 19.5px);top:calc(32% - 19.5px)"><i class="pulse"></i><span class="tag">9:05 COFFEE</span></div>
+  <div class="marker" id="markerTap" style="left:calc(68% - 19.5px);top:calc(56% - 19.5px)"><i class="pulse"></i><span class="tag">10:23 BUYS A GIFT</span></div>
+  <div class="marker" id="markerPackage" style="left:calc(45% - 19.5px);top:calc(42% - 19.5px)"><i class="pulse"></i><span class="tag">11:08 RECEIVES PACKAGE</span></div>
+
+  <h1 class="hero-h display xl">
+    <span class="ln"><span>Your life</span></span>
+    <span class="ln"><span>creates data.</span></span>
+  </h1>
+  <div class="cue mono"><span>Scroll</span><i></i></div>
+  <!-- act 2 rides inside act 1 so the sequence plays straight through -->
+  <div class="act-layer" id="act2">
+  <div class="frame" data-i="0"><img src="assets/img/website_hero_image6.jpg" alt="A man wearing red headphones and glasses looking down at his phone" loading="lazy"></div>
+  <div class="frame" data-i="4"><img src="assets/img/website_hero_image7.jpg" alt="A woman crossing a city street carrying a dark shopping bag" loading="lazy"></div>
+  <div class="frame" data-i="5"><img src="assets/img/website_hero_image9.jpg" alt="An electric vehicle charging cable plugged into a car" loading="lazy"></div>
+  <div class="frame" data-i="6"><img src="assets/img/website_hero_image8.jpg" alt="A mother and young child reaching for groceries in a supermarket aisle" loading="lazy"></div>
+    <div class="frame" data-i="7"><img src="assets/img/what-happens-to-its-value.jpg" alt="A mother reading a picture book with two children by string lights" loading="lazy"></div>
+  <div class="photo-veil" aria-hidden="true"></div>
+  <div class="line-veil"></div>
+
+  <!-- one marker per frame: the headphones, the shopping bag, the aisle, the charger -->
+  <div class="marker" id="markerStream" style="left:calc(63% - 19.5px);top:calc(38% - 19.5px)"><i class="pulse"></i><span class="tag">12:27 STREAMS MUSIC</span></div>
+  <div class="marker" id="markerShop" style="left:calc(54% - 19.5px);top:calc(55% - 19.5px)"><i class="pulse"></i><span class="tag">1:45 SHOPS IN THE CITY</span></div>
+  <div class="marker" id="markerGrocery" style="left:67.76%;top:28.06%"><i class="pulse"></i><span class="tag">5:15 GROCERIES</span></div>
+  <div class="marker" id="markerCharge" style="left:calc(35% - 19.5px);top:calc(50% - 19.5px)"><i class="pulse"></i><span class="tag">5:36 VEHICLE CHARGING</span></div>
+
+  <div class="esd display xl" aria-hidden="true">
+    <div class="w"><span class="ln"><span>Every.</span></span></div>
+    <div class="w"><span class="ln"><span>Single.</span></span></div>
+    <div class="w"><span class="ln"><span>Day.</span></span></div>
+  </div>
+  <div class="t2 display">
+    <span class="ln"><span class="q-lead">The question is:</span></span>
+    <span class="ln"><span class="dim">What happens to</span></span>
+    <span class="ln"><span class="dim">its value?</span></span>
+  </div>
+  </div>
+  <!-- and the what-if screen, so the whole opening runs without a scroll -->
+  <div class="act-layer" id="time">
+  <div class="whatif display">
+    <span class="ln"><span>Every tap. Every step.</span></span>
+    <span class="ln"><span>Every choice.</span></span>
+  </div>
+
+  <div class="worth display">
+    <span class="ln"><span class="dim">The question is:</span></span>
+    <span class="ln"><span>How much is your</span></span>
+    <span class="ln"><span>data worth?</span></span>
+  </div>
+  </div>
+</section>
+
+<!-- ACT 2 : SOMETHING INVISIBLE -->
+<!-- ACT 3 : WHAT IF YOUR DATA COULD GROW WITH YOU -->
+<!-- ACT 4 : AGE TRACK -->
+<section class="act age-scene" id="ages" aria-label="How your value grows as you age">
+  <div class="frames" id="ageFrames">
+    <div class="frame" data-age="0"><img src="assets/img/age-0-newborn.jpg" alt="A mother's hand gently touching her newborn baby lying in a crib"></div>
+    <div class="frame" data-age="2"><img src="assets/img/age-2-toddler.jpg" alt="A toddler smiling while riding a pink tricycle on a sidewalk"></div>
+    <div class="frame" data-age="13"><img src="assets/img/age-13-teenageyears.jpg" alt="A teenage girl browsing lip gloss at a beauty store"></div>
+    <div class="frame" data-age="18"><img src="assets/img/age-18-college.jpg" alt="A college student writing on a tablet with a stylus at her desk"></div>
+    <div class="frame" data-age="25"><img src="assets/img/age-25-firstapartment.jpg" alt="A woman smiling while carrying a moving box up a staircase"></div>
+    <div class="frame" data-age="32"><img src="assets/img/age-32-buildingalife.jpg" alt="A woman running on a beach while holding someone's hand" loading="lazy"></div>
+    <div class="frame" data-age="36"><img src="assets/img/age-36-family.jpg" alt="A mother laughing with her young son on the living room floor" loading="lazy"></div>
+    <div class="frame" data-age="45"><img src="assets/img/age-45-career.jpg" alt="A woman with a shoulder bag walking past a glass office building" loading="lazy"></div>
+    <div class="frame" data-age="58"><img src="assets/img/age-58-enjoyinglife.jpg" alt="A couple relaxing in a pool at a tropical resort" loading="lazy"></div>
+    <div class="frame" data-age="70"><img src="assets/img/age-70-retirement.jpg" alt="A group of friends laughing together at an outdoor dinner table" loading="lazy"></div>
+  </div>
+
+  <div class="num-wrap">
+    <div class="lab mono"><i></i><span>Potential value accumulated</span></div>
+    <div class="bignum display" id="ageBigVal">$0</div>
+  </div>
+
+  <div class="stage-tag">
+    <div class="age display" id="ageNumVal">0</div>
+    <div class="cap mono" id="ageCapVal">Newborn</div>
+  </div>
+
+  <div class="ctl" id="ageCtl">
+    <div class="hint mono"><span>One life, 0 to 70</span><b id="ageDragHint">Drag to move through time</b></div>
+    <div class="track" id="ageTrack" role="slider" aria-label="Age" aria-valuemin="0" aria-valuemax="70" aria-valuenow="0" tabindex="0">
+      <div class="rail"></div>
+      <div class="fill" id="ageFill"></div>
+      <div class="ticks" id="ageTicks"></div>
+      <div class="handle" id="ageHandle"></div>
+    </div>
+    <div class="ages mono" id="ageLabels"></div>
+  </div>
+
+  <!-- Crossfades in place over the $31,800 hold, in the last stretch of this
+       section's own pin, so the transition has zero scroll motion: the age
+       screen dissolves to black, then the solution reveal plays on it. -->
+  <div class="solution-preview" id="solutionPreview">
+    <div class="sol-glow sol-glow-l" aria-hidden="true"></div>
+    <div class="sol-glow sol-glow-r" aria-hidden="true"></div>
+
+    <div class="sol-state" id="solStateA">
+      <div class="sol-headline">
+        <span class="ln"><span>Introducing the</span></span>
+        <span class="ln"><span class="sol-blue">Data Savings Plan</span></span>
+      </div>
+      <p class="sol-body">A Data Savings Plan lets you turn the data you generate every day into a source of financial opportunity, today and for the future.</p>
+    </div>
+
+    <div class="sol-state" id="solStateB">
+      <div class="sol-headline">
+        <span class="ln"><span>Open an account,</span></span>
+        <span class="ln"><span>request your data,</span></span>
+        <span class="ln"><span>and <span class="sol-blue">earn $25.</span></span></span>
+      </div>
+    </div>
+
+    <a class="sol-cta" href="#">Open a Data Savings Account</a>
+    <a class="sol-link" href="#">View offer details &gt;</a>
+
+    <div class="sol-card">
+      <div class="sol-card-glow" aria-hidden="true"><img src="assets/img/dsp-card-glow.svg" alt=""></div>
+      <div class="sol-card-face">
+        <div class="sol-card-photo"><img src="assets/img/dsp-card-hero.jpg" alt="" loading="lazy"></div>
+        <div class="sol-cast sol-cast-warm" aria-hidden="true"></div>
+        <div class="sol-cast sol-cast-cool" aria-hidden="true"></div>
+        <div class="sol-card-brand">
+          <span class="dsp-logo"><img src="assets/img/dsp-logo.svg" alt="" loading="lazy"></span>
+          <span class="sol-card-mark">
+            <span class="dsp-word"><img src="assets/img/dsp-dsavings.svg" alt="dSavings" loading="lazy"></span>
+            <b>horizon</b>
+          </span>
+        </div>
+        <div class="sol-card-bal">$170</div>
+        <div class="sol-card-holder">
+          <span>CAROLINA WAVERLY</span>
+          <em>************3875</em>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ACT 7 : HOW IT WORKS + FAQ + FOOTER — scrolls up after the solution screen -->
+<section class="how-scene" id="how" aria-label="How a Data Savings Plan works">
+  <h2 class="how-title">How does a Data Savings Plan work?</h2>
+
+  <div class="how-steps">
+    <article class="step" id="step1">
+      <div class="step-bg"><img src="assets/img/step-1-own.jpg" alt="A woman stepping out of a rideshare car" loading="lazy"></div>
+      <div class="step-mock mock-deposit">
+        <div class="m-title">You deposited data</div>
+        <div class="m-row">
+          <img src="assets/img/step-avatar.jpg" alt="" loading="lazy">
+          <div>
+            <b>Rideshare to 265 Horizon Rd</b>
+            <em>Added to savings plan</em>
+          </div>
+        </div>
+      </div>
+      <div class="step-copy">
+        <p class="step-eyebrow">Own your data</p>
+        <h3 class="step-h">Sign up &amp; request your data</h3>
+        <p class="step-body">With dWallet, you can request your data from companies you interact with. From streaming to shopping, the data you generate will finally belong to you.</p>
+      </div>
+    </article>
+
+    <article class="step" id="step2">
+      <div class="step-bg"><img src="assets/img/step-2-save.jpg" alt="An apartment interior at dusk" loading="lazy"></div>
+      <div class="step-mock mock-pill" id="pill1">
+        <img src="assets/img/icon-travel.svg" alt="" loading="lazy">
+        <span class="m-label">Travel &amp; Transportation</span>
+        <span class="m-toggle"><i></i></span>
+      </div>
+      <div class="step-mock mock-pill" id="pill2">
+        <img src="assets/img/icon-finance.svg" alt="" loading="lazy">
+        <span class="m-label">Finance &amp; Investments</span>
+        <span class="m-toggle"><i></i></span>
+      </div>
+      <div class="step-mock mock-pill" id="pill3">
+        <img src="assets/img/icon-retail.svg" alt="" loading="lazy">
+        <span class="m-label">Retail &amp; Food</span>
+        <span class="m-toggle"><i></i></span>
+      </div>
+      <div class="step-mock mock-pill" id="pill4">
+        <img src="assets/img/icon-entertainment.svg" alt="" loading="lazy">
+        <span class="m-label">Entertainment &amp; Gaming</span>
+        <span class="m-toggle"><i></i></span>
+      </div>
+      <div class="step-copy">
+        <p class="step-eyebrow">Save your data</p>
+        <h3 class="step-h">Save &amp; manage it</h3>
+        <p class="step-body">Contribute your data to a Data Savings Plan and grow its value, much like money builds in a traditional bank account. You decide what data to add and what you're open to licensing.</p>
+      </div>
+    </article>
+
+    <article class="step" id="step3">
+      <div class="step-bg"><img src="assets/img/step-3-offers.jpg" alt="A living room with a television playing a football match" loading="lazy"></div>
+      <div class="step-mock mock-offer">
+        <div class="m-deals"><img src="assets/img/icon-best-deals.png" alt="" loading="lazy"><span>Best Deals</span></div>
+        <p class="m-offer-h">License your streaming data and earn $.</p>
+        <div class="m-cta">View offer</div>
+      </div>
+      <div class="step-copy">
+        <p class="step-eyebrow">Receive offers</p>
+        <h3 class="step-h">Earn from its value</h3>
+        <p class="step-body">You're always in control. When companies want to license your data, you decide which offers to accept. Say yes, and you'll get paid directly in your dWallet. Save it or cash out anytime.</p>
+      </div>
+    </article>
+
+    <article class="step" id="step4">
+      <div class="step-bg"><img src="assets/img/step-4-pay.jpg" alt="A woman paying at a counter with her phone" loading="lazy"></div>
+      <div class="step-mock mock-pay">
+        <div class="m-qr">
+          <img src="assets/img/step-qr.png" alt="" loading="lazy">
+          <span class="m-logo"><img src="assets/img/logo.png" alt="" loading="lazy"></span>
+        </div>
+        <div>
+          <p class="m-paying">Paying from</p>
+          <div class="m-bank">
+            <div>
+              <span class="m-brand"><img class="m-mark" src="assets/img/logo.png" alt="" loading="lazy">dSavings smart</span>
+              <div class="m-amount">$50 available</div>
+            </div>
+            <span class="m-edit"><img src="assets/img/icon-edit.svg" alt="" loading="lazy"></span>
+          </div>
+        </div>
+      </div>
+      <div class="step-copy">
+        <p class="step-eyebrow">Pay with data (coming soon)</p>
+        <h3 class="step-h">Transact using its value</h3>
+        <p class="step-body">Soon you'll be able to make purchases using the balance from your Data Savings Plan. Using a QR code, dPay enables you to pay with the value of your data.</p>
+      </div>
+    </article>
+  </div>
+
+  <div class="faq">
+    <div class="faq-head">
+      <p class="faq-label">FAQS</p>
+      <h2 class="faq-title">Questions? We&rsquo;ve got answers.</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-row"><p>Is a Data Savings Account a bank account?</p><i>+</i></div>
+      <div class="faq-row"><p>What is a Data Savings Plan?</p><i>+</i></div>
+      <div class="faq-row"><p>How much is my data worth?</p><i>+</i></div>
+      <div class="faq-row"><p>Why would a company pay for something it currently gets free?</p><i>+</i></div>
+      <div class="faq-row"><p>Is my data safe with dWallet?</p><i>+</i></div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div>
+      <div class="foot-logo"><img src="assets/img/logo.png" alt="" width="30" height="30"><b>DrumWave</b></div>
+      <p class="foot-tag">Your Life. Your Story. Your Data.</p>
+      <p class="foot-copy">Copyright &copy; 2026 DrumWave Inc. All rights reserved.</p>
+    </div>
+    <div class="foot-col">
+      <p class="foot-h">Links</p>
+      <a href="#">DrumWave.com</a>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Resources</a>
+      <a href="#">Contact</a>
+    </div>
+    <div class="foot-col">
+      <p class="foot-h">Socials</p>
+      <a href="#">YouTube</a>
+      <a href="#">Linkedin</a>
+      <a href="#">X</a>
+    </div>
+  </footer>
+</section>
+
+<script src="assets/js/gsap.min.js"></script>
+<script src="assets/js/ScrollTrigger.min.js"></script>
+<script>
+(function(){
+  gsap.registerPlugin(ScrollTrigger);
+  const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const scrub = RM ? true : 0.9;
+  // Everything up to the age ticker runs on its own clock: the timeline plays
+  // when the screen is reached and rewinds if you scroll back above it, rather
+  // than being scrubbed. Reduced motion skips straight to each end state.
+  // Driven by explicit callbacks rather than toggleActions: act 1 starts at
+  // scroll 0, where the trigger's start lands on the boundary and toggleActions
+  // keeps re-firing its reset, which pins the playhead at 0 and nothing plays.
+  const autoPlay = {
+    onEnter: self => self.animation.play(),
+    // Coming back up onto the opening gives it back from the top, rather than
+    // parking the reader on whatever frame it stopped on. Hung off onEnterBack,
+    // whose boundary is the far edge of the pin — unlike onLeaveBack below, which
+    // sits at scroll 0 and so re-fires on every refresh.
+    onEnterBack: () => restartRun(),
+    onLeave: self => self.animation.pause(),
+    // guarded: act 1's trigger starts at scroll 0, so sitting at the top of the
+    // page straddles its boundary and would re-fire this every refresh, holding
+    // the playhead at 0 forever
+    // invalidate before rewinding: the cross-dissolve fades the outgoing frame with
+    // a to(), which re-renders its recorded start (opacity 1) when the playhead sits
+    // before it — that would leave old photos stacked over the hero on the way back up
+    onLeaveBack: self => { if(self.start > 1) { self.animation.invalidate().pause(0); resetRun(); } }
+  };
+  const $ = (s, r=document) => r.querySelector(s);
+  const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+  const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+  const lines = (sel, r) => $$(sel + ' .ln > span', r);
+
+  // Prepare all line reveals hidden
+  gsap.set($$('.ln > span'), { yPercent: 112 });
+  gsap.set('#act1 .hero-h .ln > span', { yPercent: 0 });
+  // pin the tags' start state explicitly: leaving it to the CSS alone let them
+  // all render visible on first paint, before their tweens had run
+  gsap.set($$('.marker'), { opacity: 0, x: -8 });
+
+  /* ---------- ACT 1 ---------- */
+  // Photos cut — one frame off, the next on, in the same instant. No overlap, so
+  // nothing dissolves and nothing dips through black. Act 2's photos still take the
+  // 1.3 settle from 1.08 the reference gives them; act 1's sit still, as it does.
+  // The swap itself stays an instant cut — no overlap, nothing ghosting. What makes
+  // it read as smooth is that the photo is already in motion when it lands: it
+  // settles out of a 1.08 push while drifting slowly sideways for its whole time on
+  // screen, so a cut arrives into movement instead of onto a still frame.
+  const XIMG = 1.0, TXT = .6, TXT_E = 'power2.out';
+  // The baby -> family beat, and the one swap in the run that isn't a cut: the cut
+  // read as a jolt there, so the family photo eases over instead. Everything on this
+  // beat shares the one clock — the photo, the lead-out, the brighten. Linear, and
+  // deliberately: every eased version of this dissolve hung at one end or both and
+  // then arrived all at once, which is what kept reading as lag. A constant rate is
+  // what a cross-dissolve wants — nothing to notice at either end.
+  const BF = .55, BF_E = 'none';
+  // The zoom-out beat: the photo eases out of a slight push over one second, then
+  // holds. Only three screens take it — the two hero frames and the baby frame; the
+  // rest arrive at rest and simply cut.
+  const arrive = (tl, sel, at, first) =>
+    tl.fromTo(sel+' img', {scale:1.08},
+      {scale:1, duration:XIMG, ease:'power2.out', immediateRender: !!first}, at);
+  const tl1 = gsap.timeline({
+    defaults:{ease:'none'},
+    scrollTrigger:{ trigger:'#act1', start:'top top', end:'+=100%', pin:true, ...autoPlay }
+  });
+  const f1 = i => `#act1 .frame[data-i="${i}"]`;
+  // the timeline itself owns the tags' hidden start state at t=0, so however the
+  // playhead is rendered they begin cleared rather than painted on the hero
+  tl1.set($$('.marker'), {opacity:0, x:-8}, 0);
+  arrive(tl1, f1(0), 0, true);
+  tl1.set(f1(1), {opacity:1}, 1.2);
+  tl1.set(f1(0), {opacity:0}, 1.2);
+  arrive(tl1, f1(1), 1.2);
+  tl1.to('#act1 .hero-h .ln > span', {yPercent:-112, duration:.5, stagger:.06}, 7.4);
+  tl1.to('#act1 .cue', {opacity:0, duration:.3}, 1.0);
+  // the runner's tag lives on the hero frame, in and out with it
+  tl1.fromTo('#markerRun i', {scale:0}, {scale:1, duration:.22, ease:'back.out(2)', immediateRender:false}, 1.7);
+  tl1.fromTo('#markerRun', {opacity:0, x:-8}, {opacity:1, x:0, duration:.3, immediateRender:false}, 1.7);
+  tl1.to('#markerRun', {opacity:0, duration:.3}, 2.6);
+  // Every. Single. Day.
+  // the coffee, card and delivery frames, all under "Your life creates data."
+
+  // the coffee, card and delivery frames, all under "Your life creates data."
+  const esdFrames = [[9,3.0],[10,4.6],[11,6.2]];
+  // the tap frame eases out of a push; the coffee and delivery frames cut in at rest
+  esdFrames.forEach(([fi, at], k) => {
+    tl1.set(f1(fi), {opacity:1}, at);
+    tl1.set(f1(k ? esdFrames[k-1][0] : 1), {opacity:0}, at);
+    if(fi === 10) arrive(tl1, f1(fi), at);
+  });
+
+  // one marker per frame, in and out with the frame it sits on
+  const esdMarkers = [['#markerCoffee', 3.0], ['#markerTap', 4.6], ['#markerPackage', 6.2]];
+  // fromTo with immediateRender off, rather than a set plus a to: a zero-duration
+  // set reverts to its pre-set value when the timeline sits before it, which left
+  // every tag painted on screen until the first one fired
+  esdMarkers.forEach(([sel, at]) => {
+    tl1.fromTo(sel + ' i', {scale:0}, {scale:1, duration:.22, ease:'back.out(2)', immediateRender:false}, at);
+    tl1.fromTo(sel, {opacity:0, x:-8}, {opacity:1, x:0, duration:.3, immediateRender:false}, at);
+    tl1.to(sel, {opacity:0, duration:.3}, at + 1.3);
+  });
+  tl1.to({}, {duration:.4}, 7.8);
+
+  /* ---------- ACT 2 ---------- */
+  // No trigger of its own: it is appended to act 1 below so the hero runs
+  // straight through to "what happens to its value" without a scroll.
+  const tl2 = gsap.timeline({defaults:{ease:'none'}});
+  const f2 = i => `#act2 .frame[data-i="${i}"]`;
+  // Every / Single / Day: one dwell for all three, so nothing sits longer than the
+  // rest. Everything downstream is derived from WD rather than written out, so the
+  // three screens can be sped up or slowed without re-timing the whole act.
+  const WD = 1.7;                 // per word screen (was 2.27)
+  const BABY = WD * 3, FAMILY = BABY + 2.6, T2_IN = BABY + .8, END = FAMILY + 3.6;
+  const ESD2 = [[0, 0], [4, WD], [5, WD * 2]];
+  // every swap is an instant cut but the family screen, which eases over the baby —
+  // held at full opacity underneath and dropped once covered, so nothing dips through
+  // black while the two overlap
+  ESD2.concat([[6, BABY], [7, FAMILY]]).forEach(([i, at], k, arr) => {
+    if(i === 7){
+      tl2.fromTo(f2(i), {opacity:0.001},
+        {opacity:1, duration:BF, ease:BF_E, immediateRender:false}, at);
+      tl2.set(f2(arr[k-1][0]), {opacity:0}, at + BF);
+    } else {
+      if(k) tl2.set(f2(arr[k-1][0]), {opacity:0}, at);
+      tl2.set(f2(i), {opacity:1}, at);
+    }
+    // the Single screen and the baby frame ease out of a push; Every, Day and the
+    // family frame all arrive at rest
+    if(i === 4 || i === 6) arrive(tl2, f2(i), at);
+  });
+  // The family photo is full-bleed 1920x1080, and the frame it first composites on
+  // costs enough to drop one. Left alone that lands on the head of the dissolve, which
+  // is precisely where it reads as a hitch. Put the photo on screen at a hair of
+  // opacity partway through the baby hold instead, so the upload happens on a still
+  // frame, with nothing moving for it to interrupt.
+  tl2.set(f2(7), {opacity:0.001}, BABY + .4);
+  // The veil used to step 0 -> .5 -> .25 -> .12 right ON the Every/Single/Day
+  // handovers, so the screen darkened and lifted while the photos swapped and the
+  // beat read as a fade through black. It now reaches its level during a hold and
+  // sits still across every dissolve.
+  tl2.to('#act2 .line-veil', {opacity:.18, duration:.6}, .9);
+  // "The question is:" still rides up out of its mask, crisply.
+  tl2.to('#act2 .t2 .q-lead', {yPercent:0, duration:.55, ease:'power3.out'}, T2_IN);
+  // The question itself doesn't ride up with it — it is dropped into place inside its
+  // mask and ghosts in on opacity alone. It comes up just after the baby photo lands
+  // and runs through the dissolve, so it is still gaining as the screens change and
+  // reaches opaque exactly as the family photo finishes arriving. Linear here too: the
+  // ease-in it used to carry held it near-invisible for over a second, which is what
+  // made the fade feel slow — at a constant rate it is legible far sooner and still
+  // takes the same beat to land.
+  const T2_Q_IN = BABY + .25;
+  const t2Q = $$('#act2 .t2 .dim');
+  tl2.set(t2Q, {yPercent:0}, T2_Q_IN);
+  tl2.fromTo(t2Q, {opacity:0},
+    {opacity:1, duration:(FAMILY + BF) - T2_Q_IN, ease:'none', immediateRender:false}, T2_Q_IN);
+  // The photo swap here is the same cut as the others; what sets the beat apart is
+  // the text riding on it — an eased lead-out and a brighten. Both are kept short so
+  // they land with the cut rather than running long past it.
+  tl2.to('#act2 .t2 .q-lead', {opacity:0, duration:BF, ease:BF_E}, FAMILY);
+  tl2.to('#act2 .t2 .dim', {color:'#ffffff', duration:BF, ease:BF_E}, FAMILY);
+  tl2.to('#act2 .line-veil', {opacity:.94, duration:.7}, END);
+  // one marker per frame, in and out with the frame it sits on
+  // a word per frame — headphones, shopping bag, charger — in the same corners
+  // they used to occupy, each arriving with its own image
+  // Word and tag are built from one list off a single start, and the tag now takes
+  // the word's own duration and ease. Before, the tag ran .3 against the word's .5
+  // and started .1 earlier, so it landed first and read as arriving ahead of the text.
+  const esdW2 = $$('#act2 .esd .w');
+  const tagFor = ['#markerStream', '#markerShop', '#markerCharge'];
+  const WIN = .45;                // word/tag entrance, tightened to suit the shorter screen
+  ESD2.forEach(([, at], k) => {
+    const t = at + .15, sel = tagFor[k];
+    tl2.fromTo(esdW2[k].querySelector('.ln > span'), {yPercent:112}, {yPercent:0, duration:WIN, ease:TXT_E}, t);
+    tl2.fromTo(sel + ' i', {scale:0}, {scale:1, duration:.22, ease:'back.out(2)', immediateRender:false}, t);
+    tl2.fromTo(sel, {opacity:0, x:-8}, {opacity:1, x:0, duration:WIN, ease:TXT_E, immediateRender:false}, t);
+    tl2.to(sel, {opacity:0, duration:.3}, at + WD - .35);
+  });
+  tl2.to(lines('#act2 .esd'), {yPercent:-112, duration:.4, stagger:.06}, BABY + .4);
+  // the grocery tag belongs to the baby frame, which carries no word
+  tl2.fromTo('#markerGrocery i', {scale:0}, {scale:1, duration:.22, ease:'back.out(2)', immediateRender:false}, BABY + .25);
+  tl2.fromTo('#markerGrocery', {opacity:0, x:-8}, {opacity:1, x:0, duration:WIN, ease:TXT_E, immediateRender:false}, BABY + .25);
+  tl2.to('#markerGrocery', {opacity:0, duration:.4}, BABY + 1.6);
+  // clear the question before the what-if leg: act 2 is a layer now, so unlike
+  // a section it never scrolls away on its own
+  tl2.to(lines('#act2 .t2'), {yPercent:-112, duration:.4, stagger:.06}, END + .2);
+  tl2.to({}, {duration:.7}, END + .6);
+
+  // one run: act 2 starts the moment act 1 finishes, no scroll in between
+  tl1.add(tl2, '>');
+
+  /* ---------- ACT 3 : WHAT IF YOUR DATA COULD GROW WITH YOU ---------- */
+  const tl4 = gsap.timeline({defaults:{ease:'none'}});
+  tl4.fromTo('#time', {opacity:0}, {opacity:1, duration:.8, ease:'power2.out', immediateRender:false}, 0.1);
+  // the copy falls in: each line drops from above its mask and lands with a short
+  // overshoot, one after the other, rather than rising the way the other lines do
+  tl4.fromTo(lines('#time .whatif'), {yPercent:-118},
+    {yPercent:0, duration:.72, stagger:.14, ease:'back.out(1.5)', immediateRender:false}, 0.6);
+  tl4.to({}, {duration:1.4}, 1.8);
+  // and keeps falling on the way out
+  tl4.to(lines('#time .whatif'), {yPercent:118, duration:.45, stagger:.08, ease:'power2.in'}, 3.2);
+  // the question falls into the same panel as the first line is still clearing, so
+  // the copy hands over without the screen itself changing
+  tl4.fromTo(lines('#time .worth'), {yPercent:-118},
+    {yPercent:0, duration:.72, stagger:.14, ease:'back.out(1.5)', immediateRender:false}, 3.45);
+  tl4.to({}, {duration:1.7}, 4.6);
+  tl4.to(lines('#time .worth'), {yPercent:118, duration:.45, stagger:.08, ease:'power2.in'}, 6.3);
+  tl1.add(tl4, '>');   // the third and last leg of the one auto run
+
+  // These three were paced as scrub distances, so at 1x they would each run for
+  // nine or ten seconds on their own. Speed them up to land around five, and
+  // under reduced motion run them out instantly to their end state.
+  if(RM) tl1.timeScale(100);
+  else tl1.timeScale(1.0);    // 24.2 units -> ~24s, close to the authored pace
+
+  // The opening runs on its own clock, so when it ends the reader is still parked at
+  // the top with a pinned section under them. Carry them to the timeline; everything
+  // from there down is an ordinary scroll. Only ever done once.
+  const agesTop = () => {
+    const ages = ScrollTrigger.getAll().find(t => t.trigger && t.trigger.id === 'ages');
+    const to = ages ? ages.start : (document.getElementById('ages') || {}).offsetTop;
+    return to == null ? null : to;
+  };
+  let handedOff = false;
+  const handOff = () => {
+    dropSkip();
+    const to = agesTop();
+    if(to == null) return;
+    window.scrollTo({top: to, behavior: RM ? 'auto' : 'smooth'});
+  };
+
+  // A reader who wants to move on mid-run gets nothing back from a scroll: the run
+  // is on its own clock and #act1 is pinned, so the screen sits still for two
+  // viewport heights before the timeline arrives. Take the first downward gesture
+  // as that request — land the run on its end state and hand off early, so a
+  // scroll during the opening does what it does everywhere else on the page.
+  const skipIntro = () => {
+    if(handedOff) return false;
+    handedOff = true;     // set first: the jump below fires onComplete inline
+    tl1.progress(1);      // the run's end state, not a half-finished frame
+    handOff();
+    return true;
+  };
+  // Every run arms its own skip, so a replay can be skipped the same way the first
+  // one was; the hand-off drops it again the moment it fires.
+  function armSkip(){
+    handedOff = false;
+    window.addEventListener('wheel', wheelSkip, {passive:false});
+    window.addEventListener('keydown', keySkip);
+    window.addEventListener('touchstart', touchStart, {passive:true});
+    window.addEventListener('touchmove', touchSkip, {passive:true});
+  }
+  const wheelSkip = e => { if(e.deltaY > 0 && skipIntro()) e.preventDefault(); };
+  const KEY_DOWN = {ArrowDown:1, PageDown:1, End:1, ' ':1, Spacebar:1};
+  const keySkip = e => {
+    // only the page's own scroll keys: space on a focused nav button belongs to
+    // the button, not to us
+    const t = e.target;
+    if(t && t !== document.body && t !== document.documentElement) return;
+    if(KEY_DOWN[e.key] && skipIntro()) e.preventDefault();
+  };
+  let touchY = null;
+  const touchStart = e => { touchY = e.touches[0].clientY; };
+  // touchmove stays passive — cancelling it would fight the browser's own scroll,
+  // which is welcome to carry on underneath the hand-off
+  const touchSkip = e => { if(touchY != null && touchY - e.touches[0].clientY > 8) skipIntro(); };
+  function dropSkip(){
+    window.removeEventListener('wheel', wheelSkip, {passive:false});
+    window.removeEventListener('keydown', keySkip);
+    window.removeEventListener('touchstart', touchStart);
+    window.removeEventListener('touchmove', touchSkip);
+  }
+  armSkip();
+
+  tl1.eventCallback('onComplete', () => {
+    if(handedOff) { dropSkip(); return; }   // the skip already handed off
+    handedOff = true;
+    dropSkip();
+    // never yank someone who is already scrolling for themselves
+    if(window.scrollY > 4) return;
+    handOff();
+  });
+
+  // Give the run back from the top: rewind, re-state the baseline the rewind cannot
+  // be trusted to restore on its own, then play. Same three steps the load handler
+  // takes, for the same reason — a timeline rewound past a to() re-renders that
+  // tween's recorded start, which would leave later frames stacked over the hero.
+  function restartRun(){
+    tl1.invalidate().pause(0);
+    resetRun();
+    armSkip();
+    tl1.play();
+  }
+
+  /* ---------- ACT 4 : AGE TRACK ---------- */
+  const AGE_DATA = [
+    {age:0,  val:0,     label:'Newborn'},
+    {age:2,  val:98,    label:'Toddler'},
+    {age:13, val:320,   label:'Teenage years'},
+    {age:18, val:584,   label:'College'},
+    {age:25, val:878,   label:'First apartment'},
+    {age:32, val:4816,  label:'Building a life'},
+    {age:36, val:10499, label:'Family'},
+    {age:45, val:17858, label:'Career'},
+    {age:58, val:31800, label:'Enjoying life'},
+    {age:70, val:31800, label:'Retirement'}
+  ];
+  const AGES = AGE_DATA.map(d => d.age);
+  const ageFrames = $$('#ageFrames .frame');
+  const ageBigVal = $('#ageBigVal'), ageNumVal = $('#ageNumVal'), ageCapVal = $('#ageCapVal');
+  const AGE_MIN = AGES[0], AGE_MAX = AGES[AGES.length-1];
+
+  const ageTrack = $('#ageTrack'), ageFill = $('#ageFill'), ageHandle = $('#ageHandle');
+  const ageTicksEl = $('#ageTicks'), ageLabelsEl = $('#ageLabels');
+  for(let a=AGE_MIN; a<=AGE_MAX; a++){ const i=document.createElement('i'); ageTicksEl.appendChild(i); }
+  const ageTicks = $$('#ageTicks i');
+  AGES.forEach(a => { const s=document.createElement('span'); s.textContent=a; s.style.left=((a-AGE_MIN)/(AGE_MAX-AGE_MIN)*100)+'%'; ageLabelsEl.appendChild(s); });
+  const ageLabelSpans = $$('#ageLabels span');
+  let ageCurrent = AGE_MIN;
+
+  function ageValueAt(age){
+    for(let i=0;i<AGE_DATA.length-1;i++){
+      if(age <= AGE_DATA[i+1].age){
+        const u = (age-AGE_DATA[i].age)/(AGE_DATA[i+1].age-AGE_DATA[i].age);
+        return AGE_DATA[i].val + (AGE_DATA[i+1].val-AGE_DATA[i].val)*u;
+      }
+    }
+    return AGE_DATA[AGE_DATA.length-1].val;
+  }
+  const smooth = u => u*u*u*(u*(u*6-15)+10);
+  function renderAge(age){
+    age = clamp(age, AGE_MIN, AGE_MAX);
+    let si = 0;
+    for(let i=0;i<AGES.length-1;i++){ if(age >= AGES[i]) si = i; }
+    const next = AGES[si+1];
+    const segLen = next ? next - AGES[si] : 1;
+    const u = next ? clamp((age-AGES[si])/segLen, 0, 1) : 0;
+    const x = next ? smooth(clamp((u-0.4)/0.6, 0, 1)) : 0;
+    ageFrames.forEach((f,i)=>{
+      let o = 0;
+      if(i===si) o = 1;
+      else if(i===si+1) o = x;
+      f.style.opacity = o;
+      const img = f.firstElementChild;
+      const local = i===si ? u : (i===si+1 ? 0 : 1);
+      img.style.transform = `scale(${1.06 - 0.06*local}) translateX(${(-1.5 + 3*local)}%)`;
+    });
+    ageBigVal.textContent = '$' + Math.round(ageValueAt(age)).toLocaleString('en-US');
+    ageNumVal.textContent = Math.round(age);
+    ageCapVal.textContent = (next && x > .5) ? AGE_DATA[si+1].label : AGE_DATA[si].label;
+
+    ageCurrent = age;
+    const t = (age - AGE_MIN) / (AGE_MAX - AGE_MIN);
+    ageFill.style.width = (t*100)+'%';
+    ageHandle.style.left = (t*100)+'%';
+    ageTrack.setAttribute('aria-valuenow', Math.round(age));
+    ageTicks.forEach((tk,i)=> tk.classList.toggle('hit', (AGE_MIN+i) <= Math.round(age) && t > 0));
+    ageLabelSpans.forEach((l,i)=> l.classList.toggle('cur', age >= AGES[i]));
+  }
+  renderAge(AGE_MIN);
+
+  // The tail of #ages' pin dissolves the $31,800 screen to black and then plays
+  // the solution reveal on it, all on the same pin — so the transition happens
+  // in place, with zero scroll motion.
+  const cardRise = () => -window.innerHeight * 0.0333;
+  const growTl = gsap.timeline({paused:true, defaults:{ease:'none'}});
+
+  // 1 — the age screen dissolves to black.
+  growTl.to('#ages > .frames, #ages > .num-wrap, #ages > .stage-tag, #ages > .ctl',
+            {opacity:0, duration:.8, ease:'power1.inOut'}, 0);
+  growTl.to({}, {duration:.35}, .8);
+
+  // 2 — introducing the Data Savings Plan.
+  // the two blue casts behind the screen come up first, so the copy lands on a lit
+  // page rather than on flat black — .4 and .2, the levels the design gives them
+  growTl.fromTo('#solutionPreview .sol-glow-l', {opacity:0}, {opacity:.4, duration:.8, ease:'power1.out'}, .95);
+  growTl.fromTo('#solutionPreview .sol-glow-r', {opacity:0}, {opacity:.2, duration:.8, ease:'power1.out'}, .95);
+  growTl.fromTo(lines('#solStateA .sol-headline'), {yPercent:112}, {yPercent:0, duration:.5, stagger:.15, ease:'power3.out'}, 1.15);
+  growTl.fromTo('#solutionPreview .sol-card', {opacity:0, scale:1.04}, {opacity:1, scale:1, duration:.55, ease:'power2.out'}, 1.3);
+  growTl.fromTo('#solStateA .sol-body', {opacity:0, y:16}, {opacity:.7, y:0, duration:.4, ease:'power2.out'}, 1.6);
+  growTl.to({}, {duration:.6}, 2.0);
+
+  // 3 — open an account, the card easing up between the two framings.
+  growTl.to(lines('#solStateA .sol-headline'), {yPercent:-112, duration:.45, stagger:.08}, 2.6);
+  growTl.to('#solStateA .sol-body', {opacity:0, duration:.35}, 2.6);
+  // the blue casts belong to the introducing screen only — the open-an-account screen
+  // wants a clean corner, so they leave with the copy that brought them in
+  growTl.to('#solutionPreview .sol-glow', {opacity:0, duration:.5, ease:'power1.inOut'}, 2.6);
+  growTl.to('#solutionPreview .sol-card', {y:cardRise, duration:.9, ease:'power2.inOut'}, 2.65);
+  growTl.fromTo(lines('#solStateB .sol-headline'), {yPercent:112}, {yPercent:0, duration:.5, stagger:.14, ease:'power3.out'}, 2.9);
+  growTl.fromTo('#solutionPreview .sol-cta', {opacity:0, y:12}, {opacity:1, y:0, duration:.4, ease:'power2.out'}, 3.3);
+  growTl.fromTo('#solutionPreview .sol-link', {opacity:0}, {opacity:1, duration:.35, ease:'power2.out'}, 3.45);
+  growTl.to({}, {duration:.3}, 3.8);
+
+  const ageBaseTotal = AGES.length*59;
+  const ageBufferPct = 300;
+  const ageGrandTotal = ageBaseTotal + ageBufferPct;
+  let ageDragging = false;
+  const ageST = ScrollTrigger.create({
+    trigger:'#ages', start:'top top', end:'+=' + ageGrandTotal + '%', pin:true, scrub:true,
+    onUpdate(self){
+      const ap = clamp(self.progress * ageGrandTotal / ageBaseTotal, 0, 1);
+      if(!ageDragging) renderAge(AGE_MIN + ap*(AGE_MAX-AGE_MIN));
+
+      const bp = clamp((self.progress*ageGrandTotal - ageBaseTotal) / ageBufferPct, 0, 1);
+      growTl.progress(bp);
+
+    }
+  });
+
+  // Drag: the handle scrolls the page, so scroll and drag share one source of truth
+  function ageTFromEvent(e){
+    const r = ageTrack.getBoundingClientRect();
+    return clamp((e.clientX - r.left)/r.width, 0, 1);
+  }
+  function ageScrollToT(t){
+    // t spans the age-scrub only, so dragging to 70 lands at the start of the
+    // buffer rather than scrubbing through the fade to the solution screen.
+    const scrubSpan = (ageST.end - ageST.start) * ageBaseTotal / ageGrandTotal;
+    window.scrollTo(0, ageST.start + t*scrubSpan);
+  }
+  let ageHinted = false;
+  ageTrack.addEventListener('pointerdown', e => {
+    ageDragging = true; ageTrack.setPointerCapture(e.pointerId);
+    const t = ageTFromEvent(e); renderAge(AGE_MIN + t*(AGE_MAX-AGE_MIN)); ageScrollToT(t);
+    if(!ageHinted){ ageHinted = true; gsap.to('#ageDragHint', {opacity:.5, duration:.6}); }
+  });
+  ageTrack.addEventListener('pointermove', e => {
+    if(!ageDragging) return;
+    const t = ageTFromEvent(e); renderAge(AGE_MIN + t*(AGE_MAX-AGE_MIN)); ageScrollToT(t);
+  });
+  const ageEndDrag = () => { ageDragging = false; };
+  ageTrack.addEventListener('pointerup', ageEndDrag);
+  ageTrack.addEventListener('pointercancel', ageEndDrag);
+  ageTrack.addEventListener('keydown', e => {
+    const step = e.shiftKey ? 5 : 1;
+    let na = ageCurrent;
+    if(e.key === 'ArrowRight' || e.key === 'ArrowUp') na = ageCurrent + step;
+    else if(e.key === 'ArrowLeft' || e.key === 'ArrowDown') na = ageCurrent - step;
+    else return;
+    e.preventDefault();
+    na = clamp(na, AGE_MIN, AGE_MAX);
+    renderAge(na);
+    ageScrollToT((na - AGE_MIN)/(AGE_MAX - AGE_MIN));
+  });
+
+  /* ---------- ACT 7 : HOW IT WORKS + FAQ + FOOTER ---------- */
+  // A normal scrolling screen — no pin. Each block just lifts into place as it
+  // comes up, so it settles rather than animating on scrub like the acts above.
+  const rise = (target, at, extra={}) => gsap.fromTo(target,
+    {opacity:0, y:28},
+    Object.assign({opacity:1, y:0, duration:.7, ease:'power2.out',
+      scrollTrigger:{ trigger:at, start:'top 82%' }}, extra));
+
+  rise('#how .how-title', '#how .how-title');
+  $$('#how .step').forEach(step => {
+    rise(step.querySelector('.step-copy'), step, {duration:.6});
+    const mocks = $$('.step-mock', step);
+    if(mocks.length) rise(mocks, step, {duration:.6, stagger:.08, delay:.12});
+  });
+  rise('#how .faq-head', '#how .faq');
+  rise($$('#how .faq-row'), '#how .faq', {duration:.5, stagger:.07});
+  rise('#how .site-footer > *', '#how .site-footer', {duration:.5, stagger:.08});
+
+  // ScrollTrigger renders the timeline while it measures, which leaves the tags
+  // painted at their revealed state; re-assert the hidden start after every
+  // refresh, but only while the run is still at the top.
+  // The cross-dissolve fades the outgoing frame with a to(), and a to() re-renders
+  // its recorded start (opacity 1) whenever the playhead sits before it — so a
+  // refresh or a rewind leaves later photos stacked over the hero. Same cure as the
+  // tags: while the run is parked at the top, state the true baseline outright.
+  const resetRun = () => {
+    if(tl1.time() >= 0.01) return;
+    gsap.set($$('.marker'), {opacity:0, x:-8});
+    gsap.set($$('#act1 > .frame, #act2 .frame'), {opacity:0});
+    gsap.set($$('#act1 > .frame[data-i="0"]'), {opacity:1});
+    // The two panels the run darkens the screen with. Neither is ever tweened back
+    // down — the veil ends at .94 and the act 3 panel at 1 — so a rewind leaves the
+    // pair holding their end values over the hero and the screen reads as black.
+    gsap.set('#time', {opacity:0});
+    gsap.set('#act2 .line-veil', {opacity:0});
+    // and the copy, back behind its masks, the hero's own lines being the one set
+    // that starts already in view. Same two statements the run opens with.
+    gsap.set($$('.ln > span'), {yPercent:112});
+    gsap.set('#act1 .hero-h .ln > span', {yPercent:0});
+    gsap.set('#act1 .cue', {opacity:1});
+    gsap.set('#act2 .t2 .q-lead', {opacity:1});
+    gsap.set('#act2 .t2 .dim', {clearProps:'color,opacity'});
+  };
+  const hideTags = resetRun;
+  ScrollTrigger.addEventListener('refresh', hideTags);
+  hideTags();
+
+  window.addEventListener('load', () => {
+    ScrollTrigger.refresh();
+    // refresh leaves the tweens holding recorded end values; invalidate drops those
+    // and rewinding to 0 re-renders the real start state before the run begins
+    tl1.invalidate().pause(0);
+    hideTags();
+    tl1.play();          // the landing screen is already in view, so nothing enters it
+  });
+})();
+</script>
+</body>
+</html>

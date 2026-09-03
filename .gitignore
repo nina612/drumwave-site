@@ -1,0 +1,8 @@
+# macOS
+.DS_Store
+
+# stray local screenshot dir, not part of the site
+Home/
+
+# local dev tooling: launch.json points at an absolute /tmp path
+.claude/
