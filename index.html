@@ -616,7 +616,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   /* ---------- ACT 1 ---------- */
   // Photos cut — one frame off, the next on, in the same instant. No overlap, so
-  // nothing dissolves and nothing dips through black. Act 2's photos still take the
+  // nothing dissolves and nothing dips through black. The hero eases out of a push
+  // as it opens; the running and coffee frames then cut in at rest, and the tap
+  // frame is where the run slows down and drifts. Act 2's photos still take the
   // 1.3 settle from 1.08 the reference gives them; act 1's sit still, as it does.
   // The swap itself stays an instant cut — no overlap, nothing ghosting. What makes
   // it read as smooth is that the photo is already in motion when it lands: it
@@ -643,7 +645,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   arrive(tl1, f1(0), 0, true);
   tl1.set(f1(1), {opacity:1}, 1.2);
   tl1.set(f1(0), {opacity:0}, 1.2);
-  arrive(tl1, f1(1), 1.2);
   tl1.to('#act1 .hero-h .ln > span', {yPercent:-112, duration:.5, stagger:.06}, 7.8);
   tl1.to('#act1 .cue', {opacity:0, duration:.3}, 1.0);
   // the runner's tag lives on the hero frame, in and out with it
@@ -689,10 +690,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // the last of them has been up for a beat. The shopping and charging frames then
   // flash past in quick succession, and the baby frame is where the act slows again.
   const WORD_IN = .8;             // one word to the next
-  const WORDS_OUT = 2.9;          // all three have stood together by here
   const HOLD0 = 3.2;              // frame 0's whole time on screen
   const RAPID = 1.0;              // the frames that cut past in rapid succession
-  const BABY = HOLD0 + RAPID * 2, FAMILY = BABY + 2.6, T2_IN = BABY + .8, END = FAMILY + 1.5;
+  const BABY = HOLD0 + RAPID * 2, FAMILY = BABY + 2.6, T2_IN = BABY + 1.05, END = FAMILY + 1.5;
+  // The words aren't tied to the frame they arrived on: they stay up across the
+  // shopping and charging frames, then all three leave together as the baby frame
+  // cuts in. They are clear of the screen before the question begins to show, so the
+  // two never share it — which is what the baby text's own delay below is for.
+  const WORDS_OUT = BABY, WORDS_OUT_DUR = .4;
   const ESD2 = [[0, 0], [4, HOLD0], [5, HOLD0 + RAPID]];
   // Every swap in the act is an instant cut, the final image included. The dissolve
   // that used to sit on baby -> family is gone: what made that cut read as a jolt was
@@ -727,7 +732,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // ease-in it used to carry held it near-invisible for over a second, which is what
   // made the fade feel slow — at a constant rate it is legible far sooner and still
   // takes the same beat to land.
-  const T2_Q_IN = BABY + .25;
+  const T2_Q_IN = BABY + .5;   // after WORDS_OUT + WORDS_OUT_DUR, never during
   const t2Q = $$('#act2 .t2 .dim');
   tl2.set(t2Q, {yPercent:0}, T2_Q_IN);
   tl2.fromTo(t2Q, {opacity:0},
@@ -746,8 +751,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // and started .1 earlier, so it landed first and read as arriving ahead of the text.
   const esdW2 = $$('#act2 .esd .w');
   const WIN = .45;                // word/tag entrance
-  // Every. Single. Day. — one at a time, all three on the headphones frame, which
-  // holds until the last of them is up rather than handing each word its own photo.
+  // Every. Single. Day. — one at a time, all three arriving on the headphones frame,
+  // which holds until the last of them is up rather than handing each word its own
+  // photo. They then outlast that frame; see WORDS_OUT for where they go.
   esdW2.forEach((w, k) => {
     tl2.fromTo(w.querySelector('.ln > span'), {yPercent:112},
       {yPercent:0, duration:WIN, ease:TXT_E}, .15 + k * WORD_IN);
@@ -762,7 +768,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     tl2.fromTo(sel, {opacity:0, x:-8}, {opacity:1, x:0, duration:WIN, ease:TXT_E, immediateRender:false}, tin);
     tl2.to(sel, {opacity:0, duration:.25}, tout);
   });
-  tl2.to(lines('#act2 .esd'), {yPercent:-112, duration:.35, stagger:.06}, WORDS_OUT);
+  tl2.to(lines('#act2 .esd'), {yPercent:-112, duration:WORDS_OUT_DUR, ease:'power2.in'}, WORDS_OUT);
   // the grocery tag belongs to the baby frame, which carries no word
   tl2.fromTo('#markerGrocery i', {scale:0}, {scale:1, duration:.22, ease:'back.out(2)', immediateRender:false}, BABY + .25);
   tl2.fromTo('#markerGrocery', {opacity:0, x:-8}, {opacity:1, x:0, duration:WIN, ease:TXT_E, immediateRender:false}, BABY + .25);
