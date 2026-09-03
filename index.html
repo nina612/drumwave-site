@@ -146,7 +146,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* Figma 3198-49275: flat #101010, copy at left 121/1920, baseline 936/1080,
    140px on a 1214px measure, -4.2 tracking */
 #time{background:#101010;opacity:0}
-#time .whatif{position:absolute;left:6.3vw;bottom:13.3vh;text-align:left;width:63.2vw;z-index:6;
+/* Figma 3198-49275: the photograph is bled past every edge — 2239x1679 dropped at
+   0,-156 on the 1920x1080 frame — under a 10% black wash. It covers the layer's own
+   #101010, so dropping it later is what switches the screen to black. */
+#time .time-photo{position:absolute;left:0;top:-14.44%;width:116.61%;height:155.46%}
+#time .time-photo img{width:100%;height:100%;object-fit:cover}
+#time .time-photo::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.1)}
+#time .whatif{position:absolute;left:6.3vw;bottom:12.31vh;text-align:left;width:71.98vw;z-index:6;
   font-size:clamp(2.2rem,7.29vw,8.75rem);line-height:.9;letter-spacing:-.03em;color:#fff;transform-origin:0 100%}
 /* Figma 3214-2823: same panel and same measure, copy top-anchored at 569/1080 */
 #time .worth{position:absolute;left:6.3vw;top:52.7vh;text-align:left;width:63.2vw;z-index:6;
@@ -240,66 +246,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .how-scene::before{content:"";position:absolute;left:-28vw;top:-42vw;width:86vw;height:86vw;border-radius:50%;background:radial-gradient(circle,rgba(39,142,255,.09),rgba(39,142,255,0) 62%);pointer-events:none}
 .how-scene::after{content:"";position:absolute;right:-30vw;top:-48vw;width:90vw;height:90vw;border-radius:50%;background:radial-gradient(circle,rgba(75,39,255,.09),rgba(75,39,255,0) 62%);pointer-events:none}
 /* the heading's left edge lines up with the step copy in the first column below */
-.how-title{position:relative;z-index:2;max-width:none;margin:0;padding:15vh 5vw 9vh 2.125vw;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,3.33vw,4rem);line-height:.93;letter-spacing:-.04em;color:#fff}
+.how-title{position:relative;z-index:2;max-width:none;margin:0;padding:4.53vw 5vw 0 6.25vw;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,3.33vw,4rem);line-height:.93;letter-spacing:-.04em;color:#fff}
 
-.how-steps{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);--p:25vw}
-.step{position:relative;height:min(984px,88vh);overflow:hidden}
-.step-bg{position:absolute;inset:0}
-.step-bg img{width:100%;height:100%;object-fit:cover}
-.step-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 56.6%,#000 100%)}
-#step2 .step-bg::after{background:linear-gradient(180deg,rgba(0,0,0,0) 56.6%,#000 100%),linear-gradient(90deg,rgba(0,0,0,.6),rgba(0,0,0,.6))}
-#step3 .step-bg{background:#1C1C1C}
-#step3 .step-bg img{opacity:.7}
-#step4 .step-bg img{opacity:.8}
-#step4 .step-bg::after{background:linear-gradient(180deg,rgba(0,0,0,0) 56.6%,#000 86.6%)}
-.step-copy{position:absolute;left:8.5%;right:8.5%;bottom:9.5%;z-index:3;display:flex;flex-direction:column;gap:calc(var(--p)*.025)}
-.step-eyebrow{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:calc(var(--p)*.0333);letter-spacing:.1em;line-height:1.1;color:#fff}
-.step-h{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:calc(var(--p)*.0667);letter-spacing:-.03em;line-height:1.1;color:#fff}
-.step-body{font-family:'Open Sans',sans-serif;font-weight:400;font-size:calc(var(--p)*.0292);line-height:1.4;color:#999}
-.step-mock{position:absolute;z-index:3;font-family:'Titillium Web',sans-serif;color:#E3E3E3}
+/* Figma 3265-80130: four columns on one screen — a card, then the copy under it,
+   rather than the four full-height scenes this used to be. 340-wide columns with
+   106 gaps inside a 1678 measure at x120, on a 1921 frame.
+   The cards are flat exports on purpose: three of the four are single flattened
+   images in the design, so their photo crops and panel placement can't be had as
+   layers. Taking all four the same way keeps them consistent with each other. */
+.how-steps{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);gap:5.518vw;padding:4.581vw 6.247vw 0}
+.step{position:relative}
+.step-card{position:relative;width:94.19%;aspect-ratio:320.24/442;overflow:hidden;border-radius:6.25%/4.53%}
+.step-card img{display:block;width:100%;height:100%;object-fit:cover}
+.step-copy{margin-top:1.458vw;display:flex;flex-direction:column;gap:.625vw}
+.step-eyebrow{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(.65rem,.833vw,1rem);letter-spacing:.1em;line-height:1.1;color:#278EFF;text-transform:uppercase}
+.step-h{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(1rem,1.249vw,1.5rem);letter-spacing:-.03em;line-height:1.1;color:#fff}
+.step-body{font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.75rem,.729vw,.875rem);line-height:1.4;color:#999}
+.step-note{color:#999;font-weight:600}
 
-/* step 1 — deposit receipt */
-.mock-deposit{left:20.2%;top:38.7%;width:59.5%;padding:7.4% 0;border:1px solid #666;border-radius:calc(var(--p)*.0295);background:rgba(41,41,41,.1);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
-.mock-deposit .m-title{padding:0 7.4%;font-weight:600;font-size:calc(var(--p)*.0442);line-height:1.2}
-.mock-deposit .m-row{display:flex;align-items:center;gap:calc(var(--p)*.0147);padding:0 7.4%;margin-top:calc(var(--p)*.0442)}
-.mock-deposit .m-row img{flex:none;width:calc(var(--p)*.0884);height:calc(var(--p)*.0884);border-radius:50%;object-fit:cover}
-.mock-deposit b{display:block;font-family:'Open Sans',sans-serif;font-weight:700;font-size:calc(var(--p)*.0295);line-height:1.5;color:#fff}
-.mock-deposit em{display:block;font-family:'Open Sans',sans-serif;font-style:normal;font-size:calc(var(--p)*.0221);line-height:1.3}
-
-/* step 2 — category toggles */
-.mock-pill{display:flex;align-items:center;gap:calc(var(--p)*.0163);width:69.6%;padding:calc(var(--p)*.0266) calc(var(--p)*.0355);border:1px solid rgba(169,169,169,.4);border-radius:calc(var(--p)*.0355);background:rgba(255,255,255,.1);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px)}
-.mock-pill img{flex:none;width:calc(var(--p)*.0488);height:calc(var(--p)*.0488)}
-.mock-pill .m-label{flex:1;font-weight:600;font-size:calc(var(--p)*.0326);line-height:1.2;white-space:nowrap}
-.mock-pill .m-toggle{flex:none;display:flex;align-items:center;justify-content:flex-end;width:calc(var(--p)*.1139);height:calc(var(--p)*.0651);padding:calc(var(--p)*.0041);border-radius:999px;background:#16BE76}
-.mock-pill .m-toggle i{display:block;width:calc(var(--p)*.057);height:calc(var(--p)*.057);border-radius:50%;background:#fff;box-shadow:0 0 calc(var(--p)*.0318) rgba(7,7,7,.24)}
-#pill1{left:19%;top:29.5%}
-#pill2{left:10.8%;top:38%}
-#pill3{left:19.7%;top:46%}
-#pill4{left:17.4%;top:53.5%}
-
-/* step 3 — offer card */
-.mock-offer{left:50%;top:44.8%;transform:translate(-50%,-50%);width:57.8%;padding:calc(var(--p)*.049) 0 calc(var(--p)*.062);border:1px solid #B4B4B4;border-radius:calc(var(--p)*.0413);background:rgba(41,41,41,.1);backdrop-filter:blur(31px);-webkit-backdrop-filter:blur(31px)}
-.mock-offer .m-deals{display:inline-flex;align-items:center;gap:calc(var(--p)*.0135);margin-left:4.7%;padding:calc(var(--p)*.0152) calc(var(--p)*.0288) calc(var(--p)*.0152) calc(var(--p)*.0152);border:1px solid rgba(101,117,156,.3);border-radius:999px;background:linear-gradient(90deg,rgba(0,0,0,.4),#482F42)}
-.mock-offer .m-deals img{width:calc(var(--p)*.0451);height:calc(var(--p)*.0451)}
-.mock-offer .m-deals span{font-weight:600;font-size:calc(var(--p)*.0271);line-height:1.2}
-.mock-offer .m-offer-h{margin:calc(var(--p)*.058) 4.7% 0;font-weight:400;font-size:calc(var(--p)*.0542);line-height:1.1;letter-spacing:-.02em;color:#fff}
-.mock-offer .m-cta{display:flex;align-items:center;justify-content:center;height:calc(var(--p)*.0609);margin:calc(var(--p)*.058) 4.7% 0;border-radius:999px;background:linear-gradient(90deg,#4B27FF,#0091FF);font-weight:600;font-size:calc(var(--p)*.0305);letter-spacing:.02em;color:#fff}
-
-/* step 4 — pay with data */
-.mock-pay{left:26.5%;top:30.8%;width:57%;padding:calc(var(--p)*.0368);border:2px solid rgba(223,223,223,.1);border-radius:calc(var(--p)*.0245);background:rgba(41,41,41,.7);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:flex;flex-direction:column;align-items:center;gap:calc(var(--p)*.0368)}
-.mock-pay .m-qr{position:relative;width:calc(var(--p)*.2896);height:calc(var(--p)*.2896);border-radius:calc(var(--p)*.0308)}
-.mock-pay .m-qr>img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
-.mock-pay .m-qr .m-logo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(var(--p)*.1);height:calc(var(--p)*.1);border-radius:50%;background:#fff;padding:calc(var(--p)*.012)}
-.mock-pay .m-qr .m-logo img{width:100%;height:100%;object-fit:contain}
-.mock-pay .m-paying{width:100%;font-family:'Open Sans',sans-serif;font-size:calc(var(--p)*.0148);color:#fff}
-.mock-pay .m-bank{width:100%;margin-top:calc(var(--p)*.0179);padding:calc(var(--p)*.0205);border:1px solid rgba(42,42,42,.4);border-radius:calc(var(--p)*.0103);background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:space-between;gap:calc(var(--p)*.0103)}
-.mock-pay .m-bank img.m-mark{width:calc(var(--p)*.0205);height:calc(var(--p)*.0205);object-fit:contain}
-.mock-pay .m-bank .m-brand{display:flex;align-items:center;gap:calc(var(--p)*.0051);font-family:'Open Sans',sans-serif;font-size:calc(var(--p)*.0154);color:#B8B8B8}
-.mock-pay .m-bank .m-amount{margin-top:calc(var(--p)*.0051);font-family:'Open Sans',sans-serif;font-size:calc(var(--p)*.0205);line-height:1.2;color:#E3E3E3}
-.mock-pay .m-edit{flex:none;display:flex;align-items:center;justify-content:center;width:calc(var(--p)*.0564);height:calc(var(--p)*.0564);border:1px solid #2A2A2A;border-radius:50%;background:#4A4242}
-.mock-pay .m-edit img{width:calc(var(--p)*.0308);height:calc(var(--p)*.0308)}
-
-/* FAQ */
 .faq{position:relative;z-index:2;display:flex;gap:80px;max-width:1200px;margin:0 auto;padding:17vh 5vw 12vh}
 .faq-head{flex:1;min-width:0}
 .faq-label{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(1rem,1.04vw,1.25rem);line-height:1.1;color:#fff}
@@ -322,16 +286,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .site-footer .foot-col a:hover{color:#fff}
 
 @media (max-width:980px){
-  .how-steps{grid-template-columns:repeat(2,1fr);--p:50vw}
+  .how-steps{grid-template-columns:repeat(2,1fr);gap:4vw}
   .how-title{padding-left:4.25vw}
   .faq{flex-direction:column;gap:40px}
   .faq-list{width:100%}
   .faq-row p{white-space:normal}
 }
 @media (max-width:760px){
-  .how-steps{grid-template-columns:1fr;--p:100vw}
+  .how-steps{grid-template-columns:1fr;gap:8vw;padding:8vw 8vw 0}
   .how-title{padding-left:8.5vw}
-  .step{height:min(760px,80vh)}
+  .step-card{width:100%}
+  .step-eyebrow{font-size:.8rem}
+  .step-h{font-size:1.35rem}
+  .step-body{font-size:.9rem}
   .site-footer{grid-template-columns:1fr;gap:32px}
   .brand{top:16px;left:16px}
   #act1 .cue{display:none}
@@ -426,9 +393,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   </div>
   <!-- and the what-if screen, so the whole opening runs without a scroll -->
   <div class="act-layer" id="time">
+  <div class="time-photo" aria-hidden="true"><img src="assets/img/every-tap-hero.jpg" alt="" loading="lazy"></div>
   <div class="whatif display">
     <span class="ln"><span>Every tap. Every step.</span></span>
-    <span class="ln"><span>Every choice.</span></span>
+    <span class="ln"><span>Every choice creates</span></span>
+    <span class="ln"><span>value, instantly.</span></span>
   </div>
 
   <div class="worth display">
@@ -532,17 +501,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   <div class="how-steps">
     <article class="step" id="step1">
-      <div class="step-bg"><img src="assets/img/step-1-own.jpg" alt="A woman stepping out of a rideshare car" loading="lazy"></div>
-      <div class="step-mock mock-deposit">
-        <div class="m-title">You deposited data</div>
-        <div class="m-row">
-          <img src="assets/img/step-avatar.jpg" alt="" loading="lazy">
-          <div>
-            <b>Rideshare to 265 Horizon Rd</b>
-            <em>Added to savings plan</em>
-          </div>
-        </div>
-      </div>
+      <div class="step-card"><img src="assets/img/how-card-1.jpg" alt="A woman stepping out of a rideshare car, with a card reading: You deposited data, Rideshare to 265 Horizon Rd, added to savings plan" loading="lazy"></div>
       <div class="step-copy">
         <p class="step-eyebrow">Own your data</p>
         <h3 class="step-h">Sign up &amp; request your data</h3>
@@ -551,27 +510,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     </article>
 
     <article class="step" id="step2">
-      <div class="step-bg"><img src="assets/img/step-2-save.jpg" alt="An apartment interior at dusk" loading="lazy"></div>
-      <div class="step-mock mock-pill" id="pill1">
-        <img src="assets/img/icon-travel.svg" alt="" loading="lazy">
-        <span class="m-label">Travel &amp; Transportation</span>
-        <span class="m-toggle"><i></i></span>
-      </div>
-      <div class="step-mock mock-pill" id="pill2">
-        <img src="assets/img/icon-finance.svg" alt="" loading="lazy">
-        <span class="m-label">Finance &amp; Investments</span>
-        <span class="m-toggle"><i></i></span>
-      </div>
-      <div class="step-mock mock-pill" id="pill3">
-        <img src="assets/img/icon-retail.svg" alt="" loading="lazy">
-        <span class="m-label">Retail &amp; Food</span>
-        <span class="m-toggle"><i></i></span>
-      </div>
-      <div class="step-mock mock-pill" id="pill4">
-        <img src="assets/img/icon-entertainment.svg" alt="" loading="lazy">
-        <span class="m-label">Entertainment &amp; Gaming</span>
-        <span class="m-toggle"><i></i></span>
-      </div>
+      <div class="step-card"><img src="assets/img/how-card-2.jpg" alt="Toggles for travel and transportation, finance and investments, retail and food, and entertainment and gaming, each switched on" loading="lazy"></div>
       <div class="step-copy">
         <p class="step-eyebrow">Save your data</p>
         <h3 class="step-h">Save &amp; manage it</h3>
@@ -580,39 +519,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     </article>
 
     <article class="step" id="step3">
-      <div class="step-bg"><img src="assets/img/step-3-offers.jpg" alt="A living room with a television playing a football match" loading="lazy"></div>
-      <div class="step-mock mock-offer">
-        <div class="m-deals"><img src="assets/img/icon-best-deals.png" alt="" loading="lazy"><span>Best Deals</span></div>
-        <p class="m-offer-h">License your streaming data and earn $.</p>
-        <div class="m-cta">View offer</div>
-      </div>
+      <div class="step-card"><img src="assets/img/how-card-3.jpg" alt="An offer card reading: license your streaming data and earn $, with a view offer button" loading="lazy"></div>
       <div class="step-copy">
-        <p class="step-eyebrow">Receive offers</p>
+        <p class="step-eyebrow">Participate in offers</p>
         <h3 class="step-h">Earn from its value</h3>
-        <p class="step-body">You're always in control. When companies want to license your data, you decide which offers to accept. Say yes, and you'll get paid directly in your dWallet. Save it or cash out anytime.</p>
+        <p class="step-body">You're always in control. When companies want to license your data, you decide which offers to accept. Once an offer is accepted, you'll get paid directly in your dWallet. Save it or cash out anytime.</p>
       </div>
     </article>
 
     <article class="step" id="step4">
-      <div class="step-bg"><img src="assets/img/step-4-pay.jpg" alt="A woman paying at a counter with her phone" loading="lazy"></div>
-      <div class="step-mock mock-pay">
-        <div class="m-qr">
-          <img src="assets/img/step-qr.png" alt="" loading="lazy">
-          <span class="m-logo"><img src="assets/img/logo.png" alt="" loading="lazy"></span>
-        </div>
-        <div>
-          <p class="m-paying">Paying from</p>
-          <div class="m-bank">
-            <div>
-              <span class="m-brand"><img class="m-mark" src="assets/img/logo.png" alt="" loading="lazy">dSavings smart</span>
-              <div class="m-amount">$50 available</div>
-            </div>
-            <span class="m-edit"><img src="assets/img/icon-edit.svg" alt="" loading="lazy"></span>
-          </div>
-        </div>
-      </div>
+      <div class="step-card"><img src="assets/img/how-card-4.jpg" alt="A woman smiling beside a QR code and a paying-from panel showing $50 available" loading="lazy"></div>
       <div class="step-copy">
-        <p class="step-eyebrow">Pay with data (coming soon)</p>
+        <p class="step-eyebrow">Pay with data <span class="step-note">(coming soon)</span></p>
         <h3 class="step-h">Transact using its value</h3>
         <p class="step-body">Soon you'll be able to make purchases using the balance from your Data Savings Plan. Using a QR code, dPay enables you to pay with the value of your data.</p>
       </div>
@@ -705,19 +623,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // settles out of a 1.08 push while drifting slowly sideways for its whole time on
   // screen, so a cut arrives into movement instead of onto a still frame.
   const XIMG = 1.0, TXT = .6, TXT_E = 'power2.out';
-  // The baby -> family beat, and the one swap in the run that isn't a cut: the cut
-  // read as a jolt there, so the family photo eases over instead. Everything on this
-  // beat shares the one clock — the photo, the lead-out, the brighten. Linear, and
-  // deliberately: every eased version of this dissolve hung at one end or both and
-  // then arrived all at once, which is what kept reading as lag. A constant rate is
-  // what a cross-dissolve wants — nothing to notice at either end.
+  // The copy's clock on the final cut: the lead-out and the brighten. The photo itself
+  // cuts, so this times only the text that rides over the change.
   const BF = .55, BF_E = 'none';
   // The zoom-out beat: the photo eases out of a slight push over one second, then
   // holds. Only three screens take it — the two hero frames and the baby frame; the
   // rest arrive at rest and simply cut.
-  const arrive = (tl, sel, at, first) =>
+  const arrive = (tl, sel, at, first, dur) =>
     tl.fromTo(sel+' img', {scale:1.08},
-      {scale:1, duration:XIMG, ease:'power2.out', immediateRender: !!first}, at);
+      {scale:1, duration:dur || XIMG, ease:'power2.out', immediateRender: !!first}, at);
   const tl1 = gsap.timeline({
     defaults:{ease:'none'},
     scrollTrigger:{ trigger:'#act1', start:'top top', end:'+=100%', pin:true, ...autoPlay }
@@ -730,7 +644,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   tl1.set(f1(1), {opacity:1}, 1.2);
   tl1.set(f1(0), {opacity:0}, 1.2);
   arrive(tl1, f1(1), 1.2);
-  tl1.to('#act1 .hero-h .ln > span', {yPercent:-112, duration:.5, stagger:.06}, 7.4);
+  tl1.to('#act1 .hero-h .ln > span', {yPercent:-112, duration:.5, stagger:.06}, 7.8);
   tl1.to('#act1 .cue', {opacity:0, duration:.3}, 1.0);
   // the runner's tag lives on the hero frame, in and out with it
   tl1.fromTo('#markerRun i', {scale:0}, {scale:1, duration:.22, ease:'back.out(2)', immediateRender:false}, 1.7);
@@ -740,16 +654,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // the coffee, card and delivery frames, all under "Your life creates data."
 
   // the coffee, card and delivery frames, all under "Your life creates data."
-  const esdFrames = [[9,3.0],[10,4.6],[11,6.2]];
-  // the tap frame eases out of a push; the coffee and delivery frames cut in at rest
+  const TAP_HOLD = 2.4, TAP_ZOOM = 2.2;
+  const esdFrames = [[9,3.0],[10,4.6],[11,4.6 + TAP_HOLD]];
+  // The tap frame is the one that lingers: it holds for TAP_HOLD and eases out of its
+  // push across nearly all of it, so the zoom reads as a slow drift instead of a
+  // settle. The coffee and delivery frames cut in at rest.
   esdFrames.forEach(([fi, at], k) => {
     tl1.set(f1(fi), {opacity:1}, at);
     tl1.set(f1(k ? esdFrames[k-1][0] : 1), {opacity:0}, at);
-    if(fi === 10) arrive(tl1, f1(fi), at);
+    if(fi === 10) arrive(tl1, f1(fi), at, false, TAP_ZOOM);
   });
 
   // one marker per frame, in and out with the frame it sits on
-  const esdMarkers = [['#markerCoffee', 3.0], ['#markerTap', 4.6], ['#markerPackage', 6.2]];
+  const esdMarkers = [['#markerCoffee', 3.0], ['#markerTap', 4.6], ['#markerPackage', 4.6 + TAP_HOLD]];
   // fromTo with immediateRender off, rather than a set plus a to: a zero-duration
   // set reverts to its pre-set value when the timeline sits before it, which left
   // every tag painted on screen until the first one fired
@@ -758,7 +675,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     tl1.fromTo(sel, {opacity:0, x:-8}, {opacity:1, x:0, duration:.3, immediateRender:false}, at);
     tl1.to(sel, {opacity:0, duration:.3}, at + 1.3);
   });
-  tl1.to({}, {duration:.4}, 7.8);
+
 
   /* ---------- ACT 2 ---------- */
   // No trigger of its own: it is appended to act 1 below so the hero runs
@@ -768,25 +685,28 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // Every / Single / Day: one dwell for all three, so nothing sits longer than the
   // rest. Everything downstream is derived from WD rather than written out, so the
   // three screens can be sped up or slowed without re-timing the whole act.
-  const WD = 1.7;                 // per word screen (was 2.27)
-  const BABY = WD * 3, FAMILY = BABY + 2.6, T2_IN = BABY + .8, END = FAMILY + 3.6;
-  const ESD2 = [[0, 0], [4, WD], [5, WD * 2]];
-  // every swap is an instant cut but the family screen, which eases over the baby —
-  // held at full opacity underneath and dropped once covered, so nothing dips through
-  // black while the two overlap
+  // Frame 0 holds while all three words arrive one at a time, and only cuts away once
+  // the last of them has been up for a beat. The shopping and charging frames then
+  // flash past in quick succession, and the baby frame is where the act slows again.
+  const WORD_IN = .8;             // one word to the next
+  const WORDS_OUT = 2.9;          // all three have stood together by here
+  const HOLD0 = 3.2;              // frame 0's whole time on screen
+  const RAPID = 1.0;              // the frames that cut past in rapid succession
+  const BABY = HOLD0 + RAPID * 2, FAMILY = BABY + 2.6, T2_IN = BABY + .8, END = FAMILY + 1.5;
+  const ESD2 = [[0, 0], [4, HOLD0], [5, HOLD0 + RAPID]];
+  // Every swap in the act is an instant cut, the final image included. The dissolve
+  // that used to sit on baby -> family is gone: what made that cut read as a jolt was
+  // the family photo's first composite dropping a frame, and the warm-up below fixes
+  // that at the source, so the cut itself is clean.
   ESD2.concat([[6, BABY], [7, FAMILY]]).forEach(([i, at], k, arr) => {
-    if(i === 7){
-      tl2.fromTo(f2(i), {opacity:0.001},
-        {opacity:1, duration:BF, ease:BF_E, immediateRender:false}, at);
-      tl2.set(f2(arr[k-1][0]), {opacity:0}, at + BF);
-    } else {
-      if(k) tl2.set(f2(arr[k-1][0]), {opacity:0}, at);
-      tl2.set(f2(i), {opacity:1}, at);
-    }
-    // the Single screen and the baby frame ease out of a push; Every, Day and the
-    // family frame all arrive at rest
-    if(i === 4 || i === 6) arrive(tl2, f2(i), at);
+    if(k) tl2.set(f2(arr[k-1][0]), {opacity:0}, at);
+    tl2.set(f2(i), {opacity:1}, at);
   });
+  // The baby frame is where the act slows down, and it is the one image that drifts
+  // INTO a slight push rather than easing out of one. Everything else arrives at rest
+  // — the two rapid frames especially, which have no time to move.
+  tl2.fromTo(f2(6) + ' img', {scale:1},
+    {scale:1.06, duration:2.2, ease:'power1.inOut', immediateRender:false}, BABY);
   // The family photo is full-bleed 1920x1080, and the frame it first composites on
   // costs enough to drop one. Left alone that lands on the head of the dissolve, which
   // is precisely where it reads as a hitch. Put the photo on screen at a hair of
@@ -817,7 +737,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // they land with the cut rather than running long past it.
   tl2.to('#act2 .t2 .q-lead', {opacity:0, duration:BF, ease:BF_E}, FAMILY);
   tl2.to('#act2 .t2 .dim', {color:'#ffffff', duration:BF, ease:BF_E}, FAMILY);
-  tl2.to('#act2 .line-veil', {opacity:.94, duration:.7}, END);
+  tl2.to('#act2 .line-veil', {opacity:.94, duration:.4}, END);
   // one marker per frame, in and out with the frame it sits on
   // a word per frame — headphones, shopping bag, charger — in the same corners
   // they used to occupy, each arriving with its own image
@@ -825,24 +745,32 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // the word's own duration and ease. Before, the tag ran .3 against the word's .5
   // and started .1 earlier, so it landed first and read as arriving ahead of the text.
   const esdW2 = $$('#act2 .esd .w');
-  const tagFor = ['#markerStream', '#markerShop', '#markerCharge'];
-  const WIN = .45;                // word/tag entrance, tightened to suit the shorter screen
-  ESD2.forEach(([, at], k) => {
-    const t = at + .15, sel = tagFor[k];
-    tl2.fromTo(esdW2[k].querySelector('.ln > span'), {yPercent:112}, {yPercent:0, duration:WIN, ease:TXT_E}, t);
-    tl2.fromTo(sel + ' i', {scale:0}, {scale:1, duration:.22, ease:'back.out(2)', immediateRender:false}, t);
-    tl2.fromTo(sel, {opacity:0, x:-8}, {opacity:1, x:0, duration:WIN, ease:TXT_E, immediateRender:false}, t);
-    tl2.to(sel, {opacity:0, duration:.3}, at + WD - .35);
+  const WIN = .45;                // word/tag entrance
+  // Every. Single. Day. — one at a time, all three on the headphones frame, which
+  // holds until the last of them is up rather than handing each word its own photo.
+  esdW2.forEach((w, k) => {
+    tl2.fromTo(w.querySelector('.ln > span'), {yPercent:112},
+      {yPercent:0, duration:WIN, ease:TXT_E}, .15 + k * WORD_IN);
   });
-  tl2.to(lines('#act2 .esd'), {yPercent:-112, duration:.4, stagger:.06}, BABY + .4);
+  // one tag per photo, in and out with the photo it sits on — the two rapid frames
+  // get a shorter stay than frame 0, having only a second of photo to sit on
+  const tags = [['#markerStream', .15, 2.0],
+                ['#markerShop', HOLD0 + .1, HOLD0 + .7],
+                ['#markerCharge', HOLD0 + RAPID + .1, HOLD0 + RAPID + .7]];
+  tags.forEach(([sel, tin, tout]) => {
+    tl2.fromTo(sel + ' i', {scale:0}, {scale:1, duration:.22, ease:'back.out(2)', immediateRender:false}, tin);
+    tl2.fromTo(sel, {opacity:0, x:-8}, {opacity:1, x:0, duration:WIN, ease:TXT_E, immediateRender:false}, tin);
+    tl2.to(sel, {opacity:0, duration:.25}, tout);
+  });
+  tl2.to(lines('#act2 .esd'), {yPercent:-112, duration:.35, stagger:.06}, WORDS_OUT);
   // the grocery tag belongs to the baby frame, which carries no word
   tl2.fromTo('#markerGrocery i', {scale:0}, {scale:1, duration:.22, ease:'back.out(2)', immediateRender:false}, BABY + .25);
   tl2.fromTo('#markerGrocery', {opacity:0, x:-8}, {opacity:1, x:0, duration:WIN, ease:TXT_E, immediateRender:false}, BABY + .25);
   tl2.to('#markerGrocery', {opacity:0, duration:.4}, BABY + 1.6);
   // clear the question before the what-if leg: act 2 is a layer now, so unlike
   // a section it never scrolls away on its own
-  tl2.to(lines('#act2 .t2'), {yPercent:-112, duration:.4, stagger:.06}, END + .2);
-  tl2.to({}, {duration:.7}, END + .6);
+  tl2.to(lines('#act2 .t2'), {yPercent:-112, duration:.35, stagger:.05}, END + .15);
+  tl2.to({}, {duration:.2}, END + .3);
 
   // one run: act 2 starts the moment act 1 finishes, no scroll in between
   tl1.add(tl2, '>');
@@ -852,17 +780,29 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   tl4.fromTo('#time', {opacity:0}, {opacity:1, duration:.8, ease:'power2.out', immediateRender:false}, 0.1);
   // the copy falls in: each line drops from above its mask and lands with a short
   // overshoot, one after the other, rather than rising the way the other lines do
-  tl4.fromTo(lines('#time .whatif'), {yPercent:-118},
-    {yPercent:0, duration:.72, stagger:.14, ease:'back.out(1.5)', immediateRender:false}, 0.6);
-  tl4.to({}, {duration:1.4}, 1.8);
+  // The sentence arrives in two halves, on two grounds. "Every tap. Every step."
+  // lands on the photograph; then the photograph goes and the rest of it bounces in
+  // on the black underneath — one block throughout, so the lines stay set as a
+  // paragraph rather than re-flowing when the ground changes.
+  const whatifLn = lines('#time .whatif');
+  tl4.fromTo(whatifLn[0], {yPercent:-118},
+    {yPercent:0, duration:.72, ease:'back.out(1.5)', immediateRender:false}, 0.6);
+  tl4.to({}, {duration:1.0}, 1.4);
+  // the ground switches to black
+  tl4.to('#time .time-photo', {opacity:0, duration:.5, ease:'power1.inOut'}, 2.4);
+  // and the rest of the sentence bounces onto it, a touch springier than the first
+  // line so the second half reads as the answer to it
+  tl4.fromTo(whatifLn.slice(1), {yPercent:-118},
+    {yPercent:0, duration:.72, stagger:.14, ease:'back.out(1.8)', immediateRender:false}, 2.75);
+  tl4.to({}, {duration:1.4}, 3.65);
   // and keeps falling on the way out
-  tl4.to(lines('#time .whatif'), {yPercent:118, duration:.45, stagger:.08, ease:'power2.in'}, 3.2);
+  tl4.to(whatifLn, {yPercent:118, duration:.45, stagger:.08, ease:'power2.in'}, 5.05);
   // the question falls into the same panel as the first line is still clearing, so
   // the copy hands over without the screen itself changing
   tl4.fromTo(lines('#time .worth'), {yPercent:-118},
-    {yPercent:0, duration:.72, stagger:.14, ease:'back.out(1.5)', immediateRender:false}, 3.45);
-  tl4.to({}, {duration:1.7}, 4.6);
-  tl4.to(lines('#time .worth'), {yPercent:118, duration:.45, stagger:.08, ease:'power2.in'}, 6.3);
+    {yPercent:0, duration:.72, stagger:.14, ease:'back.out(1.5)', immediateRender:false}, 5.3);
+  tl4.to({}, {duration:1.7}, 6.45);
+  tl4.to(lines('#time .worth'), {yPercent:118, duration:.45, stagger:.08, ease:'power2.in'}, 8.15);
   tl1.add(tl4, '>');   // the third and last leg of the one auto run
 
   // These three were paced as scrub distances, so at 1x they would each run for
@@ -1111,10 +1051,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       scrollTrigger:{ trigger:at, start:'top 82%' }}, extra));
 
   rise('#how .how-title', '#how .how-title');
-  $$('#how .step').forEach(step => {
-    rise(step.querySelector('.step-copy'), step, {duration:.6});
-    const mocks = $$('.step-mock', step);
-    if(mocks.length) rise(mocks, step, {duration:.6, stagger:.08, delay:.12});
+  // one column at a time: the card lifts, its copy follows a beat later
+  $$('#how .step').forEach((step, i) => {
+    rise(step.querySelector('.step-card'), step, {duration:.6, delay:i*.08});
+    rise(step.querySelector('.step-copy'), step, {duration:.6, delay:i*.08 + .12});
   });
   rise('#how .faq-head', '#how .faq');
   rise($$('#how .faq-row'), '#how .faq', {duration:.5, stagger:.07});
@@ -1136,6 +1076,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // down — the veil ends at .94 and the act 3 panel at 1 — so a rewind leaves the
     // pair holding their end values over the hero and the screen reads as black.
     gsap.set('#time', {opacity:0});
+    gsap.set('#time .time-photo', {opacity:1});
     gsap.set('#act2 .line-veil', {opacity:0});
     // and the copy, back behind its masks, the hero's own lines being the one set
     // that starts already in view. Same two statements the run opens with.
