@@ -711,7 +711,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // ACT 1'S CLOCK, straight off the timing notes: a second on the opening image,
   // half a second each on the running and coffee frames, a full second on the tap
   // frame where the pacing slows, then half a second on the delivery frame.
-  const HERO = 1.5, QUICK = .75, TAP = 1.5;
+  // A tag's ideal phases, which tagOn caps its entrance and exit at. On a frame
+  // shorter than these the tag scales down to fit rather than overrunning it.
+  const TAG_IN = .3, TAG_OUT = .25;
+  const HERO = 1.5, QUICK = .3, TAP = 1.5;
   const T_RUN = HERO, T_COFFEE = T_RUN + QUICK, T_TAP = T_COFFEE + QUICK, T_PKG = T_TAP + TAP;
   const ACT1_END = T_PKG + QUICK;   // act 2 begins here, whatever the tag tails do
 
@@ -719,13 +722,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // half-second tag. fromTo with immediateRender off rather than a set plus a to: a
   // zero-duration set reverts to its pre-set value when the timeline sits before it,
   // which left every tag painted on screen until the first one fired.
-  const tagOn = (sel, at, span) => {
-    const inD = Math.min(.3, span * .5), outD = Math.min(.25, span * .3);
-    tl1.fromTo(sel + ' i', {scale:0},
-      {scale:1, duration:Math.min(.22, span * .4), ease:'back.out(2)', immediateRender:false}, at);
-    tl1.fromTo(sel, {opacity:0, x:-8},
+  const tagOn = (tl, sel, at, span) => {
+    const inD = Math.min(TAG_IN, span * .4), outD = Math.min(TAG_OUT, span * .35);
+    tl.fromTo(sel + ' i', {scale:0},
+      {scale:1, duration:Math.min(.22, inD * .75), ease:'back.out(2)', immediateRender:false}, at);
+    tl.fromTo(sel, {opacity:0, x:-8},
       {opacity:1, x:0, duration:inD, immediateRender:false}, at);
-    tl1.to(sel, {opacity:0, duration:outD}, at + span - outD);
+    tl.to(sel, {opacity:0, duration:outD}, at + span - outD);
   };
 
   // the opening image eases out of its push across the whole second it holds
@@ -740,7 +743,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     tl1.set(f1(k ? act1Frames[k-1][0] : 0), {opacity:0}, at);
     tl1.set(f1(fi), {opacity:1}, at);
     if(fi === 10) arrive(tl1, f1(fi), at, false, TAP);
-    tagOn(act1Tags[k], at, span);
+    tagOn(tl1, act1Tags[k], at, span);
   });
 
   // "Your life creates data." stands over the whole run and clears on the last frame
@@ -761,10 +764,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // the headphones frame holds only as long as the words need: the last of the three
   // is up at .15 + 2*WORD_IN + WIN, and the frame cuts a beat after that
   const HOLD0 = 2.4;              // frame 0's whole time on screen
-  const RAPID = .75;              // shopping and charging
+  const RAPID = .3;               // shopping and charging
   // the run ends on the family photo with the question in white, holds there, and
   // then simply starts over — no fade to black, no clearing the copy
-  const BABY_HOLD = 2.0, FINAL_HOLD = 2.0;
+  const BABY_HOLD = 1.5, FINAL_HOLD = 1.5;
   const BABY = HOLD0 + RAPID * 2, FAMILY = BABY + BABY_HOLD, END = FAMILY + FINAL_HOLD;
   const T2_IN = BABY + .45;
   // The words aren't tied to the frame they arrived on: they stay up across the
@@ -833,20 +836,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   });
   // one tag per photo, in and out with the photo it sits on — the two rapid frames
   // get a shorter stay than frame 0, having only a second of photo to sit on
-  const tags = [['#markerStream', .15, HOLD0 - .35],
-                ['#markerShop', HOLD0 + .06, HOLD0 + RAPID - .16],
-                ['#markerCharge', HOLD0 + RAPID + .06, HOLD0 + RAPID * 2 - .16]];
-  tags.forEach(([sel, tin, tout]) => {
-    tl2.fromTo(sel + ' i', {scale:0}, {scale:1, duration:.22, ease:'back.out(2)', immediateRender:false}, tin);
-    tl2.fromTo(sel, {opacity:0, x:-8},
-      {opacity:1, x:0, duration:Math.min(WIN, (tout - tin) * .6), ease:TXT_E, immediateRender:false}, tin);
-    tl2.to(sel, {opacity:0, duration:Math.min(.25, (tout - tin) * .35)}, tout);
-  });
+  // Same helper as act 1, so each tag lives on its own frame. These used to be
+  // written as explicit in/out times, which went NEGATIVE once the frames were short
+  // — the shopping tag's fade-out was scheduled 0.02s before its fade-in.
+  tagOn(tl2, '#markerStream', .15, HOLD0 - .5);
+  tagOn(tl2, '#markerShop', HOLD0, RAPID);
+  tagOn(tl2, '#markerCharge', HOLD0 + RAPID, RAPID);
   tl2.to(lines('#act2 .esd'), {yPercent:-112, duration:WORDS_OUT_DUR, ease:'power2.in'}, WORDS_OUT);
   // the grocery tag belongs to the baby frame, which carries no word
-  tl2.fromTo('#markerGrocery i', {scale:0}, {scale:1, duration:.2, ease:'back.out(2)', immediateRender:false}, BABY + .1);
-  tl2.fromTo('#markerGrocery', {opacity:0, x:-8}, {opacity:1, x:0, duration:.28, ease:TXT_E, immediateRender:false}, BABY + .1);
-  tl2.to('#markerGrocery', {opacity:0, duration:.22}, BABY + BABY_HOLD - .22);
+  tagOn(tl2, '#markerGrocery', BABY, BABY_HOLD);
   // The run just stops here, on the family photo with the question in white, and holds
   // for FINAL_HOLD before starting over. Nothing is faded out and nothing is cleared:
   // the restart re-states every baseline itself (see resetRun), so the loop point is a
@@ -896,21 +894,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   tl4.fromTo(whatifLn[0], {yPercent:-118},
     {yPercent:0, duration:.72, ease:'back.out(1.5)', immediateRender:false}, 0.1);
   tl4.to({}, {duration:1.0}, 0.9);
-  // the ground switches to black
-  tl4.to('#time .time-photo', {opacity:0, duration:.5, ease:'power1.inOut'}, 1.9);
-  // and the rest of the sentence bounces onto it, a touch springier than the first
-  // line so the second half reads as the answer to it
+  // the ground switches to black — one named length, so what follows can key off
+  // the moment it finishes rather than guessing at it
+  const SWITCH = .75, SWITCHED = 1.9 + SWITCH;
+  tl4.to('#time .time-photo', {opacity:0, duration:SWITCH, ease:'power1.inOut'}, 1.9);
+  // and the rest of the sentence bounces onto it once it IS black, a touch springier
+  // than the first line so the second half reads as the answer to it
   tl4.fromTo(whatifLn.slice(1), {yPercent:-118},
-    {yPercent:0, duration:.72, stagger:.14, ease:'back.out(1.8)', immediateRender:false}, 2.25);
-  tl4.to({}, {duration:1.4}, 3.15);
+    {yPercent:0, duration:.72, stagger:.14, ease:'back.out(1.8)', immediateRender:false}, SWITCHED);
+  tl4.to({}, {duration:1.4}, SWITCHED + .9);
   // and keeps falling on the way out
-  tl4.to(whatifLn, {yPercent:118, duration:.45, stagger:.08, ease:'power2.in'}, 4.55);
+  tl4.to(whatifLn, {yPercent:118, duration:.45, stagger:.08, ease:'power2.in'}, SWITCHED + 2.3);
   // the question falls into the same panel as the first line is still clearing, so
   // the copy hands over without the screen itself changing
   tl4.fromTo(lines('#time .worth'), {yPercent:-118},
-    {yPercent:0, duration:.72, stagger:.14, ease:'back.out(1.5)', immediateRender:false}, 4.8);
-  tl4.to({}, {duration:1.7}, 5.95);
-  tl4.to(lines('#time .worth'), {yPercent:118, duration:.45, stagger:.08, ease:'power2.in'}, 7.65);
+    {yPercent:0, duration:.72, stagger:.14, ease:'back.out(1.5)', immediateRender:false}, SWITCHED + 2.55);
+  tl4.to({}, {duration:1.7}, SWITCHED + 3.7);
+  tl4.to(lines('#time .worth'), {yPercent:118, duration:.45, stagger:.08, ease:'power2.in'}, SWITCHED + 5.4);
 
   // These three were paced as scrub distances, so at 1x they would each run for
   // nine or ten seconds on their own. Speed them up to land around five, and
