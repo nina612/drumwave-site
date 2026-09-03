@@ -711,7 +711,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // ACT 1'S CLOCK, straight off the timing notes: a second on the opening image,
   // half a second each on the running and coffee frames, a full second on the tap
   // frame where the pacing slows, then half a second on the delivery frame.
-  const HERO = 1.5, QUICK = .9, TAP = 1.5;
+  const HERO = 1.5, QUICK = .75, TAP = 1.5;
   const T_RUN = HERO, T_COFFEE = T_RUN + QUICK, T_TAP = T_COFFEE + QUICK, T_PKG = T_TAP + TAP;
   const ACT1_END = T_PKG + QUICK;   // act 2 begins here, whatever the tag tails do
 
@@ -761,10 +761,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // the headphones frame holds only as long as the words need: the last of the three
   // is up at .15 + 2*WORD_IN + WIN, and the frame cuts a beat after that
   const HOLD0 = 2.4;              // frame 0's whole time on screen
-  const RAPID = .9;               // shopping and charging
+  const RAPID = .75;              // shopping and charging
   // the run ends on the family photo with the question in white, holds there, and
   // then simply starts over — no fade to black, no clearing the copy
-  const BABY_HOLD = 2.0, LAST = .9, FINAL_HOLD = 2.0;
+  const BABY_HOLD = 2.0, FINAL_HOLD = 2.0;
   const BABY = HOLD0 + RAPID * 2, FAMILY = BABY + BABY_HOLD, END = FAMILY + FINAL_HOLD;
   const T2_IN = BABY + .45;
   // The words aren't tied to the frame they arrived on: they stay up across the
