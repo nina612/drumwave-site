@@ -266,18 +266,45 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .step-body{font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.75rem,.729vw,.875rem);line-height:1.4;color:#999}
 .step-note{color:#999;font-weight:600}
 
-.faq{position:relative;z-index:2;display:flex;gap:80px;max-width:1200px;margin:0 auto;padding:17vh 5vw 12vh}
+/* Figma 3157-69704: a true 1200 measure — 626 for the accordion, 80 gap, the rest
+   for the heading. The old 5vw side padding sat inside the max-width and was eating
+   100px off the accordion. */
+.faq{position:relative;z-index:2;display:flex;gap:80px;width:min(1200px,90vw);margin:0 auto;padding:7.19vw 0 6vw}
 .faq-head{flex:1;min-width:0}
 .faq-label{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(1rem,1.04vw,1.25rem);line-height:1.1;color:#fff}
 .faq-title{margin-top:20px;max-width:385px;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,3.33vw,4rem);line-height:.93;letter-spacing:-.04em;color:#fff}
-.faq-list{display:flex;flex-direction:column;gap:12px;width:min(626px,52%)}
+.faq-list{display:flex;flex-direction:column;gap:12px;flex:none;width:626px;max-width:100%}
 .faq-row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:28px;border:1px solid rgba(237,240,242,.1);border-radius:16px;background:rgba(255,255,255,.05);box-shadow:0 4px 8px rgba(0,0,0,.02);transition:background .25s,border-color .25s}
 .faq-row:hover{background:rgba(255,255,255,.08);border-color:rgba(237,240,242,.2)}
-.faq-row p{flex:1;min-width:0;font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(1rem,1.04vw,1.25rem);line-height:1.1;letter-spacing:-.03em;color:#E3E3E3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.faq-row .faq-text{flex:1;min-width:0}
+.faq-row .faq-q{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(1rem,1.04vw,1.25rem);line-height:1.1;letter-spacing:-.03em;color:#E3E3E3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .faq-row i{flex:none;width:24px;font-family:'Open Sans',sans-serif;font-style:normal;font-size:18px;text-align:center;color:#6E7680}
+/* Figma 3157-69704: the open row sits its question and answer in a column, tops
+   aligned rather than centred, and carries a little more height than a shut one */
+.faq-row.open{align-items:flex-start;padding:30px 28px}
+.faq-row.open .faq-q{color:#fff}
+.faq-row .faq-a{display:none;margin-top:16px;font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.8rem,.729vw,.875rem);line-height:1.4;color:#999}
+.faq-row.open .faq-a{display:block}
+
+/* Figma 3157-69704: the disclosures block — text at x164 on a 1464 measure, 18px
+   at #666, with a rule above it the full width of the footer's columns */
+.disclosures{position:relative;z-index:2;padding:1.29vw 8.9vw 3.5vw 8.54vw;background:var(--ink)}
+.disclosures::before{content:"";display:block;width:80.03vw;height:1px;background:rgba(255,255,255,.1);margin-bottom:2.24vw}
+.disclosures h2,.disclosures p{max-width:76.25vw;font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.8rem,.94vw,1.125rem);line-height:1.34;color:#666;text-decoration:underline}
+.disclosures h2{margin:0 0 1.34em;letter-spacing:.02em}
+.disclosures p{margin:0 0 .35em}
+.disclosures .disc-contact{margin-top:1.34em;text-decoration:none}
+.disclosures .disc-contact a{color:#666;text-decoration:underline}
+.disclosures .disc-contact a:hover{color:#B4B4B4}
 
 /* footer */
-.site-footer{position:relative;z-index:2;display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:40px;padding:9vh 8.9vw 10vh;background:var(--ink)}
+/* Figma 3157-69704: the brand sits at x171, Resources at x946 and Contact at x1345
+   on a 1920 frame, so the columns are placed rather than proportioned */
+.site-footer{position:relative;z-index:2;display:grid;grid-template-columns:40.36vw 20.78vw 1fr;gap:0;padding:4.06vw 8.9vw 5vw;background:var(--ink)}
+.site-footer .foot-social{display:flex;align-items:center;gap:.89vw;margin-top:2.6vw}
+.site-footer .foot-social a{display:block;opacity:1;transition:opacity .25s}
+.site-footer .foot-social a:hover{opacity:.65}
+.site-footer .foot-social img{display:block;height:1.354vw;min-height:16px;width:auto}
 .site-footer .foot-logo{display:flex;align-items:center;gap:12px}
 .site-footer .foot-logo img{width:30px;height:30px;object-fit:contain}
 .site-footer .foot-logo b{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:22px;letter-spacing:-.01em;color:#fff}
@@ -292,7 +319,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .how-title{padding-left:4.25vw}
   .faq{flex-direction:column;gap:40px}
   .faq-list{width:100%}
-  .faq-row p{white-space:normal}
+  .faq-row .faq-q{white-space:normal}
 }
 @media (max-width:760px){
   .how-steps{grid-template-columns:1fr;gap:8vw;padding:8vw 8vw 0}
@@ -548,11 +575,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       <h2 class="faq-title">Questions? We&rsquo;ve got answers.</h2>
     </div>
     <div class="faq-list">
-      <div class="faq-row"><p>Is a Data Savings Account a bank account?</p><i>+</i></div>
-      <div class="faq-row"><p>What is a Data Savings Plan?</p><i>+</i></div>
-      <div class="faq-row"><p>How much is my data worth?</p><i>+</i></div>
-      <div class="faq-row"><p>Why would a company pay for something it currently gets free?</p><i>+</i></div>
-      <div class="faq-row"><p>Is my data safe with dWallet?</p><i>+</i></div>
+      <div class="faq-row open">
+        <div class="faq-text">
+          <p class="faq-q">Is a Data Savings Account a bank account?</p>
+          <p class="faq-a">A dWallet is a data wallet to help you manage the value of your data. It lets you own, save, exchange, invest, and benefit from the value of the data you generate every day. With a dWallet, you can request your data from the companies you interact with, apply for a Data Savings Plan, and use it for personal, professional, and financial reasons, all with a secure way to keep it protected and under your control.</p>
+        </div><i>&minus;</i>
+      </div>
+      <div class="faq-row"><div class="faq-text"><p class="faq-q">What is a Data Savings Plan?</p></div><i>+</i></div>
+      <div class="faq-row"><div class="faq-text"><p class="faq-q">How much is my data worth?</p></div><i>+</i></div>
+      <div class="faq-row"><div class="faq-text"><p class="faq-q">Why would a company pay for something it currently gets free?</p></div><i>+</i></div>
+      <div class="faq-row"><div class="faq-text"><p class="faq-q">Is my data safe with dWallet?</p></div><i>+</i></div>
     </div>
   </div>
 
@@ -561,21 +593,38 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       <div class="foot-logo"><img src="assets/img/logo.png" alt="" width="30" height="30"><b>DrumWave</b></div>
       <p class="foot-tag">Your Life. Your Story. Your Data.</p>
       <p class="foot-copy">Copyright &copy; 2026 DrumWave Inc. All rights reserved.</p>
+      <div class="foot-social">
+        <a href="#" aria-label="DrumWave on LinkedIn"><img src="assets/img/icon-linkedin.svg" alt="" loading="lazy"></a>
+        <a href="#" aria-label="DrumWave on YouTube"><img src="assets/img/icon-youtube.svg" alt="" loading="lazy"></a>
+      </div>
     </div>
     <div class="foot-col">
-      <p class="foot-h">Links</p>
-      <a href="#">DrumWave.com</a>
-      <a href="#">Privacy Policy</a>
-      <a href="#">Resources</a>
-      <a href="#">Contact</a>
+      <p class="foot-h">Resources</p>
+      <a href="#">News &amp; Media</a>
+      <a href="#">System Status</a>
+      <a href="#">Security</a>
+      <a href="#">Privacy Policy (EN)</a>
+      <a href="#">Pol&iacute;tica de Privacidade (PT)</a>
     </div>
     <div class="foot-col">
-      <p class="foot-h">Socials</p>
-      <a href="#">YouTube</a>
-      <a href="#">Linkedin</a>
-      <a href="#">X</a>
+      <p class="foot-h">Contact</p>
+      <a href="#">Contact Us</a>
+      <a href="#">Join Newsletter</a>
     </div>
   </footer>
+
+  <!-- Figma 3157-69704 closes on the disclosures, under a rule the width of the
+       footer above it. Underlined throughout, as the design has it. -->
+  <section class="disclosures" aria-label="Disclosures">
+    <h2>DISCLOSURES</h2>
+    <p>1. The Data Savings Plan is not a security, deposit account, savings account, or investment product of any kind. It has not been registered with, and is not endorsed or approved by, the U.S. Securities and Exchange Commission (SEC), any state securities regulator, or any banking regulator. DrumWave Inc. is not a bank, broker-dealer, or investment adviser, and does not provide investment, financial, or tax advice.</p>
+    <p>2. Upon completing the required actions described in the Offer Activation Terms, DrumWave will pay you a fixed amount of $25.00. It is not payment for a data sale or license to any specific company; it compensates you for completing the required steps.</p>
+    <p>3. Separately from it, any additional amounts you may earn arise solely from other Offers you may receive while enrolled in the Plan. These are subject to your prior authorization for each specific use, and there is no promise, guarantee, or expectation of a fixed, increasing, or predetermined return from those Offers. The amount you actually receive from this separate component depends on demand from companies during the Plan&rsquo;s term; it may be lower than any amount shown or estimated, and may be zero.</p>
+    <p>4. Therefore, any estimate, chart, simulation, or illustration of value shown on this website is hypothetical and for illustrative purposes only. It does not represent any actual participant, does not constitute a projection or forecast, and is not a promise or guarantee of any future amount.</p>
+    <p>5. This service is not directed and/or available to individuals under 18, and DrumWave does not knowingly collect personal information from individuals under 18. If you believe an individual under 18 has provided us with personal information, contact us using the information below.</p>
+    <p>6. Read DrumWave&rsquo;s dWallet Terms, Terms and Conditions of Use of the Data Savings Plan, Offer Activation Terms, and Privacy Policy before enrolling.</p>
+    <p class="disc-contact">Questions: <a href="mailto:support@drumwave.com">support@drumwave.com</a>.</p>
+  </section>
 </section>
 
 <script src="assets/js/gsap.min.js"></script>
@@ -1054,6 +1103,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   rise('#how .faq-head', '#how .faq');
   rise($$('#how .faq-row'), '#how .faq', {duration:.5, stagger:.07});
   rise('#how .site-footer > *', '#how .site-footer', {duration:.5, stagger:.08});
+  rise('#how .disclosures > *', '#how .disclosures', {duration:.5, stagger:.03});
 
   // ScrollTrigger renders the timeline while it measures, which leaves the tags
   // painted at their revealed state; re-assert the hidden start after every
