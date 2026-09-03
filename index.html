@@ -259,12 +259,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .how-steps{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);gap:5.518vw;padding:4.581vw 6.247vw 0}
 .step{position:relative}
 .step-card{position:relative;width:94.19%;aspect-ratio:320.24/442;overflow:hidden;border-radius:6.25%/4.53%}
+/* Figma 3265-80232: the last card is wider than the other three — 380 against their
+   320 — and it grows leftward into the gap, so its right edge stays on the same 1678
+   measure the row is built on. Its copy shifts with it and keeps the 340 column. */
+.how-steps .step:last-child{margin-left:-2.082vw}
+.how-steps .step:last-child .step-card{width:19.781vw;aspect-ratio:380/442;border-radius:5.27%/4.53%}
+/* the wider card makes its 1fr track grow with it; the copy stays on the 340 column
+   the design keeps it on, so it sits in from the card's right edge */
+.how-steps .step:last-child .step-copy{width:17.699vw}
 .step-card img{display:block;width:100%;height:100%;object-fit:cover}
 .step-copy{margin-top:1.458vw;display:flex;flex-direction:column;gap:.625vw}
 .step-eyebrow{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(.65rem,.833vw,1rem);letter-spacing:.1em;line-height:1.1;color:#278EFF;text-transform:uppercase}
 .step-h{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(1rem,1.249vw,1.5rem);letter-spacing:-.03em;line-height:1.1;color:#fff}
 .step-body{font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.75rem,.729vw,.875rem);line-height:1.4;color:#999}
-.step-note{color:#999;font-weight:600}
+.step-note{color:#6F7274;font-weight:600}
 
 /* Figma 3157-69704: a true 1200 measure — 626 for the accordion, 80 gap, the rest
    for the heading. The old 5vw side padding sat inside the max-width and was eating
@@ -316,6 +324,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 @media (max-width:980px){
   .how-steps{grid-template-columns:repeat(2,1fr);gap:4vw}
+  /* stacked, an odd card out would just look ragged */
+  .how-steps .step:last-child{margin-left:0}
+  .how-steps .step:last-child .step-card{width:94.19%;aspect-ratio:320.24/442;border-radius:6.25%/4.53%}
+  .how-steps .step:last-child .step-copy{width:auto}
   .how-title{padding-left:4.25vw}
   .faq{flex-direction:column;gap:40px}
   .faq-list{width:100%}
@@ -324,7 +336,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 @media (max-width:760px){
   .how-steps{grid-template-columns:1fr;gap:8vw;padding:8vw 8vw 0}
   .how-title{padding-left:8.5vw}
-  .step-card{width:100%}
+  .step-card,.how-steps .step:last-child .step-card{width:100%}
   .step-eyebrow{font-size:.8rem}
   .step-h{font-size:1.35rem}
   .step-body{font-size:.9rem}
