@@ -903,14 +903,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   tl4.fromTo(whatifLn.slice(1), {yPercent:-118},
     {yPercent:0, duration:.72, stagger:.14, ease:'back.out(1.8)', immediateRender:false}, SWITCHED);
   tl4.to({}, {duration:1.4}, SWITCHED + .9);
-  // and keeps falling on the way out
-  tl4.to(whatifLn, {yPercent:118, duration:.45, stagger:.08, ease:'power2.in'}, SWITCHED + 2.3);
-  // the question falls into the same panel as the first line is still clearing, so
-  // the copy hands over without the screen itself changing
+  // THE HANDOVER. The sentence keeps falling on the way out and the question falls
+  // into the same panel behind it, overlapping so the screen never sits empty. Both
+  // halves are quicker and the overlap tighter than they were: 1.25s down to 0.9s.
+  const HAND = SWITCHED + 2.3;   // where the sentence starts to leave
+  const HAND_LAP = .15;          // how soon the question follows it in
+  tl4.to(whatifLn, {yPercent:118, duration:.3, stagger:.05, ease:'power2.in'}, HAND);
   tl4.fromTo(lines('#time .worth'), {yPercent:-118},
-    {yPercent:0, duration:.72, stagger:.14, ease:'back.out(1.5)', immediateRender:false}, SWITCHED + 2.55);
-  tl4.to({}, {duration:1.7}, SWITCHED + 3.7);
-  tl4.to(lines('#time .worth'), {yPercent:118, duration:.45, stagger:.08, ease:'power2.in'}, SWITCHED + 5.4);
+    {yPercent:0, duration:.55, stagger:.1, ease:'back.out(1.5)', immediateRender:false}, HAND + HAND_LAP);
+  tl4.to({}, {duration:1.7}, HAND + 1.4);
+  tl4.to(lines('#time .worth'), {yPercent:118, duration:.45, stagger:.08, ease:'power2.in'}, HAND + 3.1);
 
   // These three were paced as scrub distances, so at 1x they would each run for
   // nine or ten seconds on their own. Speed them up to land around five, and
