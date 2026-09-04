@@ -352,18 +352,31 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* footer */
 /* Figma 3157-69704: the brand sits at x171, Resources at x946 and Contact at x1345
    on a 1920 frame, so the columns are placed rather than proportioned */
-.site-footer{position:relative;z-index:2;display:grid;grid-template-columns:40.36vw 20.78vw 1fr;gap:0;padding:4.06vw 8.9vw 5vw;background:var(--ink)}
-.site-footer .foot-social{display:flex;align-items:center;gap:.89vw;margin-top:2.6vw}
+/* Figma 3157-69719 — measured off the 1924x400 frame: the logo at x171 y78, the
+   columns at 946 and 1345, the copyright at y200, the social row at y275.
+   The design paints the ground with a clipped 140-vector artwork, which is not
+   something to reproduce as vectors. These two ellipses are a numeric fit to its
+   render: 1.1 rms per channel over 330 samples, and every bottom-row check within
+   three. Each ends on its own hue at zero alpha rather than on `transparent`, which
+   is rgba(0,0,0,0) and would drag the midpoint through black. Teal is listed first
+   because the first background layer paints on top. */
+.site-footer{position:relative;z-index:2;display:grid;grid-template-columns:40.27vw 20.74vw 1fr;gap:0;padding:4.06vw 8.9vw 2.34vw;
+  background:
+    radial-gradient(36.3% 94.7% at 68.4% 134.1%, rgba(4,88,68,.626), rgba(4,88,68,0)),
+    radial-gradient(39.9% 97.1% at 39.6% 116.2%, rgba(9,47,81,.927), rgba(9,47,81,0)),
+    var(--ink)}
+.site-footer .foot-social{display:flex;align-items:center;gap:.89vw;margin-top:27px}
 .site-footer .foot-social a{display:block;opacity:1;transition:opacity .25s}
 .site-footer .foot-social a:hover{opacity:.65}
 .site-footer .foot-social img{display:block;height:1.354vw;min-height:16px;width:auto}
-.site-footer .foot-logo{display:flex;align-items:center;gap:12px}
-.site-footer .foot-logo img{width:30px;height:30px;object-fit:contain}
-.site-footer .foot-logo b{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:22px;letter-spacing:-.01em;color:#fff}
-.site-footer .foot-tag{margin-top:26px;font-family:'Open Sans',sans-serif;font-size:clamp(1rem,1.04vw,1.25rem);line-height:1.2;color:#B4B4B4}
-.site-footer .foot-copy{margin-top:20px;max-width:282px;font-family:'Open Sans',sans-serif;font-size:clamp(.9rem,.94vw,1.125rem);line-height:1.34;color:#666}
+.site-footer .foot-logo{display:flex;align-items:center;gap:14px}
+.site-footer .foot-logo img{width:42px;height:42px;object-fit:contain}
+.site-footer .foot-logo b{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:25px;letter-spacing:-.01em;color:#fff}
+.site-footer .foot-tag{margin-top:16px;font-family:'Open Sans',sans-serif;font-size:clamp(1rem,1.04vw,1.25rem);line-height:1.2;color:#B4B4B4}
+.site-footer .foot-copy{margin-top:40px;max-width:282px;font-family:'Open Sans',sans-serif;font-size:clamp(.9rem,.94vw,1.125rem);line-height:1.34;color:#666}
+.site-footer .foot-col{max-width:292px}
 .site-footer .foot-h{font-family:'Open Sans',sans-serif;font-weight:700;font-size:clamp(.9rem,.94vw,1.125rem);line-height:1.2;color:#E3E3E3}
-.site-footer .foot-col a{display:block;margin-top:25px;font-family:'Open Sans',sans-serif;font-size:clamp(.9rem,.94vw,1.125rem);line-height:1.5;color:#B4B4B4;transition:color .25s}
+.site-footer .foot-col a{display:block;margin-top:24px;font-family:'Open Sans',sans-serif;font-size:clamp(.9rem,.94vw,1.125rem);line-height:1.5;color:#B4B4B4;transition:color .25s}
 .site-footer .foot-col a:hover{color:#fff}
 
 @media (max-width:980px){
@@ -381,7 +394,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .step-eyebrow{font-size:.8rem}
   .step-h{font-size:1.35rem}
   .step-body{font-size:.9rem}
-  .site-footer{grid-template-columns:1fr;gap:32px}
+  .site-footer{grid-template-columns:1fr;gap:32px;padding-bottom:9vw}
   .brand{top:16px;left:16px}
   #act1 .cue{display:none}
   /* a tag has no width of its own — it fills whatever room its left offset leaves,
@@ -759,7 +772,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   <footer class="site-footer">
     <div>
-      <div class="foot-logo"><img src="assets/img/logo.png" alt="" width="30" height="30"><b>DrumWave</b></div>
+      <div class="foot-logo"><img src="assets/img/logo.png" alt="" width="42" height="42"><b>DrumWave</b></div>
       <p class="foot-tag">Your Life. Your Story. Your Data.</p>
       <p class="foot-copy">Copyright &copy; 2026 DrumWave Inc. All rights reserved.</p>
       <div class="foot-social">
