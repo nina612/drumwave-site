@@ -257,8 +257,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 /* ACT 7 : HOW IT WORKS + FAQ + FOOTER — one long scrolling screen */
 .how-scene{position:relative;background:var(--ink);overflow:hidden}
-.sol-how::before{content:"";position:absolute;left:-28vw;top:-42vw;width:86vw;height:86vw;border-radius:50%;background:radial-gradient(circle,rgba(39,142,255,.09),rgba(39,142,255,0) 62%);pointer-events:none}
-.sol-how::after{content:"";position:absolute;right:-30vw;top:-48vw;width:90vw;height:90vw;border-radius:50%;background:radial-gradient(circle,rgba(75,39,255,.09),rgba(75,39,255,0) 62%);pointer-events:none}
+/* The cards framing takes the same two blue casts as the introducing framing, at the
+   same size, position and levels — .4 and .2 of #2731B6 under a 10.42vw blur — so all
+   three beats of the plan sit on one lit ground. It used to carry a pair of radial
+   gradients that peaked at alpha .09, which is invisible.
+   These are pseudo-elements rather than the .sol-glow nodes themselves: those live
+   inside .solution-preview at z-index 9, which paints over the cards layer, whereas
+   .how-title and .how-steps already hold z-index 2 above these. They need no tween of
+   their own — they arrive and leave with .sol-how's own opacity. */
+.sol-how::before,.sol-how::after{content:"";position:absolute;width:43.7vw;aspect-ratio:1;border-radius:50%;background:#2731B6;filter:blur(10.42vw);pointer-events:none;z-index:0}
+.sol-how::before{left:-11.77vw;top:-7.5vh;opacity:.4}
+.sol-how::after{left:71.35vw;top:1.48vh;opacity:.2}
 /* The cards framing of the plan screen. It sits over the other two, centred rather
    than padded from the top, because it has a screen's height to live in and not a
    section that can grow. .sol-how-fit takes the shrink-to-fit scale: everything
