@@ -1012,14 +1012,21 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // "Your life creates data." stands over the hero, the run and the coffee, and leaves
   // as the tap frame cuts in — that frame carries the next line instead.
   tl1.to('#act1 .hero-h .ln > span', {yPercent:-112, duration:.3, stagger:.05}, T_TAP);
+  // How far a line of this block travels to clear its mask. 112 is what the rest of the
+  // page uses and it is not enough here: .run-say sets line-height .9, so its line box
+  // is 94px where the font's own ink is 160 — the glyphs spill 65px past the box they
+  // are masked by. Clearing takes the box, the .08em the mask is padded by underneath,
+  // and half that spill: 143%. At 112 the periods and commas sat just inside the mask
+  // and showed as a row of dots above and below the copy.
+  const SAY_OUT = 150;
   // Every span in both statements starts behind its mask.
   const saySpans = $$('#act1 .run-say .ln > span');
-  tl1.set(saySpans, {yPercent:112}, 0);
+  tl1.set(saySpans, {yPercent:SAY_OUT}, 0);
   // "Every tap. Every step. Every choice creates value, instantly." arrives whole, on
   // the tap frame — no stagger, so the three lines rise together and read as one
   // statement rather than as a sentence being assembled a piece to a photograph.
   const sayA = $$('#sayA .ln > span'), sayB = $$('#sayB .ln > span');
-  tl1.fromTo(sayA, {yPercent:112},
+  tl1.fromTo(sayA, {yPercent:SAY_OUT},
     {yPercent:0, duration:.55, ease:'power3.out', immediateRender:false}, T_TAP + .12);
 
   /* ---------- ACT 2 ---------- */
@@ -1118,8 +1125,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // as the baby frame cuts in; statement three arrives whole in its place. Both move as
   // a block — the line-by-line build these used to do, and the transparent first line
   // that went with it, are gone.
-  tl2.to(sayA, {yPercent:-112, duration:.34, ease:'power2.in'}, BABY);
-  tl2.fromTo(sayB, {yPercent:112},
+  tl2.to(sayA, {yPercent:-SAY_OUT, duration:.34, ease:'power2.in'}, BABY);
+  tl2.fromTo(sayB, {yPercent:SAY_OUT},
     {yPercent:0, duration:.5, ease:'power3.out', immediateRender:false}, BABY + .3);
   // the grocery tag belongs to the baby frame, which carries no word
   tagOn(tl2, '#markerGrocery', BABY, BABY_HOLD, FAMILY);
@@ -1517,7 +1524,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // that starts already in view. Same two statements the run opens with.
     gsap.set($$('.ln > span'), {yPercent:112});
     gsap.set('#act1 .hero-h .ln > span', {yPercent:0});
-    gsap.set($$('#act1 .run-say .ln > span'), {yPercent:112});
+    gsap.set($$('#act1 .run-say .ln > span'), {yPercent:150});
     gsap.set($$('#runSay > .ln > span'), {opacity:1});
     gsap.set('#act1 .cue', {opacity:1});
   };
