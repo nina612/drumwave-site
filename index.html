@@ -794,9 +794,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // ACT 1'S CLOCK, straight off the timing notes: a second on the opening image,
   // half a second each on the running and coffee frames, a full second on the tap
   // frame where the pacing slows, then half a second on the delivery frame.
-  // A tag's ideal phases, which tagOn caps its entrance and exit at. On a frame
-  // shorter than these the tag scales down to fit rather than overrunning it.
-  const TAG_IN = .3, TAG_OUT = .25;
+  // A TAG'S OWN CLOCK. TAG_MIN is what it needs to arrive, rest long enough to be
+  // read, and leave. A 0.3s frame is shorter than that, so rather than crushing the
+  // tag into the frame the tag is allowed to outlive the cut and carry on over the
+  // next photo — which is what these are: a day's timestamps accumulating, not
+  // captions bolted to one image. The markers sit far enough apart that two being up
+  // together never collides, and act 1's markers paint above act 2, so the last one
+  // carries across the act boundary rather than being clipped.
+  const TAG_IN = .3, TAG_REST = .25, TAG_OUT = .25;
+  const TAG_MIN = TAG_IN + TAG_REST + TAG_OUT;   // .8
   const HERO = 1.5, QUICK = .3, TAP = 1.5;
   const T_RUN = HERO, T_COFFEE = T_RUN + QUICK, T_TAP = T_COFFEE + QUICK, T_PKG = T_TAP + TAP;
   const ACT1_END = T_PKG + QUICK;   // act 2 begins here, whatever the tag tails do
@@ -806,12 +812,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // zero-duration set reverts to its pre-set value when the timeline sits before it,
   // which left every tag painted on screen until the first one fired.
   const tagOn = (tl, sel, at, span) => {
-    const inD = Math.min(TAG_IN, span * .4), outD = Math.min(TAG_OUT, span * .35);
+    const life = Math.max(span, TAG_MIN);
+    const inD = Math.min(TAG_IN, life * .4), outD = Math.min(TAG_OUT, life * .35);
     tl.fromTo(sel + ' i', {scale:0},
       {scale:1, duration:Math.min(.22, inD * .75), ease:'back.out(2)', immediateRender:false}, at);
     tl.fromTo(sel, {opacity:0, x:-8},
       {opacity:1, x:0, duration:inD, immediateRender:false}, at);
-    tl.to(sel, {opacity:0, duration:outD}, at + span - outD);
+    tl.to(sel, {opacity:0, duration:outD}, at + life - outD);
   };
 
   // the opening image eases out of its push across the whole second it holds
