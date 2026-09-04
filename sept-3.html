@@ -125,7 +125,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* The tails stack on the same two lines under line 1, one shown at a time — the family
    frame changes what the sentence finishes with (Figma 3406-5908) rather than adding a
    second block beside it. 1407/1920 is that node's measure, the widest of the set. */
-#act1 .run-say .say-tail{display:block;position:absolute;left:0;top:100%;width:100%}
+/* The two statements sit on the same origin, one up at a time. They used to be a line
+   plus two tails stacked under it, which is what a line-by-line build needs; a whole
+   statement arriving at once does not. */
+#act1 .run-say .say{position:absolute;left:0;top:0;width:100%}
 #act1 .run-say{position:absolute;left:6.3vw;top:51.67vh;width:73.28vw;z-index:6;
   font-size:clamp(2.2rem,7.29vw,8.75rem);line-height:.9;letter-spacing:-.03em;color:#fff}
 #act1 .cue{position:absolute;right:5vw;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:14px;writing-mode:vertical-rl}
@@ -494,15 +497,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <!-- sept-3: the run's later copy. Line 1 lands on the tap frame, lines 2 and 3 join
        it on the delivery frame, so the sentence is whole before act 2 begins. -->
   <div class="run-say display" id="runSay">
-    <span class="ln"><span>Every tap. Every step.</span></span>
-    <span class="say-tail" id="sayTailA">
+    <div class="say" id="sayA">
+      <span class="ln"><span>Every tap. Every step.</span></span>
       <span class="ln"><span>Every choice creates</span></span>
       <span class="ln"><span>value, instantly.</span></span>
-    </span>
-    <span class="say-tail" id="sayTailB">
+    </div>
+    <div class="say" id="sayB">
       <span class="ln"><span>Own and save your data.</span></span>
       <span class="ln"><span>Grow its value.</span></span>
-    </span>
+    </div>
   </div>
   <div class="cue mono"><span>Scroll</span><i></i></div>
   <!-- act 2 rides inside act 1 so the sequence plays straight through -->
@@ -1009,19 +1012,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // "Your life creates data." stands over the hero, the run and the coffee, and leaves
   // as the tap frame cuts in — that frame carries the next line instead.
   tl1.to('#act1 .hero-h .ln > span', {yPercent:-112, duration:.3, stagger:.05}, T_TAP);
-  // Every span in the block, so all of them start behind their masks — including the
-  // family tail, which sits in here too and would otherwise be up from the first frame.
+  // Every span in both statements starts behind its mask.
   const saySpans = $$('#act1 .run-say .ln > span');
   tl1.set(saySpans, {yPercent:112}, 0);
-  // and the two that the delivery frame brings in, named rather than sliced: this was
-  // saySpans.slice(1), which took the family tail with them once it was added.
-  const sayLine1 = $$('#runSay > .ln > span'), sayTailA = $$('#sayTailA .ln > span');
-  tl1.fromTo(sayLine1, {yPercent:112},
-    {yPercent:0, duration:.5, ease:'power3.out', immediateRender:false}, T_TAP + .12);
-  // tighter than the .5/.18 the first line took: the delivery frame cuts straight on
-  // now, so the two lines have to be up before it goes rather than dwelling after.
-  tl1.fromTo(sayTailA, {yPercent:112},
-    {yPercent:0, duration:.38, stagger:.12, ease:'power3.out', immediateRender:false}, T_PKG + .06);
+  // "Every tap. Every step. Every choice creates value, instantly." arrives whole, on
+  // the tap frame — no stagger, so the three lines rise together and read as one
+  // statement rather than as a sentence being assembled a piece to a photograph.
+  const sayA = $$('#sayA .ln > span'), sayB = $$('#sayB .ln > span');
+  tl1.fromTo(sayA, {yPercent:112},
+    {yPercent:0, duration:.55, ease:'power3.out', immediateRender:false}, T_TAP + .12);
 
   /* ---------- ACT 2 ---------- */
   // No trigger of its own: it is appended to act 1 below so the hero runs
@@ -1115,26 +1114,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // nothing leaves. Line 1 stands the whole way and only the tail changes, swapped as
   // the family photo settles rather than on the baby frame, so the change lands with
   // the picture it belongs to.
-  // Line 1 is visible on the tap and the delivery frames and NOT after them: every node
-   // from the headphones on sets "Every tap. Every step." to rgba(255,255,255,0) rather
-  // than deleting it, so it keeps its line and the copy below it does not ride up.
-  // Reading the layer NAMES off get_metadata is what got this wrong the first time —
-  // Figma names a text layer from its content once and never again, so all six read as
-  // the whole sentence while only two of them show it.
-  tl2.to(sayLine1, {opacity:0, duration:.35, ease:'power1.inOut'}, 0);
-
-  // The last two lines land on two different photos rather than arriving together: the
-  // baby frame says "Own and save your data." and the family photo adds "Grow its
-  // value." as it settles out of the dissolve. So the tail keeps building the way the
-  // rest of the run does, a line to a picture.
-  const tailB = $$('#sayTailB .ln > span');
-  tl2.to(sayTailA, {yPercent:-112, duration:.34, stagger:.06, ease:'power2.in'}, BABY);
-  tl2.fromTo(tailB[0], {yPercent:112},
-    {yPercent:0, duration:.46, ease:'power3.out', immediateRender:false}, BABY + .28);
-  // .7 into a 1.5 dissolve: the line finishes as the family photo does, so it reads as
-  // arriving with the picture rather than ahead of it or after it has settled.
-  tl2.fromTo(tailB[1], {yPercent:112},
-    {yPercent:0, duration:.46, ease:'power3.out', immediateRender:false}, FAMILY + .7);
+  // Statement two stands from the tap frame through the charging frame and leaves whole
+  // as the baby frame cuts in; statement three arrives whole in its place. Both move as
+  // a block — the line-by-line build these used to do, and the transparent first line
+  // that went with it, are gone.
+  tl2.to(sayA, {yPercent:-112, duration:.34, ease:'power2.in'}, BABY);
+  tl2.fromTo(sayB, {yPercent:112},
+    {yPercent:0, duration:.5, ease:'power3.out', immediateRender:false}, BABY + .3);
   // the grocery tag belongs to the baby frame, which carries no word
   tagOn(tl2, '#markerGrocery', BABY, BABY_HOLD, FAMILY);
   // The run just stops here, on the family photo with the question in white, and holds
