@@ -1587,7 +1587,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // used to sit beside is gone, its sentence having moved into the run itself.
     const w = at('worth');
     if(w != null) out.push(w + 8);
-    out.push(at('ages'));
+    // The timeline is snapped too, a stop per age it has a photograph for. It used to
+    // be one stop at its start and a free scrub after, which meant the one stretch of
+    // the page where a gesture did not land you anywhere in particular. Its own drag
+    // handle sets the scroll directly, so it keeps the continuous scrub — the wheel
+    // steps, the handle still slides.
+    const ag = st('ages');
+    if(ag){
+      const pin = ag.end - ag.start;
+      // the scrub only spans the age part of the pin; the tail belongs to the closing
+      // screen, whose progress is measured off the buffer that follows
+      const ageShare = ageBaseTotal / ageGrandTotal;
+      for(const a of AGE_DATA.map(d => d.age))
+        out.push(Math.round(ag.start + ((a - AGE_MIN) / (AGE_MAX - AGE_MIN)) * ageShare * pin));
+      // and the closing screen, once its crossfade is through
+      out.push(Math.round(ag.start + ((ageBaseTotal + .9 * ageBufferPct) / ageGrandTotal) * pin));
+    }
     return out.filter(v => v != null);
   };
   // A single physical gesture fires dozens of wheel events over a second or more of
