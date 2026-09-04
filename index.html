@@ -296,6 +296,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .step-body{font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.75rem,.729vw,.875rem);line-height:1.4;color:#999}
 .step-note{color:#6F7274;font-weight:600}
 
+/* Figma 3381-35616 — the closing screen, measured off the 1924x879 frame. The design
+   centres the block a shade below the middle: its centre lands at 53.7% of the frame,
+   which the padding-top buys against a straight centre. The headline is the same type
+   treatment as .how-title down to the tracking — 64px at 1920, .93 leading, -.04em. */
+.closing{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:7.4vh;background:#070707;opacity:0;pointer-events:none}
+.closing-copy{width:94.59%;text-align:center}
+.closing-h{margin:0;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,3.33vw,4rem);line-height:.93;letter-spacing:-.04em;color:#fff}
+.closing-sub{margin:1.04vw 0 0;font-family:'Open Sans',sans-serif;font-weight:500;font-size:clamp(.85rem,.94vw,1.125rem);line-height:1.38;color:#fff;opacity:.7}
+.closing-cta{margin-top:3.38vw;pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;padding:.83vw 1.25vw;border-radius:100px;background:linear-gradient(133.78deg,#4B27FF 1.94%,#0091FF 100.59%);font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(.85rem,.94vw,1.125rem);line-height:1;color:#fff;white-space:nowrap;transition:filter .25s}
+.closing-cta:hover{filter:brightness(1.12)}
+
 /* Figma 3157-69704: a true 1200 measure — 626 for the accordion, 80 gap, the rest
    for the heading. The old 5vw side padding sat inside the max-width and was eating
    100px off the accordion. */
@@ -385,6 +396,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .solution-preview .sol-cta{left:8vw;top:auto;bottom:22vh}
   .solution-preview .sol-link{left:8vw;top:auto;bottom:17vh;transform:none}
   .solution-preview .sol-card{right:auto;left:8vw;top:auto;bottom:30vh;width:84vw}
+  /* the vw paddings and gaps are a few pixels at this width, so set them in their own terms */
+  .closing{padding-top:0}
+  .closing-copy{width:84vw}
+  .closing-sub{margin-top:1.2em}
+  .closing-cta{margin-top:12vw;padding:14px 24px;font-size:1rem}
 }
 /* On a phone the nav's own content is wider than 94vw — logo, rule, wordmark and a
    CTA whose label runs to 25 characters — so the CTA's text was being clipped. The
@@ -626,6 +642,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <div class="ages mono" id="ageLabels"></div>
   </div>
 
+  <!-- Figma 3381-35616. Crossfades in over the $31,800 hold, on the tail of this
+       section's own pin, so it arrives with no scroll motion of its own: the age
+       screen dissolves and the closing screen is simply there. The frame carries two
+       big ellipse glows, but they are set to opacity 0 in the file and the exported
+       render is flat, so the ground here is the flat #070707 the design shows. -->
+  <div class="closing" id="closing">
+    <div class="closing-copy">
+      <h2 class="closing-h">Save your data. Grow its value.</h2>
+      <p class="closing-sub">Your everyday life creates data. Capture its value and put it to work for your future.</p>
+    </div>
+    <a class="closing-cta" href="#">Start saving your data</a>
+  </div>
 </section>
 
 <!-- FAQ + FOOTER + DISCLOSURES — closes the page. -->
@@ -1281,10 +1309,27 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   renderAge(AGE_MIN);
 
 
+  // The tail of #ages' pin dissolves the $31,800 screen and brings the closing screen
+  // up in its place, on the same pin — so it arrives with no scroll motion of its own,
+  // the way the plan reveal used to before it moved to the top of the page. The reader
+  // is not snapped through here: from the timeline down the page scrolls normally,
+  // because there the scroll IS the interaction, so this simply scrubs as they go.
+  const closeTl = gsap.timeline({paused:true, defaults:{ease:'none'}});
+  closeTl.to({}, {duration:.22}, 0);                    // $31,800 holds a beat first
+  closeTl.to('#ages > .frames, #ages > .num-wrap, #ages > .stage-tag, #ageCtl',
+             {opacity:0, duration:.34, ease:'power1.inOut'}, .22);
+  // an opacity-0 slider still takes the pointer, so take it out of reach as it goes
+  closeTl.set('#ageCtl', {pointerEvents:'none'}, .56);
+  closeTl.fromTo('#closing', {opacity:0}, {opacity:1, duration:.34, ease:'power1.inOut'}, .34);
+  closeTl.fromTo('#closing .closing-h', {y:26, opacity:0}, {y:0, opacity:1, duration:.26, ease:'power2.out'}, .52);
+  closeTl.fromTo('#closing .closing-sub', {y:18, opacity:0}, {y:0, opacity:.7, duration:.24, ease:'power2.out'}, .60);
+  closeTl.fromTo('#closing .closing-cta', {y:14, opacity:0}, {y:0, opacity:1, duration:.24, ease:'power2.out'}, .68);
+  closeTl.to({}, {duration:.08}, .92);
+
   const ageBaseTotal = AGES.length*59;
-  // The buffer used to be three viewports, because the solution reveal played out on
-  // it. That reveal has its own screen now, so this is just a hold on the last frame.
-  const ageBufferPct = 60;
+  // Two viewports of tail: a hold on the number, the dissolve, then the closing screen
+  // held while the section scrolls away.
+  const ageBufferPct = 200;
   const ageGrandTotal = ageBaseTotal + ageBufferPct;
   let ageDragging = false;
   const ageST = ScrollTrigger.create({
@@ -1292,6 +1337,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     onUpdate(self){
       const ap = clamp(self.progress * ageGrandTotal / ageBaseTotal, 0, 1);
       if(!ageDragging) renderAge(AGE_MIN + ap*(AGE_MAX-AGE_MIN));
+
+      const bp = clamp((self.progress*ageGrandTotal - ageBaseTotal) / ageBufferPct, 0, 1);
+      closeTl.progress(bp);
     }
   });
 
