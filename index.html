@@ -301,14 +301,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .step-body{font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.75rem,.729vw,.875rem);line-height:1.4;color:#999}
 .step-note{color:#6F7274;font-weight:600}
 
-/* Figma 3381-35616 and 3199-49514 both hang these two off the top of the frame:
-   Ellipse 22069 at x646 y-903 and Ellipse 22070 at x-566 y-1022, each 1498x1396,
-   #124BC6 and #1A33B0 under a 247px Gaussian. Sized and offset from the viewport
-   WIDTH rather than the section height, because the two frames place them at
-   identical coordinates while being 879 and 1127 tall — they are pinned to the top
-   of each frame, they do not scale with it.
-   Both frames set them to opacity 0, so the file gives no level to copy. .32 is the
-   site's own for a disc of this kind, the level #time's opening glow runs at. */
+/* The closing screen's two discs — Figma 3381-35616: Ellipse 22069 at x646 y-903 and
+   Ellipse 22070 at x-566 y-1022, each 1498x1396, #124BC6 and #1A33B0 under a 247px
+   Gaussian. Sized and offset from the viewport WIDTH rather than the section height:
+   the disclosures frame carries the same pair at the same coordinates while being
+   1127 tall against this one's 879, which says they hang off the top of a frame and
+   do not scale with it. The file has them at opacity 0, so there is no level to copy;
+   .32 is what #time's opening glow runs at.
+   The disclosures had these too for a moment and no longer do — that block reads
+   better on the flat ground its own frame renders. */
 .frame-glow{position:absolute;width:77.86vw;height:72.56vw;border-radius:50%;filter:blur(12.84vw);opacity:.32;pointer-events:none;z-index:0}
 .frame-glow-r{left:33.58vw;top:-46.93vw;background:#124BC6}
 .frame-glow-l{left:-29.42vw;top:-53.12vw;background:#1A33B0}
@@ -360,7 +361,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    footer's has one. The frame also carries the same two 1498x1396 ellipses as the
    closing screen, and they are switched off in the file the same way: its render is
    flat #070707 top to bottom. */
-.disclosures{position:relative;z-index:2;overflow:hidden;padding:3.53vw 8.9vw 3.5vw 8.54vw;background:var(--ink)}
+.disclosures{position:relative;z-index:2;padding:3.53vw 8.9vw 3.5vw 8.54vw;background:var(--ink)}
 .disclosures h2,.disclosures p{max-width:76.25vw;font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.8rem,.94vw,1.125rem);line-height:1.34;color:#666}
 .disclosures h2{margin:0 0 1.34em}
 .disclosures p{margin:0 0 1.34em}
@@ -685,9 +686,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   <!-- Figma 3381-35616. Crossfades in over the $31,800 hold, on the tail of this
        section's own pin, so it arrives with no scroll motion of its own: the age
-       screen dissolves and the closing screen is simply there. The frame carries two
-       big ellipse glows, but they are set to opacity 0 in the file and the exported
-       render is flat, so the ground here is the flat #070707 the design shows. -->
+       screen dissolves and the closing screen is simply there. The frame's two big
+       ellipse glows sit at opacity 0 in the file, so its render is flat — they are
+       switched on here deliberately, at the level .frame-glow sets. -->
   <div class="closing" id="closing">
     <div class="frame-glow frame-glow-l" aria-hidden="true"></div>
     <div class="frame-glow frame-glow-r" aria-hidden="true"></div>
@@ -826,8 +827,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <!-- Figma 3157-69704 closes on the disclosures, under a rule the width of the
        footer above it. Underlined throughout, as the design has it. -->
   <section class="disclosures" aria-label="Disclosures">
-    <div class="frame-glow frame-glow-l" aria-hidden="true"></div>
-    <div class="frame-glow frame-glow-r" aria-hidden="true"></div>
     <h2>DISCLOSURES</h2>
     <p>1. The Data Savings Plan is not a security, deposit account, savings account, or investment product of any kind. It has not been registered with, and is not endorsed or approved by, the U.S. Securities and Exchange Commission (SEC), any state securities regulator, or any banking regulator. DrumWave Inc. is not a bank, broker-dealer, or investment adviser, and does not provide investment, financial, or tax advice.</p>
     <p>2. Upon completing the required actions described in the Offer Activation Terms, DrumWave will pay you a fixed amount of $25.00. It is not payment for a data sale or license to any specific company; it compensates you for completing the required steps.</p>
@@ -1477,9 +1476,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   rise('#how .faq-head', '#how .faq');
   rise($$('#how .faq-row'), '#how .faq', {duration:.5, stagger:.07});
   rise('#how .site-footer > *', '#how .site-footer', {duration:.5, stagger:.08});
-  // not the glows: they are direct children too, and rising them would land them on
-  // opacity 1 instead of the .32 they are set to
-  rise('#how .disclosures > :not(.frame-glow)', '#how .disclosures', {duration:.5, stagger:.03});
+  rise('#how .disclosures > *', '#how .disclosures', {duration:.5, stagger:.03});
 
   // ScrollTrigger renders the timeline while it measures, which leaves the tags
   // painted at their revealed state; re-assert the hidden start after every
