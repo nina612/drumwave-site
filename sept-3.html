@@ -862,7 +862,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // run carries a little weight and settles after the wheel stops rather than halting
   // on the frame. Reduced motion drops the smoothing, as it does there.
   const RUN_SCRUB = RM ? true : 0.9;
-  const RUN_PINS = 400;   // four screens, the same as that file's opening
+  const RUN_PINS = 500;   // five screens. The reference's opening takes four, which put
+                          // the two quickest tags inside 148px of scroll — legible, but
+                          // a flick. A quarter more scroll buys them ~185px and leaves
+                          // the smoothing, which is what the handling actually comes
+                          // from, exactly as that file sets it.
 
   const autoPlay = {
     onEnter: self => self.animation.play(),
