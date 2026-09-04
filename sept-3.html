@@ -1117,10 +1117,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // the whole sentence while only two of them show it.
   tl2.to(sayLine1, {opacity:0, duration:.35, ease:'power1.inOut'}, 0);
 
+  // The last two lines land on two different photos rather than arriving together: the
+  // baby frame says "Own and save your data." and the family photo adds "Grow its
+  // value." as it settles out of the dissolve. So the tail keeps building the way the
+  // rest of the run does, a line to a picture.
   const tailB = $$('#sayTailB .ln > span');
-  tl2.to(sayTailA, {yPercent:-112, duration:.34, stagger:.06, ease:'power2.in'}, FAMILY + BF);
-  tl2.fromTo(tailB, {yPercent:112},
-    {yPercent:0, duration:.46, stagger:.12, ease:'power3.out', immediateRender:false}, FAMILY + BF + .22);
+  tl2.to(sayTailA, {yPercent:-112, duration:.34, stagger:.06, ease:'power2.in'}, BABY);
+  tl2.fromTo(tailB[0], {yPercent:112},
+    {yPercent:0, duration:.46, ease:'power3.out', immediateRender:false}, BABY + .28);
+  // .7 into a 1.5 dissolve: the line finishes as the family photo does, so it reads as
+  // arriving with the picture rather than ahead of it or after it has settled.
+  tl2.fromTo(tailB[1], {yPercent:112},
+    {yPercent:0, duration:.46, ease:'power3.out', immediateRender:false}, FAMILY + .7);
   // the grocery tag belongs to the baby frame, which carries no word
   tagOn(tl2, '#markerGrocery', BABY, BABY_HOLD, FAMILY);
   // The run just stops here, on the family photo with the question in white, and holds
