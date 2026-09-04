@@ -340,14 +340,21 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 /* Figma 3157-69704: the disclosures block — text at x164 on a 1464 measure, 18px
    at #666, with a rule above it the full width of the footer's columns */
-.disclosures{position:relative;z-index:2;padding:1.29vw 8.9vw 3.5vw 8.54vw;background:var(--ink)}
-.disclosures::before{content:"";display:block;width:80.03vw;height:1px;background:rgba(255,255,255,.1);margin-bottom:2.24vw}
-.disclosures h2,.disclosures p{max-width:76.25vw;font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.8rem,.94vw,1.125rem);line-height:1.34;color:#666;text-decoration:underline}
-.disclosures h2{margin:0 0 1.34em;letter-spacing:.02em}
-.disclosures p{margin:0 0 .35em}
-.disclosures .disc-contact{margin-top:1.34em;text-decoration:none}
-.disclosures .disc-contact a{color:#666;text-decoration:underline}
-.disclosures .disc-contact a:hover{color:#B4B4B4}
+/* Figma 3199-49514 — the block sits at x164 on a 1464 measure, 18px Open Sans at
+   1.34 over #666, with a clear line between every item. Three things the design
+   settles that were wrong here: the body carried an underline it does not have, the
+   support address is #278eff and not the body grey, and there is no rule above the
+   label — that came from an earlier combined frame and neither this frame nor the
+   footer's has one. The frame also carries the same two 1498x1396 ellipses as the
+   closing screen, and they are switched off in the file the same way: its render is
+   flat #070707 top to bottom. */
+.disclosures{position:relative;z-index:2;padding:3.53vw 8.9vw 3.5vw 8.54vw;background:var(--ink)}
+.disclosures h2,.disclosures p{max-width:76.25vw;font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.8rem,.94vw,1.125rem);line-height:1.34;color:#666}
+.disclosures h2{margin:0 0 1.34em}
+.disclosures p{margin:0 0 1.34em}
+.disclosures .disc-contact{margin-bottom:0}
+.disclosures .disc-contact a,.disclosures .disc-dot{color:#278EFF;text-decoration:underline;text-underline-position:from-font}
+.disclosures .disc-contact a:hover{color:#5BA9FF}
 
 /* footer */
 /* Figma 3157-69704: the brand sits at x171, Resources at x946 and Contact at x1345
@@ -812,7 +819,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <p>4. Therefore, any estimate, chart, simulation, or illustration of value shown on this website is hypothetical and for illustrative purposes only. It does not represent any actual participant, does not constitute a projection or forecast, and is not a promise or guarantee of any future amount.</p>
     <p>5. This service is not directed and/or available to individuals under 18, and DrumWave does not knowingly collect personal information from individuals under 18. If you believe an individual under 18 has provided us with personal information, contact us using the information below.</p>
     <p>6. Read DrumWave&rsquo;s dWallet Terms, Terms and Conditions of Use of the Data Savings Plan, Offer Activation Terms, and Privacy Policy before enrolling.</p>
-    <p class="disc-contact">Questions: <a href="mailto:support@drumwave.com">support@drumwave.com</a>.</p>
+    <p class="disc-contact">Questions: <a href="mailto:support@drumwave.com">support@drumwave.com</a><span class="disc-dot">.</span></p>
   </section>
 </section>
 
