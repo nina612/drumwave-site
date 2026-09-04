@@ -63,6 +63,26 @@ Two things to know:
 Downloaded fonts are cached in `.build-cache/` (gitignored), so rebuilds work
 offline.
 
+### If the file won't open
+
+Lightweight HTML previewers — mail clients, chat file previews, Quick Look —
+tend to hang on 7MB of base64 in a single document. That is the viewer, not
+the file. Open it in a real browser instead:
+
+```bash
+open -a "Google Chrome" drumwave-standalone.html
+```
+
+For a version those previewers will open, re-encode the photographs:
+
+```bash
+python3 build-standalone.py --light
+```
+
+That writes `drumwave-standalone-light.html` at about 3.7MB — photos capped at
+1400px and JPEG quality 68. Fine for a quick look; use the full build for
+anything anyone judges the photography on.
+
 ## The timeline
 
 Ages 18 → 70 with an illustrative value curve:

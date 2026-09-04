@@ -10,3 +10,5 @@ Home/
 # than tracked — it would more than double the repo on its own
 drumwave-standalone.html
 .build-cache/
+
+drumwave-standalone-light.html

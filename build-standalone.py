@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Fold the whole site into one self-contained HTML file.
 
-    python3 build-standalone.py
+    python3 build-standalone.py            full quality, about 7MB
+    python3 build-standalone.py --light    re-encoded, about a third the size
 
 Reads index.html and writes drumwave-standalone.html with every asset inlined:
 images and fonts as data URIs, GSAP inlined as script text. The result opens with
@@ -13,6 +14,12 @@ still opens, but offline it falls back to a system sans and the whole page looks
 wrong — the kind of failure you don't see until someone else opens it. So the
 faces are embedded, latin subsets only: that is 16 faces instead of 48, and about
 490KB instead of some 1.5MB. There is no non-latin copy on the page.
+
+--light re-encodes the photographs smaller and softer and writes
+drumwave-standalone-light.html instead. Lightweight HTML previewers (mail
+clients, chat file previews) tend to hang on 7MB of base64 in one document;
+the light build opens in them. Use the full build for anything anyone judges
+the photography on.
 
 Downloaded fonts are cached in .build-cache/ so a rebuild needs no network.
 """
@@ -27,6 +34,7 @@ import urllib.request
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(HERE, "index.html")
 OUT = os.path.join(HERE, "drumwave-standalone.html")
+OUT_LIGHT = os.path.join(HERE, "drumwave-standalone-light.html")
 CACHE = os.path.join(HERE, ".build-cache")
 
 # a real browser UA, or Google serves the older truetype format instead of woff2
@@ -64,7 +72,29 @@ def inline_fonts(css_url):
     return css, len(kept)
 
 
+def shrink(blob, ext, max_w=1400, quality=68):
+    """Re-encode one photograph smaller. Returns (bytes, mime) — the original
+    if Pillow is missing, or if squeezing it made it bigger."""
+    try:
+        import io
+        from PIL import Image
+    except ImportError:
+        return blob, None
+    try:
+        im = Image.open(io.BytesIO(blob))
+        if im.width > max_w:
+            im = im.resize((max_w, round(im.height * max_w / im.width)), Image.LANCZOS)
+        buf = io.BytesIO()
+        im.convert("RGB").save(buf, "JPEG", quality=quality, optimize=True, progressive=True)
+        out = buf.getvalue()
+        return (out, "image/jpeg") if len(out) < len(blob) else (blob, None)
+    except Exception:
+        return blob, None
+
+
 def main():
+    light = "--light" in sys.argv
+    dest = OUT_LIGHT if light else OUT
     if not os.path.exists(SRC):
         sys.exit("index.html not found next to this script")
     html = open(SRC).read()
@@ -99,8 +129,12 @@ def main():
             continue
         ext = os.path.splitext(rel)[1].lower()
         blob = open(full, "rb").read()
-        uri = "data:%s;base64,%s" % (MIME.get(ext, mimetypes.guess_type(rel)[0] or "application/octet-stream"),
-                                     base64.b64encode(blob).decode())
+        mime = MIME.get(ext, mimetypes.guess_type(rel)[0] or "application/octet-stream")
+        # SVGs are already tiny and vector; leave them alone
+        if light and ext in (".jpg", ".jpeg", ".png"):
+            blob, remime = shrink(blob, ext)
+            mime = remime or mime
+        uri = "data:%s;base64,%s" % (mime, base64.b64encode(blob).decode())
         html = html.replace(rel, uri)
         images += 1
 
@@ -108,10 +142,11 @@ def main():
     external = [r for r in re.findall(r'(?:src|href)="([^"]+)"', html)
                 if not r.startswith(("data:", "mailto:", "#"))]
 
-    open(OUT, "w").write(html)
-    mb = os.path.getsize(OUT) / 1048576
+    open(dest, "w").write(html)
+    mb = os.path.getsize(dest) / 1048576
     print("inlined %d font faces, %d scripts, %d images" % (faces, scripts, images))
-    print("index.html %.0f KB -> %s %.2f MB" % (before / 1024, os.path.basename(OUT), mb))
+    print("index.html %.0f KB -> %s %.2f MB%s" % (
+        before / 1024, os.path.basename(dest), mb, " (re-encoded)" if light else ""))
     if missing:
         print("MISSING (left as-is): " + ", ".join(missing))
     if external:
