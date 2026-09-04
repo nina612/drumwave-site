@@ -117,7 +117,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    the tap frame carries "Every tap. Every step." and the delivery frame finishes the
    sentence. Top-anchored at 558/1080, on the 6.3vw left and 1310/1920 measure the
    every-tap screen already uses, so the two read as the same voice. */
-#act1 .run-say{position:absolute;left:6.3vw;top:51.67vh;width:68.23vw;z-index:6;
+/* The tails stack on the same two lines under line 1, one shown at a time — the family
+   frame changes what the sentence finishes with (Figma 3406-5908) rather than adding a
+   second block beside it. 1407/1920 is that node's measure, the widest of the set. */
+#act1 .run-say .say-tail{display:block;position:absolute;left:0;top:100%;width:100%}
+#act1 .run-say{position:absolute;left:6.3vw;top:51.67vh;width:73.28vw;z-index:6;
   font-size:clamp(2.2rem,7.29vw,8.75rem);line-height:.9;letter-spacing:-.03em;color:#fff}
 #act1 .cue{position:absolute;right:5vw;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:14px;writing-mode:vertical-rl}
 #act1 .cue i{display:block;width:1px;height:64px;background:var(--line)}
@@ -137,8 +141,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    carries the bottom, so this only lifts the top back to that level */
 #act2 .frame[data-i="5"]::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,7,7,.26) 0%,rgba(7,7,7,0) 62%)}
 /* Figma 3157-67710: right edge 1801/1920, top 521/1080, 140px, -4.2 tracking */
-#act2 .t2{position:absolute;z-index:2;right:6.2vw;top:48.2vh;width:54.6vw;text-align:right;font-size:clamp(2.2rem,7.29vw,8.75rem);line-height:.99;letter-spacing:-.03em;color:#fff}
-#act2 .t2 .dim{color:rgba(255,255,255,.3)}
 /* Figma 3157-67631: 1148px circle centred at 1362,1125 on a 1920x1080 frame */
 /* placements measured off the three reference frames: Every high-left, Single
    right and lower, Day indented near the bottom — and set smaller than the hero */
@@ -477,8 +479,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 
   <!-- one marker per "every / single / day" frame: the cup, the card, the box -->
-  <!-- sept-3: both on their own nodes' coordinates — 1367,519 and 1113,383 on the
-       1920x1080 frames, which is the group's top-left, dot included. -->
+  <!-- sept-3: the tap and delivery tags are on their own nodes' coordinates —
+       1367,519 and 1113,383 on the 1920x1080 frames, which is the group's top-left,
+       dot included. The run and coffee tags came with screenshots rather than nodes,
+       so their placement is read off those and is good to about a per cent. -->
+  <div class="marker" id="markerRun" style="left:58.1%;top:26.8%"><i class="pulse"></i><span class="tag">7:45 MORNING RUN</span></div>
+  <div class="marker" id="markerCoffee" style="left:39.4%;top:35.9%"><i class="pulse"></i><span class="tag">9:05 COFFEE</span></div>
   <div class="marker" id="markerTap" style="left:71.20%;top:48.06%"><i class="pulse"></i><span class="tag">10:23 BUYS A GIFT</span></div>
   <div class="marker" id="markerPackage" style="left:57.97%;top:35.46%"><i class="pulse"></i><span class="tag">11:08 RECEIVES PACKAGE</span></div>
 
@@ -490,8 +496,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
        it on the delivery frame, so the sentence is whole before act 2 begins. -->
   <div class="run-say display" id="runSay">
     <span class="ln"><span>Every tap. Every step.</span></span>
-    <span class="ln"><span>Every choice creates</span></span>
-    <span class="ln"><span>value, instantly.</span></span>
+    <span class="say-tail" id="sayTailA">
+      <span class="ln"><span>Every choice creates</span></span>
+      <span class="ln"><span>value, instantly.</span></span>
+    </span>
+    <span class="say-tail" id="sayTailB">
+      <span class="ln"><span>Own and save your data.</span></span>
+      <span class="ln"><span>Grow its value.</span></span>
+    </span>
   </div>
   <div class="cue mono"><span>Scroll</span><i></i></div>
   <!-- act 2 rides inside act 1 so the sequence plays straight through -->
@@ -511,11 +523,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <div class="marker" id="markerCharge" style="left:47.86%;top:46.39%"><i class="pulse"></i><span class="tag">5:36 VEHICLE CHARGING</span></div>
   <div class="marker" id="markerGrocery" style="left:67.76%;top:28.06%"><i class="pulse"></i><span class="tag">5:15 GROCERIES</span></div>
 
-  <div class="t2 display">
-    <span class="ln"><span class="q-lead">The question is:</span></span>
-    <span class="ln"><span class="dim">What happens to</span></span>
-    <span class="ln"><span class="dim">its value?</span></span>
-  </div>
   </div>
 </section>
 
@@ -863,12 +870,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // on one file rather than a second copy of the page to keep in step — the two would
   // have drifted the first time either was edited.
   const SCROLL_RUN = /(?:^|[?&#])scroll(?:=|&|$)/.test(location.search + location.hash);
-  const RUN_PINS = 700;   // per cent of viewport height the scrubbed pin spans:
+  const RUN_PINS = 740;   // per cent of viewport height the scrubbed pin spans:
                           // ~2 timeline units a screen, which is the rate the
                           // authored beats read at (a 1.5 beat gets ~600px).
-                          // sept-3's run is longer than index.html's — the new copy
-                          // and the tags on shopping and charging add ~3 units — so
-                          // this is 700 where that file's is 550, to hold the rate.
+                          // sept-3's run is longer than index.html's — the new copy and
+                          // the tags on shopping, charging, running and coffee add ~4
+                          // units — so this is 740 where that file's is 550, to hold
+                          // the rate rather than run the whole thing faster.
 
   const autoPlay = {
     onEnter: self => self.animation.play(),
@@ -915,8 +923,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // The zoom-out beat: the photo eases out of a slight push over one second, then
   // holds. Only three screens take it — the two hero frames and the baby frame; the
   // rest arrive at rest and simply cut.
-  const arrive = (tl, sel, at, first, dur) =>
-    tl.fromTo(sel+' img', {scale:1.08},
+  const arrive = (tl, sel, at, first, dur, from) =>
+    tl.fromTo(sel+' img', {scale:from || 1.08},
       {scale:1, duration:dur || XIMG, ease:'power2.out', immediateRender: !!first}, at);
   const tl1 = gsap.timeline({
     defaults:{ease:'none'},
@@ -937,11 +945,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // they are. It is deliberately NOT allowed to outlive its frame to buy itself
   // reading time — that put two and three tags on screen together.
   const TAG_IN = .3, TAG_OUT = .25;
-  // SEPT-3 CLOCK. The dev note asks the three photos after the hero to cut with no
-  // zoom or fades and to run slightly faster, so QUICK drops from .3 to .22. The
-  // delivery frame is the exception: it has two lines of copy to bring in, so it gets
-  // its own length rather than a quick cut's.
-  const HERO = 1.5, QUICK = .22, TAP = 1.5, PKG = 1.6;
+  // SEPT-3 CLOCK. The dev note asks the photos after the hero to cut with no zoom or
+  // fades and to run slightly faster, which took QUICK to .22. The run and coffee
+  // frames then had to carry a tag each, and .22 is not enough to read one: a tag
+  // needs about .55 just to arrive and leave, with nothing left over to sit still.
+  // Unreadable tags on short frames is the exact thing that got them deleted the first
+  // time, so these two go to .7 — still the quickest frames in the run, so the pacing
+  // the note wanted varied is still varied, just not at a length that flashes.
+  // The tap and delivery frames answer to their own note: the tap holds longer and
+  // eases out of a slight push, the delivery cuts straight on with no zoom and nothing
+  // held after its copy lands. So they pull in opposite directions — 2.2 against 1.0 —
+  // which is the pacing contrast the note is asking for.
+  const HERO = 1.5, QUICK = .7, TAP = 2.2, PKG = 1.0;
   const T_RUN = HERO, T_COFFEE = T_RUN + QUICK, T_TAP = T_COFFEE + QUICK, T_PKG = T_TAP + TAP;
   const ACT1_END = T_PKG + PKG;   // act 2 begins here, whatever the tag tails do
 
@@ -971,13 +986,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // as a blink, so the fast frames run untagged and the montage stays clean.
   // Each row carries its own tag limit rather than ACT1_END, so the tap's tag is gone
   // before the delivery's arrives — one on screen at a time, as before.
-  const act1Frames = [[1, T_RUN, QUICK, null, null], [9, T_COFFEE, QUICK, null, null],
+  const act1Frames = [[1, T_RUN, QUICK, '#markerRun', () => T_COFFEE],
+                      [9, T_COFFEE, QUICK, '#markerCoffee', () => T_TAP],
                       [10, T_TAP, TAP, '#markerTap', () => T_PKG],
                       [11, T_PKG, PKG, '#markerPackage', () => ACT1_END]];
   act1Frames.forEach(([fi, at, span, tag, limit], k) => {
     tl1.set(f1(k ? act1Frames[k-1][0] : 0), {opacity:0}, at);
     tl1.set(f1(fi), {opacity:1}, at);
-    // no arrive() on the tap frame here: "no zoom or fades" for this stretch
+    // The tap frame is the one that pushes: 1.04 rather than the 1.08 the hero and the
+    // baby take, eased across its whole stay, so it reads as a drift rather than a
+    // zoom. Every other frame in the run is a flat cut.
+    if(fi === 10) arrive(tl1, f1(fi), at, false, TAP, 1.04);
     if(tag) tagOn(tl1, tag, at, span, limit());
   });
 
@@ -988,8 +1007,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   tl1.set(saySpans, {yPercent:112}, 0);
   tl1.fromTo(saySpans[0], {yPercent:112},
     {yPercent:0, duration:.5, ease:'power3.out', immediateRender:false}, T_TAP + .12);
+  // tighter than the .5/.18 the first line took: the delivery frame cuts straight on
+  // now, so the two lines have to be up before it goes rather than dwelling after.
   tl1.fromTo(saySpans.slice(1), {yPercent:112},
-    {yPercent:0, duration:.5, stagger:.18, ease:'power3.out', immediateRender:false}, T_PKG + .1);
+    {yPercent:0, duration:.38, stagger:.12, ease:'power3.out', immediateRender:false}, T_PKG + .06);
 
   /* ---------- ACT 2 ---------- */
   // No trigger of its own: it is appended to act 1 below so the hero runs
@@ -1017,12 +1038,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   const SHOP = 1.2, CHARGE = 1.2;
   const BABY = HOLD0 + SHOP + CHARGE, FAMILY = BABY + BABY_HOLD;
   const END = FAMILY + DISSOLVE + FINAL_HOLD;
-  const T2_IN = BABY + .45;
-  // The words aren't tied to the frame they arrived on: they stay up across the
-  // shopping and charging frames, then all three leave together as the baby frame
-  // cuts in. They are clear of the screen before the question begins to show, so the
-  // two never share it — which is what the baby text's own delay below is for.
-  const WORDS_OUT = BABY, WORDS_OUT_DUR = .3;
   const ESD2 = [[0, 0], [4, HOLD0], [5, HOLD0 + SHOP]];
   // Every swap is an instant cut but the last one: the family photo eases over the
   // baby across DISSOLVE, with the baby held at full opacity underneath and dropped
@@ -1056,7 +1071,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // sits still across every dissolve.
   tl2.to('#act2 .line-veil', {opacity:.18, duration:.6}, .9);
   // "The question is:" still rides up out of its mask, crisply.
-  tl2.to('#act2 .t2 .q-lead', {yPercent:0, duration:.55, ease:'power3.out'}, T2_IN);
   // The question itself doesn't ride up with it — it is dropped into place inside its
   // mask and ghosts in on opacity alone. It comes up just after the baby photo lands
   // and runs through the dissolve, so it is still gaining as the screens change and
@@ -1064,16 +1078,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // ease-in it used to carry held it near-invisible for over a second, which is what
   // made the fade feel slow — at a constant rate it is legible far sooner and still
   // takes the same beat to land.
-  const T2_Q_IN = BABY + .35;  // after WORDS_OUT + WORDS_OUT_DUR, never during
-  const t2Q = $$('#act2 .t2 .dim');
-  tl2.set(t2Q, {yPercent:0}, T2_Q_IN);
-  tl2.fromTo(t2Q, {opacity:0},
-    {opacity:1, duration:(FAMILY + BF) - T2_Q_IN, ease:'none', immediateRender:false}, T2_Q_IN);
   // The photo swap here is the same cut as the others; what sets the beat apart is
   // the text riding on it — an eased lead-out and a brighten. Both are kept short so
   // they land with the cut rather than running long past it.
-  tl2.to('#act2 .t2 .q-lead', {opacity:0, duration:BF, ease:BF_E}, FAMILY);
-  tl2.to('#act2 .t2 .dim', {color:'#ffffff', duration:BF, ease:BF_E}, FAMILY);
   // one marker per frame, in and out with the frame it sits on
   // a word per frame — headphones, shopping bag, charger — in the same corners
   // they used to occupy, each arriving with its own image
@@ -1093,9 +1100,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   tagOn(tl2, '#markerStream', .15, HOLD0 - .5, HOLD0);
   tagOn(tl2, '#markerShop', HOLD0 + .1, SHOP - .2, HOLD0 + SHOP);
   tagOn(tl2, '#markerCharge', HOLD0 + SHOP + .1, CHARGE - .2, BABY);
-  // and the sentence leaves as the baby frame cuts in, where the question takes over
-  tl2.to($$('#act1 .run-say .ln > span'),
-    {yPercent:-112, duration:WORDS_OUT_DUR, stagger:.05, ease:'power2.in'}, WORDS_OUT);
+  // The sentence used to leave here and hand over to "What happens to its value?".
+  // The family node has no such line — it finishes the same sentence differently — so
+  // nothing leaves. Line 1 stands the whole way and only the tail changes, swapped as
+  // the family photo settles rather than on the baby frame, so the change lands with
+  // the picture it belongs to.
+  const tailA = $$('#sayTailA .ln > span'), tailB = $$('#sayTailB .ln > span');
+  tl2.set(tailB, {yPercent:112}, 0);
+  tl2.to(tailA, {yPercent:-112, duration:.34, stagger:.06, ease:'power2.in'}, FAMILY + BF);
+  tl2.fromTo(tailB, {yPercent:112},
+    {yPercent:0, duration:.46, stagger:.12, ease:'power3.out', immediateRender:false}, FAMILY + BF + .22);
   // the grocery tag belongs to the baby frame, which carries no word
   tagOn(tl2, '#markerGrocery', BABY, BABY_HOLD, FAMILY);
   // The run just stops here, on the family photo with the question in white, and holds
@@ -1537,8 +1551,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     gsap.set('#act1 .hero-h .ln > span', {yPercent:0});
     gsap.set($$('#act1 .run-say .ln > span'), {yPercent:112});
     gsap.set('#act1 .cue', {opacity:1});
-    gsap.set('#act2 .t2 .q-lead', {opacity:1});
-    gsap.set('#act2 .t2 .dim', {clearProps:'color,opacity'});
   };
   const hideTags = resetRun;
   ScrollTrigger.addEventListener('refresh', hideTags);
