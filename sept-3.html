@@ -1610,6 +1610,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     if(y > stops[stops.length - 1] + 4) return null;   // past the screens entirely
     let i = 0;
     for(let k = 0; k < stops.length; k++) if(y >= stops[k] - 4) i = k;
+    // The timeline is the one screen where the scroll IS the interaction, so its stop is
+    // a place to arrive at and not one to be thrown out of. Standing on it, a gesture
+    // down carries on into the age scrub (there is no stop past it) — but a gesture up
+    // used to fling the reader 1600px back to the question screen, which is easy to do
+    // by accident when you are at age 0 and only meant to nudge. Upward from the last
+    // stop releases instead: they scroll back out of the timeline the same way they
+    // scrubbed through it.
+    if(dir < 0 && i === stops.length - 1) return null;
     const n = i + dir;
     return (n < 0 || n >= stops.length) ? null : stops[n];
   };
