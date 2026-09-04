@@ -9,3 +9,4 @@ Home/
 # the self-contained build: 7MB of inlined assets, rebuilt on demand rather
 # than tracked — it would more than double the repo on its own
 drumwave-standalone.html
+.build-cache/

@@ -1,7 +1,7 @@
 # dWallet — "Your life creates data"
 
 Scroll-driven brand experience. Six pinned acts, an interactive life timeline,
-and 18 wide-angle editorial photographs.
+and 32 wide-angle editorial photographs.
 
 The dWallet mark lives at `assets/img/logo.png` and is used in the nav and in
 the closing identity block. Swap that one file to change both.
@@ -10,42 +10,58 @@ the closing identity block. Swap that one file to change both.
 
 Double-click `index.html`. That's it — no build step, no server.
 
-The page ships with GSAP bundled locally in `assets/js/`, so animation works
-with no internet. Two things still reach out to the network:
-
-- **Fonts** (Titillium Web + Open Sans, from Google Fonts) — falls back to
-  system sans if offline.
-- **Photographs** — see below.
+The page ships with GSAP and every photograph locally, so it works with no
+internet. One thing still reaches out to the network: **fonts** (Titillium Web
++ Open Sans, from Google Fonts), which fall back to system sans if offline. To
+close that last gap, see *Packaging it as one file* below.
 
 ## The photographs
 
-`assets/img/` holds only the logo on first download. The `<img>` tags point at
-local files but fall back automatically to the hosted originals, so the page
-looks correct straight away as long as you're online.
+All 32 images are committed under `assets/img/`, so the folder is
+self-contained — no fetch step, and it works with no internet.
 
-To make the folder fully self-contained, run once:
-
-```bash
-bash download-images.sh
-```
-
-That pulls all 18 files listed in `assets/img/manifest.json` into
-`assets/img/`. After it finishes, the whole folder works with no internet at
-all and can be zipped and passed around freely.
-
-**Before this goes anywhere public**, host the images yourself. The current
-URLs point at a generation CDN and should not be treated as permanent.
+`download-images.sh` and `assets/img/manifest.json` are left over from when the
+photos were pulled from a generation CDN at load time. Nothing needs them now.
 
 ## What's inside
 
 ```
 index.html                    the whole experience, one file
-assets/img/logo.png           the dWallet mark
-assets/img/manifest.json      filename → source URL for all 18 photos
+assets/img/                   the mark, and all 32 photographs
 assets/js/gsap.min.js         animation engine (v3.12.5)
 assets/js/ScrollTrigger.min.js
-download-images.sh            fetches the photos into assets/img/
+build-standalone.py           folds the whole site into one shareable file
+download-images.sh            vestigial — the photos are committed now
 ```
+
+## Packaging it as one file
+
+To hand the site to someone who can't be given a link — an email attachment, a
+stick, a laptop with no wifi:
+
+```bash
+python3 build-standalone.py
+```
+
+That writes `drumwave-standalone.html`, about 7MB, with every asset folded in
+as a data URI: all 32 images, both GSAP scripts, and the fonts. Nothing is
+fetched when it opens. The script refuses to write a file that still has an
+external `src` or `href`, so a silently-broken build isn't possible.
+
+It is not committed — at 7MB it is larger than the rest of the repo put
+together, and it is a build product. Rebuild it after editing `index.html`;
+it takes under a second.
+
+Two things to know:
+
+- **Only the latin font subsets are embedded** (16 faces, not 48). That keeps
+  the fonts near 490KB instead of some 1.5MB. Non-latin text would fall back —
+  there is none on the page today.
+- **The whole 7MB loads before the first paint**, where the hosted site streams
+  4.8MB progressively as you scroll. Prefer the link when there is one.
+
+Downloaded fonts are cached in `.build-cache/` (gitignored), so rebuilds work
+offline.
 
 ## The timeline
 
