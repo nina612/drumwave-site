@@ -1302,17 +1302,35 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     };
     return [0, at('time'), at('ages')].filter(v => v != null);
   };
-  let gliding = false;
+  // A single physical gesture fires dozens of wheel events over a second or more of
+  // momentum, so taking each one would chain several snaps and run the reader to the
+  // bottom. One snap per gesture: the latch holds from the moment a snap is taken
+  // until the wheel has been quiet long enough for the gesture to be over AND the
+  // glide has landed.
+  let gliding = false, latched = false, quiet = null, glideGuard = null;
+  const holdLatch = () => {
+    clearTimeout(quiet);
+    quiet = setTimeout(() => {
+      if(gliding) holdLatch();     // the glide is still running; keep waiting
+      else latched = false;
+    }, 320);
+  };
   const glide = to => {
     if(RM){ window.scrollTo(0, to); return; }
     const from = window.scrollY, t0 = performance.now(), ms = 650;
     gliding = true;
+    // requestAnimationFrame is throttled to nothing in a hidden or backgrounded tab.
+    // Without this the tween would never finish, `gliding` would stay raised and every
+    // later gesture would be swallowed for good — so land the scroll and drop the flag
+    // on a timer regardless of whether a frame ever arrives.
+    clearTimeout(glideGuard);
+    glideGuard = setTimeout(() => { window.scrollTo(0, to); gliding = false; }, ms + 140);
     const step = now => {
       const p = Math.min(1, (now - t0) / ms);
       const e = p < .5 ? 2*p*p : 1 - Math.pow(-2*p + 2, 2) / 2;   // power2.inOut
       window.scrollTo(0, Math.round(from + (to - from) * e));
       if(p < 1) requestAnimationFrame(step);
-      else gliding = false;
+      else { gliding = false; clearTimeout(glideGuard); }
     };
     requestAnimationFrame(step);
   };
@@ -1327,9 +1345,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     return (n < 0 || n >= stops.length) ? null : stops[n];
   };
   const takeGesture = dir => {
-    if(gliding) return true;
+    // already mid-gesture: swallow it rather than stacking another jump
+    if(gliding || latched){ holdLatch(); return true; }
     const to = stepTo(dir);
     if(to == null || to === window.scrollY) return false;
+    latched = true;
+    holdLatch();
     glide(to);
     return true;
   };
