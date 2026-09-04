@@ -1587,20 +1587,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // used to sit beside is gone, its sentence having moved into the run itself.
     const w = at('worth');
     if(w != null) out.push(w + 8);
-    // The timeline is snapped too, a stop per age it has a photograph for. It used to
-    // be one stop at its start and a free scrub after, which meant the one stretch of
-    // the page where a gesture did not land you anywhere in particular. Its own drag
-    // handle sets the scroll directly, so it keeps the continuous scrub — the wheel
-    // steps, the handle still slides.
+    // The timeline is one screen, so it gets one stop and one traversal — not a stop
+    // per age. It had ten for a moment, which meant coming to rest on every one of
+    // them: ten gestures to cross the picker, and it read as stopping over and over
+    // rather than moving. Landing on it is a gesture; crossing it is the next one, and
+    // the whole life scrubs past during that glide.
     const ag = st('ages');
     if(ag){
       const pin = ag.end - ag.start;
-      // the scrub only spans the age part of the pin; the tail belongs to the closing
-      // screen, whose progress is measured off the buffer that follows
-      const ageShare = ageBaseTotal / ageGrandTotal;
-      for(const a of AGE_DATA.map(d => d.age))
-        out.push(Math.round(ag.start + ((a - AGE_MIN) / (AGE_MAX - AGE_MIN)) * ageShare * pin));
-      // and the closing screen, once its crossfade is through
+      out.push(Math.round(ag.start));
+      // the far side: the closing screen, once its crossfade is through. The scrub
+      // spans the age part of the pin and the buffer after it carries this.
       out.push(Math.round(ag.start + ((ageBaseTotal + .9 * ageBufferPct) / ageGrandTotal) * pin));
     }
     return out.filter(v => v != null);
@@ -1625,7 +1622,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // are not equal: reaching the solution screen crosses the opening's pin release
     // as well as the reveal, where moving between its two framings is a single
     // viewport. Scale with the distance so they all travel at about the same speed.
-    const ms = Math.max(520, Math.min(1050, 380 + Math.abs(to - from) * 0.24));
+    // The cap used to be 1050ms, which was fine when the longest step was a screen or
+    // two. Crossing the picker is ~6200px in one gesture and a whole life of
+    // photographs scrubbing past, and a second flat was not enough to read it.
+    const ms = Math.max(520, Math.min(1900, 380 + Math.abs(to - from) * 0.24));
     gliding = true;
     // requestAnimationFrame is throttled to nothing in a hidden or backgrounded tab.
     // Without this the tween would never finish, `gliding` would stay raised and every
