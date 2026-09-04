@@ -862,11 +862,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // run carries a little weight and settles after the wheel stops rather than halting
   // on the frame. Reduced motion drops the smoothing, as it does there.
   const RUN_SCRUB = RM ? true : 0.9;
-  const RUN_PINS = 500;   // five screens. The reference's opening takes four, which put
-                          // the two quickest tags inside 148px of scroll — legible, but
-                          // a flick. A quarter more scroll buys them ~185px and leaves
-                          // the smoothing, which is what the handling actually comes
-                          // from, exactly as that file sets it.
+  const RUN_PINS = 600;   // six screens. The reference's opening takes four; this file's
+                          // run is longer and three of its frames longer again, so the
+                          // pin grows with them — otherwise the extra length would just
+                          // go by faster and undo the slowing down. Holds the ~3 units a
+                          // screen the 500 setting landed on. The 0.9 smoothing, which is
+                          // where the handling comes from, is that file's exactly.
 
   const autoPlay = {
     onEnter: self => self.animation.play(),
@@ -913,9 +914,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // The zoom-out beat: the photo eases out of a slight push over one second, then
   // holds. Only three screens take it — the two hero frames and the baby frame; the
   // rest arrive at rest and simply cut.
-  const arrive = (tl, sel, at, first, dur, from) =>
+  const arrive = (tl, sel, at, first, dur, from, ease) =>
     tl.fromTo(sel+' img', {scale:from || 1.08},
-      {scale:1, duration:dur || XIMG, ease:'power2.out', immediateRender: !!first}, at);
+      {scale:1, duration:dur || XIMG, ease:ease || 'power2.out', immediateRender: !!first}, at);
   const tl1 = gsap.timeline({
     defaults:{ease:'none'},
     scrollTrigger: SCROLL_RUN
@@ -946,7 +947,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // eases out of a slight push, the delivery cuts straight on with no zoom and nothing
   // held after its copy lands. So they pull in opposite directions — 2.2 against 1.0 —
   // which is the pacing contrast the note is asking for.
-  const HERO = 1.5, QUICK = .7, TAP = 2.2, PKG = 1.0;
+  const HERO = 1.5, QUICK = .7, TAP = 3.0, PKG = 1.0;
   const T_RUN = HERO, T_COFFEE = T_RUN + QUICK, T_TAP = T_COFFEE + QUICK, T_PKG = T_TAP + TAP;
   const ACT1_END = T_PKG + PKG;   // act 2 begins here, whatever the tag tails do
 
@@ -986,7 +987,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // The tap frame is the one that pushes: 1.04 rather than the 1.08 the hero and the
     // baby take, eased across its whole stay, so it reads as a drift rather than a
     // zoom. Every other frame in the run is a flat cut.
-    if(fi === 10) arrive(tl1, f1(fi), at, false, TAP, 1.04);
+    // power1.out rather than the power2.out the other pushes take: over a frame this
+    // long power2 spent 90 per cent of the drift in the first third and then sat still,
+    // which reads as a bump and then nothing rather than a slow zoom out.
+    if(fi === 10) arrive(tl1, f1(fi), at, false, TAP, 1.04, 'power1.out');
     if(tag) tagOn(tl1, tag, at, span, limit());
   });
 
@@ -1018,7 +1022,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // The words these frames used to carry are gone — the sentence from the tap frame
   // stands over all three instead — so their lengths answer to their tags now, not to
   // a word arriving on each. WORD_IN and RAPID went with the words.
-  const HOLD0 = 2.4;              // frame 0's whole time on screen
+  const HOLD0 = 3.4;              // frame 0's whole time on screen
   // The baby photo eases over into the family photo rather than cutting to it, and
   // the run then rests on the family photo before starting over — no fade to black,
   // no clearing the copy. FINAL_HOLD counts from when the family photo is fully
@@ -1027,7 +1031,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // there is no starting over, so five seconds of it becomes five seconds of scrolling
   // where nothing moves — a third of the whole run. The reader decides when to leave a
   // held frame, so it only needs enough to register as a hold at all.
-  const BABY_HOLD = 1.5, DISSOLVE = 1.5, FINAL_HOLD = SCROLL_RUN ? 1.0 : 5.0;
+  const BABY_HOLD = 2.6, DISSOLVE = 1.5, FINAL_HOLD = SCROLL_RUN ? 1.0 : 5.0;
   // sept-3: the design puts a tag on the shopping and charging frames, and .3s each is
   // a flash — a tag needs about .55 to arrive, sit and go. They get 1.2 apiece here.
   const SHOP = 1.2, CHARGE = 1.2;

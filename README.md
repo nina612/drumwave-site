@@ -89,7 +89,7 @@ anything anyone judges the photography on.
 index.html            the live site, run plays itself
 index.html?scroll     the live site, run follows the scroll
 sept-3.html           its own line of exploration — scroll-driven by default,
-                      pinned across five screens with a 0.9 scrub smoothing,
+                      pinned across six screens with a 0.9 scrub smoothing,
                       matching ~/Downloads/drumwave-site/index.html's opening
                       (?play puts it back on a clock)
 ```
