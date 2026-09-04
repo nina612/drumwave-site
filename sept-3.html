@@ -112,6 +112,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .pad{position:absolute;left:5vw;right:5vw}
 
 /* ACT 1 */
+/* sept-3, Figma 3406-5989: its own photograph for the baby frame, cropped the way that
+   node crops it. The source is 3:2, so cover fits it by width and leaves 200px of
+   vertical overflow in a 16:9 box; the node's y of -105 is 52.5% of that, not the 50%
+   cover would centre on. Five pixels, but it is the difference the node asks for. */
+#act2 .frame-baby img{object-position:50% 52.5%}
 #act1 .hero-h{position:absolute;left:5vw;bottom:4vh;max-width:92vw;color:#fff}
 /* SEPT-3 ONLY. Figma 3406-5930 and 3406-5968 give the run a second block of copy:
    the tap frame carries "Every tap. Every step." and the delivery frame finishes the
@@ -151,14 +156,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    140px on a 1214px measure, -4.2 tracking */
 /* its own section rather than a layer inside act 1, so it is opaque: the reader
    scrolls onto a finished screen and the copy arrives on it */
-#time{background:#101010}
 /* Figma 3350-13850 is where this screen starts: flat #101010 with one soft glow off
    the top-right corner. A #2731B6 disc of r571 at .32 under a 200 blur — drawn rather
    than shipped as SVG, since the source is a plain blurred circle. Its frame says
    left -457, but the node carries a rotate-180 + scale-y-100 pair, which is a
    horizontal mirror: the disc actually sits at 1235, centred at 94%/10.5% of the
    frame, which is where measuring the render's blueness puts it. */
-#time .time-glow{position:absolute;left:64.32vw;top:-42.41vh;width:59.48vw;aspect-ratio:1;border-radius:50%;background:#2731B6;opacity:.32;filter:blur(10.42vw);pointer-events:none}
 /* Figma 3361-82758: the question screen falls back to that same #101010, but the
    glow moves — smaller, and down to the lower left. Same mirror to undo: its frame
    says left 1254, which puts the disc at -173 once flipped, centred at 12.8%/70% of
@@ -166,12 +169,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #worth .time-glow-q{position:absolute;left:-9.01vw;top:31.30vh;width:43.70vw;aspect-ratio:1;border-radius:50%;background:#2731B6;opacity:0;filter:blur(10.42vw);pointer-events:none}
 /* Figma 3347-82746: the photograph then fades up over that — 1945x1459 from the
    frame's origin, under a 35% black wash. It starts at nothing; see PHOTO_IN. */
-#time .whatif{position:absolute;left:6.3vw;bottom:12.31vh;text-align:left;width:71.98vw;z-index:6;
-  font-size:clamp(2.2rem,7.29vw,8.75rem);line-height:.9;letter-spacing:-.03em;color:#fff;transform-origin:0 100%}
 /* Figma 3214-2823: same panel and same measure, copy top-anchored at 569/1080 */
 #worth .worth{position:absolute;left:6.3vw;bottom:12.31vh;text-align:left;width:57.92vw;z-index:6;
   font-size:clamp(2.2rem,7.29vw,8.75rem);line-height:.9;letter-spacing:-.03em;color:#fff}
-#worth .worth .dim{color:rgba(255,255,255,.4)}
 
 /* AGE SCENES (Age 0, Age 2, ...) */
 .age-scene .frames{position:absolute;inset:0}
@@ -309,7 +309,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    the disclosures frame carries the same pair at the same coordinates while being
    1127 tall against this one's 879, which says they hang off the top of a frame and
    do not scale with it. The file has them at opacity 0, so there is no level to copy;
-   .32 is what #time's opening glow runs at.
+   .32 is the level the site's other discs run at.
    The disclosures had these too for a moment and no longer do — that block reads
    better on the flat ground its own frame renders. */
 .frame-glow{position:absolute;width:77.86vw;height:72.56vw;border-radius:50%;filter:blur(12.84vw);opacity:.32;pointer-events:none;z-index:0}
@@ -422,7 +422,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   /* a tag has no width of its own — it fills whatever room its left offset leaves,
      so on a narrow screen one placed well left grows until it meets the edge */
   .marker .tag{max-width:52vw}
-  #time .whatif{left:5vw;bottom:9vh;width:90vw}
   #worth .worth{left:5vw;top:38vh;width:90vw}
   .age-scene .ctl{bottom:10vh}
   .solution-preview .sol-state{left:8vw;max-width:84vw}
@@ -511,7 +510,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <div class="frame" data-i="0"><img src="assets/img/website_hero_image6.jpg" alt="A man wearing red headphones and glasses looking down at his phone" loading="lazy"></div>
   <div class="frame" data-i="4"><img src="assets/img/website_hero_image7.jpg" alt="A woman crossing a city street carrying a dark shopping bag" loading="lazy"></div>
   <div class="frame" data-i="5"><img src="assets/img/website_hero_image9.jpg" alt="An electric vehicle charging cable plugged into a car" loading="lazy"></div>
-  <div class="frame" data-i="6"><img src="assets/img/website_hero_image8.jpg" alt="A mother and young child reaching for groceries in a supermarket aisle" loading="lazy"></div>
+  <div class="frame frame-baby" data-i="6"><img src="assets/img/sept3-baby-aisle.jpg" alt="A mother and young child reaching for groceries in a supermarket aisle" loading="lazy"></div>
     <div class="frame" data-i="7"><img src="assets/img/what-happens-to-its-value.jpg" alt="A mother reading a picture book with two children by string lights" loading="lazy"></div>
   <div class="photo-veil" aria-hidden="true"></div>
   <div class="line-veil"></div>
@@ -633,18 +632,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      anything wider. -->
 <section class="how-scene" id="howHost" aria-label="How a Data Savings Plan works"></section>
 
-<!-- EVERY TAP. EVERY STEP. — a screen of its own, reached by scrolling rather than
-     played out of the opening run, so it starts whenever the reader arrives at it and
-     plays again if they come back up to it. -->
-<section class="act" id="time" aria-label="Every tap, every step, every choice creates value">
-  <div class="time-glow" aria-hidden="true"></div>
-  <div class="whatif display">
-    <span class="ln"><span>Every tap. Every step.</span></span>
-    <span class="ln"><span>Every choice creates</span></span>
-    <span class="ln"><span>value, instantly.</span></span>
-  </div>
-</section>
-
 <!-- HOW MUCH IS YOUR DATA WORTH? — its own screen. It used to arrive on the tail of
      the every-tap timeline, on a clock: the sentence left and the question took its
      place whether or not anyone was still looking, and a reader who scrolled on early
@@ -653,7 +640,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 <section class="act" id="worth" aria-label="How much is your data worth">
   <div class="time-glow-q" aria-hidden="true"></div>
   <div class="worth display">
-    <span class="ln"><span class="dim">The question is:</span></span>
     <span class="ln"><span>How much is your</span></span>
     <span class="ln"><span>data worth?</span></span>
   </div>
@@ -1074,14 +1060,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // beat read as a fade through black. It now reaches its level during a hold and
   // sits still across every dissolve.
   tl2.to('#act2 .line-veil', {opacity:.18, duration:.6}, .9);
-  // "The question is:" still rides up out of its mask, crisply.
-  // The question itself doesn't ride up with it — it is dropped into place inside its
-  // mask and ghosts in on opacity alone. It comes up just after the baby photo lands
-  // and runs through the dissolve, so it is still gaining as the screens change and
-  // reaches opaque exactly as the family photo finishes arriving. Linear here too: the
-  // ease-in it used to carry held it near-invisible for over a second, which is what
-  // made the fade feel slow — at a constant rate it is legible far sooner and still
-  // takes the same beat to land.
   // The photo swap here is the same cut as the others; what sets the beat apart is
   // the text riding on it — an eased lead-out and a brighten. Both are kept short so
   // they land with the cut rather than running long past it.
@@ -1266,49 +1244,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 
 
-  /* ---------- EVERY TAP. EVERY STEP. ---------- */
-  // Its own screen, on its own trigger: it plays when the reader reaches it, pauses if
-  // they leave, and starts over from the top if they come back up onto it.
-  // The sentence lands and stays. It used to keep going on a clock — the sentence left
-  // and the question took its place a couple of seconds later, whether or not anyone
-  // was still there. The question is now a screen of its own below, so this one has
-  // nothing to hand over to and no reason to loop: it holds until the reader moves on.
-  const resetTime = () => {
-    gsap.set('#time .time-glow', {opacity:.32});
-    gsap.set($$('#time .ln > span'), {yPercent:112});
-  };
-  const tl4 = gsap.timeline({
-    defaults:{ease:'none'},
-    paused:true,
-    scrollTrigger:{
-      trigger:'#time', start:'top top', end:'+=100%', pin:true,
-      onEnter:      self => self.animation.play(),
-      onEnterBack:  () => restartTime(),
-      onLeave:      self => self.animation.pause(),
-      onLeaveBack:  self => { self.animation.invalidate().pause(0); resetTime(); }
-    }
-  });
-  function restartTime(){
-    tl4.invalidate().pause(0);
-    resetTime();
-    tl4.play();
-  }
-
-  // the copy falls in: each line drops from above its mask and lands with a short
-  // overshoot, one after the other, rather than rising the way the other lines do
-  const whatifLn = lines('#time .whatif');
-  tl4.fromTo(whatifLn[0], {yPercent:-118},
-    {yPercent:0, duration:.72, ease:'back.out(1.5)', immediateRender:false}, 0.1);
-  // A photograph used to fade up here over 1.75s and the rest of the sentence waited
-  // on it. The screen is one ground throughout now, so there is nothing to wait for —
-  // holding that long on a screen that no longer changes would read as a stall. The
-  // sentence carries on a beat after the first line settles instead.
-  const REST = 1.3;
-  // a wider stagger than the first line took, so the two lines arrive one after the
-  // other rather than together
-  tl4.fromTo(whatifLn.slice(1), {yPercent:-118},
-    {yPercent:0, duration:.72, stagger:.22, ease:'back.out(1.8)', immediateRender:false}, REST);
-
   /* ---------- HOW MUCH IS YOUR DATA WORTH? ---------- */
   // The reason this is a screen and not the tail of the one above: it asks the reader
   // something, so it should be on screen because they arrived at it, not because a
@@ -1345,7 +1280,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // These three were paced as scrub distances, so at 1x they would each run for
   // nine or ten seconds on their own. Speed them up to land around five, and
   // under reduced motion run them out instantly to their end state.
-  if(RM){ tl1.timeScale(100); tl4.timeScale(100); tl5.timeScale(100); }
+  if(RM){ tl1.timeScale(100); tl5.timeScale(100); }
   else tl1.timeScale(1.0);    // 24.2 units -> ~24s, close to the authored pace
 
   // The opening runs on its own clock, so when it ends the reader is still parked at
@@ -1562,7 +1497,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     gsap.set($$('#act1 > .frame[data-i="0"]'), {opacity:1});
     // The veil the run darkens the screen with is never tweened back down — it ends
     // at .94 — so a rewind would leave it holding that value over the hero and the
-    // screen would read as black. (#time keeps its own baseline; see resetTime.)
+    // screen would read as black.
     gsap.set('#act2 .line-veil', {opacity:0});
     // and the copy, back behind its masks, the hero's own lines being the one set
     // that starts already in view. Same two statements the run opens with.
@@ -1613,10 +1548,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // its first frame — which is what it did here before the plan screens moved up,
     // for as long as the snapping has existed. Eight pixels into a pin is the same
     // picture, because the pin is holding the section still anyway.
-    for(const id of ['time', 'worth']){
-      const v = at(id);
-      if(v != null) out.push(v + 8);
-    }
+    // Only the question screen plays on its own clock now — the every-tap screen it
+    // used to sit beside is gone, its sentence having moved into the run itself.
+    const w = at('worth');
+    if(w != null) out.push(w + 8);
     out.push(at('ages'));
     return out.filter(v => v != null);
   };
