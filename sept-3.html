@@ -113,6 +113,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 /* ACT 1 */
 #act1 .hero-h{position:absolute;left:5vw;bottom:4vh;max-width:92vw;color:#fff}
+/* SEPT-3 ONLY. Figma 3406-5930 and 3406-5968 give the run a second block of copy:
+   the tap frame carries "Every tap. Every step." and the delivery frame finishes the
+   sentence. Top-anchored at 558/1080, on the 6.3vw left and 1310/1920 measure the
+   every-tap screen already uses, so the two read as the same voice. */
+#act1 .run-say{position:absolute;left:6.3vw;top:51.67vh;width:68.23vw;z-index:6;
+  font-size:clamp(2.2rem,7.29vw,8.75rem);line-height:.9;letter-spacing:-.03em;color:#fff}
 #act1 .cue{position:absolute;right:5vw;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:14px;writing-mode:vertical-rl}
 #act1 .cue i{display:block;width:1px;height:64px;background:var(--line)}
 
@@ -134,14 +140,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #act2 .t2{position:absolute;z-index:2;right:6.2vw;top:48.2vh;width:54.6vw;text-align:right;font-size:clamp(2.2rem,7.29vw,8.75rem);line-height:.99;letter-spacing:-.03em;color:#fff}
 #act2 .t2 .dim{color:rgba(255,255,255,.3)}
 /* Figma 3157-67631: 1148px circle centred at 1362,1125 on a 1920x1080 frame */
-#act2 .esd{position:absolute;inset:0;pointer-events:none}
-#act2 .esd .w{position:absolute;color:var(--bone)}
 /* placements measured off the three reference frames: Every high-left, Single
    right and lower, Day indented near the bottom — and set smaller than the hero */
-#act2 .esd .w{font-size:clamp(2rem,6.25vw,7.5rem)}
-#act2 .esd .w:nth-child(1){left:5.5vw;top:22vh}
-#act2 .esd .w:nth-child(2){left:auto;right:8.8vw;top:66vh;text-align:right}
-#act2 .esd .w:nth-child(3){left:17vw;top:80vh}
 #act2 .line-veil{position:absolute;inset:0;background:var(--ink);opacity:0}
 
 /* ACT 3 */
@@ -420,8 +420,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   /* a tag has no width of its own — it fills whatever room its left offset leaves,
      so on a narrow screen one placed well left grows until it meets the edge */
   .marker .tag{max-width:52vw}
-  #act2 .esd .w:nth-child(2){top:60vh;right:6vw}
-  #act2 .esd .w:nth-child(3){left:10vw}
   #time .whatif{left:5vw;bottom:9vh;width:90vw}
   #worth .worth{left:5vw;top:38vh;width:90vw}
   .age-scene .ctl{bottom:10vh}
@@ -479,12 +477,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 
   <!-- one marker per "every / single / day" frame: the cup, the card, the box -->
-  <div class="marker" id="markerTap" style="left:calc(68% - 19.5px);top:calc(56% - 19.5px)"><i class="pulse"></i><span class="tag">10:23 BUYS A GIFT</span></div>
+  <!-- sept-3: both on their own nodes' coordinates — 1367,519 and 1113,383 on the
+       1920x1080 frames, which is the group's top-left, dot included. -->
+  <div class="marker" id="markerTap" style="left:71.20%;top:48.06%"><i class="pulse"></i><span class="tag">10:23 BUYS A GIFT</span></div>
+  <div class="marker" id="markerPackage" style="left:57.97%;top:35.46%"><i class="pulse"></i><span class="tag">11:08 RECEIVES PACKAGE</span></div>
 
   <h1 class="hero-h display xl">
     <span class="ln"><span>Your life</span></span>
     <span class="ln"><span>creates data.</span></span>
   </h1>
+  <!-- sept-3: the run's later copy. Line 1 lands on the tap frame, lines 2 and 3 join
+       it on the delivery frame, so the sentence is whole before act 2 begins. -->
+  <div class="run-say display" id="runSay">
+    <span class="ln"><span>Every tap. Every step.</span></span>
+    <span class="ln"><span>Every choice creates</span></span>
+    <span class="ln"><span>value, instantly.</span></span>
+  </div>
   <div class="cue mono"><span>Scroll</span><i></i></div>
   <!-- act 2 rides inside act 1 so the sequence plays straight through -->
   <div class="act-layer" id="act2">
@@ -496,15 +504,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <div class="photo-veil" aria-hidden="true"></div>
   <div class="line-veil"></div>
 
-  <!-- one marker per frame: the headphones, the shopping bag, the aisle, the charger -->
-  <div class="marker" id="markerStream" style="left:calc(63% - 19.5px);top:calc(38% - 19.5px)"><i class="pulse"></i><span class="tag">12:27 STREAMS MUSIC</span></div>
+  <!-- one marker per frame. sept-3 puts the first three on their own nodes'
+       coordinates — 1159,520 / 1073,501 / 919,501 on the 1920x1080 frames. -->
+  <div class="marker" id="markerStream" style="left:60.36%;top:48.15%"><i class="pulse"></i><span class="tag">12:27 STREAMS MUSIC</span></div>
+  <div class="marker" id="markerShop" style="left:55.89%;top:46.39%"><i class="pulse"></i><span class="tag">1:45 SHOPS IN THE CITY</span></div>
+  <div class="marker" id="markerCharge" style="left:47.86%;top:46.39%"><i class="pulse"></i><span class="tag">5:36 VEHICLE CHARGING</span></div>
   <div class="marker" id="markerGrocery" style="left:67.76%;top:28.06%"><i class="pulse"></i><span class="tag">5:15 GROCERIES</span></div>
 
-  <div class="esd display xl" aria-hidden="true">
-    <div class="w"><span class="ln"><span>Every.</span></span></div>
-    <div class="w"><span class="ln"><span>Single.</span></span></div>
-    <div class="w"><span class="ln"><span>Day.</span></span></div>
-  </div>
   <div class="t2 display">
     <span class="ln"><span class="q-lead">The question is:</span></span>
     <span class="ln"><span class="dim">What happens to</span></span>
@@ -857,9 +863,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // on one file rather than a second copy of the page to keep in step — the two would
   // have drifted the first time either was edited.
   const SCROLL_RUN = /(?:^|[?&#])scroll(?:=|&|$)/.test(location.search + location.hash);
-  const RUN_PINS = 550;   // per cent of viewport height the scrubbed pin spans:
+  const RUN_PINS = 700;   // per cent of viewport height the scrubbed pin spans:
                           // ~2 timeline units a screen, which is the rate the
-                          // authored beats read at (a 1.5 beat gets ~600px)
+                          // authored beats read at (a 1.5 beat gets ~600px).
+                          // sept-3's run is longer than index.html's — the new copy
+                          // and the tags on shopping and charging add ~3 units — so
+                          // this is 700 where that file's is 550, to hold the rate.
 
   const autoPlay = {
     onEnter: self => self.animation.play(),
@@ -928,9 +937,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // they are. It is deliberately NOT allowed to outlive its frame to buy itself
   // reading time — that put two and three tags on screen together.
   const TAG_IN = .3, TAG_OUT = .25;
-  const HERO = 1.5, QUICK = .3, TAP = 1.5;
+  // SEPT-3 CLOCK. The dev note asks the three photos after the hero to cut with no
+  // zoom or fades and to run slightly faster, so QUICK drops from .3 to .22. The
+  // delivery frame is the exception: it has two lines of copy to bring in, so it gets
+  // its own length rather than a quick cut's.
+  const HERO = 1.5, QUICK = .22, TAP = 1.5, PKG = 1.6;
   const T_RUN = HERO, T_COFFEE = T_RUN + QUICK, T_TAP = T_COFFEE + QUICK, T_PKG = T_TAP + TAP;
-  const ACT1_END = T_PKG + QUICK;   // act 2 begins here, whatever the tag tails do
+  const ACT1_END = T_PKG + PKG;   // act 2 begins here, whatever the tag tails do
 
   // A tag lives and dies inside its own frame, so a half-second frame gets a
   // half-second tag. fromTo with immediateRender off rather than a set plus a to: a
@@ -956,17 +969,27 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // Only the frames that hold carry a tag. On a 0.3s frame there is no room for one
   // to arrive, be read and leave without either overlapping its neighbour or reading
   // as a blink, so the fast frames run untagged and the montage stays clean.
-  const act1Frames = [[1, T_RUN, QUICK, null], [9, T_COFFEE, QUICK, null],
-                      [10, T_TAP, TAP, '#markerTap'], [11, T_PKG, QUICK, null]];
-  act1Frames.forEach(([fi, at, span, tag], k) => {
+  // Each row carries its own tag limit rather than ACT1_END, so the tap's tag is gone
+  // before the delivery's arrives — one on screen at a time, as before.
+  const act1Frames = [[1, T_RUN, QUICK, null, null], [9, T_COFFEE, QUICK, null, null],
+                      [10, T_TAP, TAP, '#markerTap', () => T_PKG],
+                      [11, T_PKG, PKG, '#markerPackage', () => ACT1_END]];
+  act1Frames.forEach(([fi, at, span, tag, limit], k) => {
     tl1.set(f1(k ? act1Frames[k-1][0] : 0), {opacity:0}, at);
     tl1.set(f1(fi), {opacity:1}, at);
-    if(fi === 10) arrive(tl1, f1(fi), at, false, TAP);
-    if(tag) tagOn(tl1, tag, at, span, ACT1_END);
+    // no arrive() on the tap frame here: "no zoom or fades" for this stretch
+    if(tag) tagOn(tl1, tag, at, span, limit());
   });
 
-  // "Your life creates data." stands over the whole run and clears on the last frame
-  tl1.to('#act1 .hero-h .ln > span', {yPercent:-112, duration:.3, stagger:.05}, T_PKG + .1);
+  // "Your life creates data." stands over the hero, the run and the coffee, and leaves
+  // as the tap frame cuts in — that frame carries the next line instead.
+  tl1.to('#act1 .hero-h .ln > span', {yPercent:-112, duration:.3, stagger:.05}, T_TAP);
+  const saySpans = $$('#act1 .run-say .ln > span');
+  tl1.set(saySpans, {yPercent:112}, 0);
+  tl1.fromTo(saySpans[0], {yPercent:112},
+    {yPercent:0, duration:.5, ease:'power3.out', immediateRender:false}, T_TAP + .12);
+  tl1.fromTo(saySpans.slice(1), {yPercent:112},
+    {yPercent:0, duration:.5, stagger:.18, ease:'power3.out', immediateRender:false}, T_PKG + .1);
 
   /* ---------- ACT 2 ---------- */
   // No trigger of its own: it is appended to act 1 below so the hero runs
@@ -976,14 +999,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // Every / Single / Day: one dwell for all three, so nothing sits longer than the
   // rest. Everything downstream is derived from WD rather than written out, so the
   // three screens can be sped up or slowed without re-timing the whole act.
-  // Frame 0 holds while all three words arrive one at a time, and only cuts away once
-  // the last of them has been up for a beat. The shopping and charging frames then
-  // flash past in quick succession, and the baby frame is where the act slows again.
-  const WORD_IN = .8;             // one word to the next
-  // the headphones frame holds only as long as the words need: the last of the three
-  // is up at .15 + 2*WORD_IN + WIN, and the frame cuts a beat after that
+  // The words these frames used to carry are gone — the sentence from the tap frame
+  // stands over all three instead — so their lengths answer to their tags now, not to
+  // a word arriving on each. WORD_IN and RAPID went with the words.
   const HOLD0 = 2.4;              // frame 0's whole time on screen
-  const RAPID = .3;               // shopping and charging
   // The baby photo eases over into the family photo rather than cutting to it, and
   // the run then rests on the family photo before starting over — no fade to black,
   // no clearing the copy. FINAL_HOLD counts from when the family photo is fully
@@ -993,7 +1012,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // where nothing moves — a third of the whole run. The reader decides when to leave a
   // held frame, so it only needs enough to register as a hold at all.
   const BABY_HOLD = 1.5, DISSOLVE = 1.5, FINAL_HOLD = SCROLL_RUN ? 1.0 : 5.0;
-  const BABY = HOLD0 + RAPID * 2, FAMILY = BABY + BABY_HOLD;
+  // sept-3: the design puts a tag on the shopping and charging frames, and .3s each is
+  // a flash — a tag needs about .55 to arrive, sit and go. They get 1.2 apiece here.
+  const SHOP = 1.2, CHARGE = 1.2;
+  const BABY = HOLD0 + SHOP + CHARGE, FAMILY = BABY + BABY_HOLD;
   const END = FAMILY + DISSOLVE + FINAL_HOLD;
   const T2_IN = BABY + .45;
   // The words aren't tied to the frame they arrived on: they stay up across the
@@ -1001,7 +1023,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // cuts in. They are clear of the screen before the question begins to show, so the
   // two never share it — which is what the baby text's own delay below is for.
   const WORDS_OUT = BABY, WORDS_OUT_DUR = .3;
-  const ESD2 = [[0, 0], [4, HOLD0], [5, HOLD0 + RAPID]];
+  const ESD2 = [[0, 0], [4, HOLD0], [5, HOLD0 + SHOP]];
   // Every swap is an instant cut but the last one: the family photo eases over the
   // baby across DISSOLVE, with the baby held at full opacity underneath and dropped
   // only once it is covered, so nothing dips through black on the way. Linear, which
@@ -1058,23 +1080,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // Word and tag are built from one list off a single start, and the tag now takes
   // the word's own duration and ease. Before, the tag ran .3 against the word's .5
   // and started .1 earlier, so it landed first and read as arriving ahead of the text.
-  const esdW2 = $$('#act2 .esd .w');
-  const WIN = .45;                // word/tag entrance
-  // Every. Single. Day. — one at a time, all three arriving on the headphones frame,
-  // which holds until the last of them is up rather than handing each word its own
-  // photo. They then outlast that frame; see WORDS_OUT for where they go.
-  esdW2.forEach((w, k) => {
-    tl2.fromTo(w.querySelector('.ln > span'), {yPercent:112},
-      {yPercent:0, duration:WIN, ease:TXT_E}, .15 + k * WORD_IN);
-  });
+  // "Every. Single. Day." used to arrive here, three words across these three frames.
+  // The designs replace it: the sentence that began on the tap frame simply stays up
+  // across all three, so there is nothing to bring in — only somewhere to take it out.
   // one tag per photo, in and out with the photo it sits on — the two rapid frames
   // get a shorter stay than frame 0, having only a second of photo to sit on
   // Same helper as act 1, so each tag lives on its own frame. These used to be
   // written as explicit in/out times, which went NEGATIVE once the frames were short
   // — the shopping tag's fade-out was scheduled 0.02s before its fade-in.
   // the headphones frame holds long enough for a tag; shopping and charging do not
-  tagOn(tl2, '#markerStream', .15, HOLD0 - .5, WORDS_OUT + WORDS_OUT_DUR);
-  tl2.to(lines('#act2 .esd'), {yPercent:-112, duration:WORDS_OUT_DUR, ease:'power2.in'}, WORDS_OUT);
+  // One tag per photo, each capped by the next one's arrival so only ever one is up.
+  tagOn(tl2, '#markerStream', .15, HOLD0 - .5, HOLD0);
+  tagOn(tl2, '#markerShop', HOLD0 + .1, SHOP - .2, HOLD0 + SHOP);
+  tagOn(tl2, '#markerCharge', HOLD0 + SHOP + .1, CHARGE - .2, BABY);
+  // and the sentence leaves as the baby frame cuts in, where the question takes over
+  tl2.to($$('#act1 .run-say .ln > span'),
+    {yPercent:-112, duration:WORDS_OUT_DUR, stagger:.05, ease:'power2.in'}, WORDS_OUT);
   // the grocery tag belongs to the baby frame, which carries no word
   tagOn(tl2, '#markerGrocery', BABY, BABY_HOLD, FAMILY);
   // The run just stops here, on the family photo with the question in white, and holds
@@ -1514,6 +1535,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // that starts already in view. Same two statements the run opens with.
     gsap.set($$('.ln > span'), {yPercent:112});
     gsap.set('#act1 .hero-h .ln > span', {yPercent:0});
+    gsap.set($$('#act1 .run-say .ln > span'), {yPercent:112});
     gsap.set('#act1 .cue', {opacity:1});
     gsap.set('#act2 .t2 .q-lead', {opacity:1});
     gsap.set('#act2 .t2 .dim', {clearProps:'color,opacity'});
