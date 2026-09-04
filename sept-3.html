@@ -855,13 +855,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // where the run plays itself unless ?scroll asks otherwise. ?play gets the clock back
   // on this file if it is ever wanted for comparison.
   const SCROLL_RUN = !/(?:^|[?&#])play(?:=|&|$)/.test(location.search + location.hash);
-  const RUN_PINS = 740;   // per cent of viewport height the scrubbed pin spans:
-                          // ~2 timeline units a screen, which is the rate the
-                          // authored beats read at (a 1.5 beat gets ~600px).
-                          // sept-3's run is longer than index.html's — the new copy and
-                          // the tags on shopping, charging, running and coffee add ~4
-                          // units — so this is 740 where that file's is 550, to hold
-                          // the rate rather than run the whole thing faster.
+  // The run's feel is taken from ~/Downloads/drumwave-site/index.html, which pins its
+  // opening across four screens and scrubs it with a 0.9 smoothing rather than locking
+  // it to the scroll. The smoothing is the part that changes how it handles: the
+  // playhead eases toward the scroll position instead of tracking it exactly, so the
+  // run carries a little weight and settles after the wheel stops rather than halting
+  // on the frame. Reduced motion drops the smoothing, as it does there.
+  const RUN_SCRUB = RM ? true : 0.9;
+  const RUN_PINS = 400;   // four screens, the same as that file's opening
 
   const autoPlay = {
     onEnter: self => self.animation.play(),
@@ -914,7 +915,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   const tl1 = gsap.timeline({
     defaults:{ease:'none'},
     scrollTrigger: SCROLL_RUN
-      ? { trigger:'#act1', start:'top top', end:'+=' + RUN_PINS + '%', pin:true, scrub:true }
+      ? { trigger:'#act1', start:'top top', end:'+=' + RUN_PINS + '%', pin:true, scrub:RUN_SCRUB }
       : { trigger:'#act1', start:'top top', end:'+=100%', pin:true, ...autoPlay }
   });
   const f1 = i => `#act1 .frame[data-i="${i}"]`;
