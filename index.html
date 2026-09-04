@@ -794,14 +794,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // ACT 1'S CLOCK, straight off the timing notes: a second on the opening image,
   // half a second each on the running and coffee frames, a full second on the tap
   // frame where the pacing slows, then half a second on the delivery frame.
-  // A TAG'S OWN CLOCK. TAG_MIN is what it needs to arrive, rest long enough to be
-  // read, and leave. A 0.3s frame is shorter than that, so a tag may outlive its own
-  // cut and carry on over the next photo — these are a day's timestamps accumulating,
-  // not captions bolted to one image. But never past the copy it belongs with: every
-  // call passes a hard limit, and the tag is cut to fit inside it. Without one the
-  // delivery tag ran half a second into act 2, hanging over the next act's photo.
-  const TAG_IN = .3, TAG_REST = .25, TAG_OUT = .25;
-  const TAG_MIN = TAG_IN + TAG_REST + TAG_OUT;   // .8
+  // A TAG'S OWN CLOCK. One tag on screen at a time, always: a tag lives inside its
+  // own frame and is gone before the next one arrives. TAG_IN and TAG_OUT are the
+  // entrance and exit it would like, scaled down when the frame is shorter than
+  // they are. It is deliberately NOT allowed to outlive its frame to buy itself
+  // reading time — that put two and three tags on screen together.
+  const TAG_IN = .3, TAG_OUT = .25;
   const HERO = 1.5, QUICK = .3, TAP = 1.5;
   const T_RUN = HERO, T_COFFEE = T_RUN + QUICK, T_TAP = T_COFFEE + QUICK, T_PKG = T_TAP + TAP;
   const ACT1_END = T_PKG + QUICK;   // act 2 begins here, whatever the tag tails do
@@ -811,8 +809,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // zero-duration set reverts to its pre-set value when the timeline sits before it,
   // which left every tag painted on screen until the first one fired.
   const tagOn = (tl, sel, at, span, limit) => {
-    const room = limit == null ? Infinity : Math.max(span, limit - at);
-    const life = Math.min(Math.max(span, TAG_MIN), room);
+    // never past `limit` — the next tag's arrival, or the end of the copy it sits with
+    const life = limit == null ? span : Math.min(span, Math.max(0, limit - at));
     const inD = Math.min(TAG_IN, life * .4), outD = Math.min(TAG_OUT, life * .35);
     tl.fromTo(sel + ' i', {scale:0},
       {scale:1, duration:Math.min(.22, inD * .75), ease:'back.out(2)', immediateRender:false}, at);
