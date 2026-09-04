@@ -88,7 +88,8 @@ anything anyone judges the photography on.
 ```
 index.html            the live site, run plays itself
 index.html?scroll     the live site, run follows the scroll
-sept-3.html           a frozen copy of 3 September, both modes
+sept-3.html           its own line of exploration — scroll-driven by default
+                      (?play puts it back on a clock)
 ```
 
 `sept-3.html` is a byte-identical snapshot taken so it can be shown alongside

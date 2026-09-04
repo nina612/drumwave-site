@@ -864,12 +864,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // Driven by explicit callbacks rather than toggleActions: act 1 starts at
   // scroll 0, where the trigger's start lands on the boundary and toggleActions
   // keeps re-firing its reset, which pins the playhead at 0 and nothing plays.
-  // THE OPENING'S DRIVER. By default the run plays on its own clock when the reader
-  // arrives. With ?scroll (or #scroll) in the URL it is scrubbed instead: its 24 units
-  // map onto RUN_PINS viewports of scroll and the reader moves it themselves. One flag
-  // on one file rather than a second copy of the page to keep in step — the two would
-  // have drifted the first time either was edited.
-  const SCROLL_RUN = /(?:^|[?&#])scroll(?:=|&|$)/.test(location.search + location.hash);
+  // THE OPENING'S DRIVER.
+  // sept-3 moves from the scroll by default — the opposite way round from index.html,
+  // where the run plays itself unless ?scroll asks otherwise. ?play gets the clock back
+  // on this file if it is ever wanted for comparison.
+  const SCROLL_RUN = !/(?:^|[?&#])play(?:=|&|$)/.test(location.search + location.hash);
   const RUN_PINS = 740;   // per cent of viewport height the scrubbed pin spans:
                           // ~2 timeline units a screen, which is the rate the
                           // authored beats read at (a 1.5 beat gets ~600px).
@@ -1003,13 +1002,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // "Your life creates data." stands over the hero, the run and the coffee, and leaves
   // as the tap frame cuts in — that frame carries the next line instead.
   tl1.to('#act1 .hero-h .ln > span', {yPercent:-112, duration:.3, stagger:.05}, T_TAP);
+  // Every span in the block, so all of them start behind their masks — including the
+  // family tail, which sits in here too and would otherwise be up from the first frame.
   const saySpans = $$('#act1 .run-say .ln > span');
   tl1.set(saySpans, {yPercent:112}, 0);
-  tl1.fromTo(saySpans[0], {yPercent:112},
+  // and the two that the delivery frame brings in, named rather than sliced: this was
+  // saySpans.slice(1), which took the family tail with them once it was added.
+  const sayLine1 = $$('#runSay > .ln > span'), sayTailA = $$('#sayTailA .ln > span');
+  tl1.fromTo(sayLine1, {yPercent:112},
     {yPercent:0, duration:.5, ease:'power3.out', immediateRender:false}, T_TAP + .12);
   // tighter than the .5/.18 the first line took: the delivery frame cuts straight on
   // now, so the two lines have to be up before it goes rather than dwelling after.
-  tl1.fromTo(saySpans.slice(1), {yPercent:112},
+  tl1.fromTo(sayTailA, {yPercent:112},
     {yPercent:0, duration:.38, stagger:.12, ease:'power3.out', immediateRender:false}, T_PKG + .06);
 
   /* ---------- ACT 2 ---------- */
@@ -1105,9 +1109,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // nothing leaves. Line 1 stands the whole way and only the tail changes, swapped as
   // the family photo settles rather than on the baby frame, so the change lands with
   // the picture it belongs to.
-  const tailA = $$('#sayTailA .ln > span'), tailB = $$('#sayTailB .ln > span');
-  tl2.set(tailB, {yPercent:112}, 0);
-  tl2.to(tailA, {yPercent:-112, duration:.34, stagger:.06, ease:'power2.in'}, FAMILY + BF);
+  // Line 1 is visible on the tap and the delivery frames and NOT after them: every node
+   // from the headphones on sets "Every tap. Every step." to rgba(255,255,255,0) rather
+  // than deleting it, so it keeps its line and the copy below it does not ride up.
+  // Reading the layer NAMES off get_metadata is what got this wrong the first time —
+  // Figma names a text layer from its content once and never again, so all six read as
+  // the whole sentence while only two of them show it.
+  tl2.to(sayLine1, {opacity:0, duration:.35, ease:'power1.inOut'}, 0);
+
+  const tailB = $$('#sayTailB .ln > span');
+  tl2.to(sayTailA, {yPercent:-112, duration:.34, stagger:.06, ease:'power2.in'}, FAMILY + BF);
   tl2.fromTo(tailB, {yPercent:112},
     {yPercent:0, duration:.46, stagger:.12, ease:'power3.out', immediateRender:false}, FAMILY + BF + .22);
   // the grocery tag belongs to the baby frame, which carries no word
@@ -1550,6 +1561,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     gsap.set($$('.ln > span'), {yPercent:112});
     gsap.set('#act1 .hero-h .ln > span', {yPercent:0});
     gsap.set($$('#act1 .run-say .ln > span'), {yPercent:112});
+    gsap.set($$('#runSay > .ln > span'), {opacity:1});
     gsap.set('#act1 .cue', {opacity:1});
   };
   const hideTags = resetRun;
