@@ -851,6 +851,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // Driven by explicit callbacks rather than toggleActions: act 1 starts at
   // scroll 0, where the trigger's start lands on the boundary and toggleActions
   // keeps re-firing its reset, which pins the playhead at 0 and nothing plays.
+  // THE OPENING'S DRIVER. By default the run plays on its own clock when the reader
+  // arrives. With ?scroll (or #scroll) in the URL it is scrubbed instead: its 24 units
+  // map onto RUN_PINS viewports of scroll and the reader moves it themselves. One flag
+  // on one file rather than a second copy of the page to keep in step — the two would
+  // have drifted the first time either was edited.
+  const SCROLL_RUN = /(?:^|[?&#])scroll(?:=|&|$)/.test(location.search + location.hash);
+  const RUN_PINS = 550;   // per cent of viewport height the scrubbed pin spans:
+                          // ~2 timeline units a screen, which is the rate the
+                          // authored beats read at (a 1.5 beat gets ~600px)
+
   const autoPlay = {
     onEnter: self => self.animation.play(),
     // Coming back up onto the opening gives it back from the top, rather than
@@ -901,7 +911,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       {scale:1, duration:dur || XIMG, ease:'power2.out', immediateRender: !!first}, at);
   const tl1 = gsap.timeline({
     defaults:{ease:'none'},
-    scrollTrigger:{ trigger:'#act1', start:'top top', end:'+=100%', pin:true, ...autoPlay }
+    scrollTrigger: SCROLL_RUN
+      ? { trigger:'#act1', start:'top top', end:'+=' + RUN_PINS + '%', pin:true, scrub:true }
+      : { trigger:'#act1', start:'top top', end:'+=100%', pin:true, ...autoPlay }
   });
   const f1 = i => `#act1 .frame[data-i="${i}"]`;
   // the timeline itself owns the tags' hidden start state at t=0, so however the
@@ -976,7 +988,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // the run then rests on the family photo before starting over — no fade to black,
   // no clearing the copy. FINAL_HOLD counts from when the family photo is fully
   // there, so it is a real five seconds of stillness, not five including the change.
-  const BABY_HOLD = 1.5, DISSOLVE = 1.5, FINAL_HOLD = 5.0;
+  // FINAL_HOLD is the family photo's time on screen before the run starts over. Scrubbed
+  // there is no starting over, so five seconds of it becomes five seconds of scrolling
+  // where nothing moves — a third of the whole run. The reader decides when to leave a
+  // held frame, so it only needs enough to register as a hold at all.
+  const BABY_HOLD = 1.5, DISSOLVE = 1.5, FINAL_HOLD = SCROLL_RUN ? 1.0 : 5.0;
   const BABY = HOLD0 + RAPID * 2, FAMILY = BABY + BABY_HOLD;
   const END = FAMILY + DISSOLVE + FINAL_HOLD;
   const T2_IN = BABY + .45;
@@ -1304,7 +1320,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     resetRun();
     tl1.play();
   }
-  loopWhileHere(tl1, restartRun);
+  if(!SCROLL_RUN) loopWhileHere(tl1, restartRun);
 
   /* ---------- ACT 4 : AGE TRACK ---------- */
   const AGE_DATA = [
@@ -1517,7 +1533,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   const screenStops = () => {
     const st = id => ScrollTrigger.getAll().find(x => x.trigger && x.trigger.id === id);
     const at = id => { const t = st(id); return t ? Math.round(t.start) : null; };
-    const out = [0];
+    // Scrubbed, the opening IS the scroll — a stop at the top would carry the reader
+    // straight past the whole run in one gesture. So it contributes no stop, and
+    // everything above the plan screen scrolls freely.
+    const out = SCROLL_RUN ? [] : [0];
     // The plan screen carries three framings on one pin, so it contributes three
     // stops rather than one — a quarter of the way in, where the reveal has landed on
     // "Introducing the Data Savings Plan", a half, where it has become "Open an
@@ -1587,7 +1606,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // which stop are we sitting on, and where does `dir` take us?
   const stepTo = dir => {
     const stops = screenStops();
+    if(!stops.length) return null;
     const y = window.scrollY;
+    if(y < stops[0] - 4) return null;                  // above them: the scrub owns it
     if(y > stops[stops.length - 1] + 4) return null;   // past the screens entirely
     let i = 0;
     for(let k = 0; k < stops.length; k++) if(y >= stops[k] - 4) i = k;
@@ -1631,7 +1652,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // and rewinding to 0 re-renders the real start state before the run begins
     tl1.invalidate().pause(0);
     hideTags();
-    tl1.play();          // the landing screen is already in view, so nothing enters it
+    // scrubbed, the scroll position owns the playhead: hand it over rather than
+    // starting a clock that would then fight it
+    if(SCROLL_RUN) ScrollTrigger.update();
+    else tl1.play();     // the landing screen is already in view, so nothing enters it
   });
 })();
 </script>

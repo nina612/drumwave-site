@@ -83,6 +83,34 @@ That writes `drumwave-standalone-light.html` at about 3.7MB — photos capped at
 1400px and JPEG quality 68. Fine for a quick look; use the full build for
 anything anyone judges the photography on.
 
+## Two openings, one file
+
+The opening run plays on its own clock when the reader arrives. Add `?scroll` to
+the URL and it is scrubbed instead — the reader moves it themselves, one screen of
+scroll to about two seconds of the run:
+
+```
+index.html            the run plays itself
+index.html?scroll     the run follows the scroll
+```
+
+`#scroll` works too, which is what the offline single file needs (a `file://` URL
+keeps the hash). Changing only the hash on a page that is already open does not
+reload it, so the switch needs a fresh load either way.
+
+It is one file rather than two copies on purpose: a duplicate would have drifted
+from this one the first time either was edited. Two things differ under the flag,
+and nothing else does:
+
+- **The pin is 5.5 screens instead of one**, and the timeline is scrubbed across
+  it rather than played.
+- **The final hold drops from 5s to 1s.** It exists so the run does not restart
+  the instant it ends; scrubbed there is no restart, and five seconds of held
+  frame becomes five seconds of scrolling where nothing moves.
+
+Snapping lets go of the opening in this mode — otherwise one gesture from the top
+would carry the reader past the whole run. It picks up again at the plan screen.
+
 ## The timeline
 
 Ages 18 → 70 with an illustrative value curve:
