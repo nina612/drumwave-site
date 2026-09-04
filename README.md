@@ -83,6 +83,24 @@ That writes `drumwave-standalone-light.html` at about 3.7MB — photos capped at
 1400px and JPEG quality 68. Fine for a quick look; use the full build for
 anything anyone judges the photography on.
 
+## Three versions
+
+```
+index.html            the live site, run plays itself
+index.html?scroll     the live site, run follows the scroll
+sept-3.html           a frozen copy of 3 September, both modes
+```
+
+`sept-3.html` is a byte-identical snapshot taken so it can be shown alongside
+whatever the live page becomes. Editing `index.html` does not touch it — that is
+the whole point of it being a file rather than another flag.
+
+One way that isolation can still leak: the snapshot points at the same
+`assets/` folder. Removing an image that only the snapshot still uses would break
+it silently, so `build-standalone.py` checks every other HTML file's asset
+references on each run and exits non-zero if any are missing. If you do need to
+drop such an asset, build the snapshot into a self-contained file first.
+
 ## Two openings, one file
 
 The opening run plays on its own clock when the reader arrives. Add `?scroll` to

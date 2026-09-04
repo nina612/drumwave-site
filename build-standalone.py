@@ -25,6 +25,7 @@ Downloaded fonts are cached in .build-cache/ so a rebuild needs no network.
 """
 
 import base64
+import glob
 import mimetypes
 import os
 import re
@@ -153,6 +154,24 @@ def main():
         print("STILL EXTERNAL: " + ", ".join(sorted(set(external))))
         sys.exit("not self-contained — fix the above and rebuild")
     print("self-contained: no external src or href remain")
+
+    # Frozen snapshots (sept-3.html and any like it) point at this same asset folder,
+    # so deleting an image that only a snapshot still uses would break it silently —
+    # and quietly is exactly how that would reach someone else's screen. Say it here.
+    stale = 0
+    for other in sorted(glob.glob(os.path.join(HERE, "*.html"))):
+        name = os.path.basename(other)
+        if name == "index.html" or "standalone" in name:
+            continue
+        txt = open(other).read()
+        gone = sorted(r for r in set(re.findall(
+            r"assets/[a-z]+/[A-Za-z0-9_./'\- ]+?\.(?:png|jpg|jpeg|svg|gif|webp|json|js)", txt))
+            if not os.path.exists(os.path.join(HERE, r)))
+        if gone:
+            stale += 1
+            print("WARNING  %s references %d missing asset(s): %s" % (name, len(gone), ", ".join(gone)))
+    if stale:
+        sys.exit("a snapshot is broken — restore the asset, or inline that snapshot before removing it")
 
 
 if __name__ == "__main__":
