@@ -164,9 +164,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #time .time-glow-q{position:absolute;left:-9.01vw;top:31.30vh;width:43.70vw;aspect-ratio:1;border-radius:50%;background:#2731B6;opacity:0;filter:blur(10.42vw);pointer-events:none}
 /* Figma 3347-82746: the photograph then fades up over that — 1945x1459 from the
    frame's origin, under a 35% black wash. It starts at nothing; see PHOTO_IN. */
-#time .time-photo{position:absolute;left:0;top:0;width:101.30%;height:135.09%;opacity:0}
-#time .time-photo img{width:100%;height:100%;object-fit:cover}
-#time .time-photo::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.35)}
 #time .whatif{position:absolute;left:6.3vw;bottom:12.31vh;text-align:left;width:71.98vw;z-index:6;
   font-size:clamp(2.2rem,7.29vw,8.75rem);line-height:.9;letter-spacing:-.03em;color:#fff;transform-origin:0 100%}
 /* Figma 3214-2823: same panel and same measure, copy top-anchored at 569/1080 */
@@ -596,7 +593,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 <section class="act" id="time" aria-label="Every tap, every step, every choice creates value">
   <div class="time-glow" aria-hidden="true"></div>
   <div class="time-glow-q" aria-hidden="true"></div>
-  <div class="time-photo" aria-hidden="true"><img src="assets/img/every-tap-hero.jpg" alt="" loading="lazy"></div>
   <div class="whatif display">
     <span class="ln"><span>Every tap. Every step.</span></span>
     <span class="ln"><span>Every choice creates</span></span>
@@ -1164,7 +1160,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // section is opaque, so there is nothing to fade the screen itself in from — the
   // photograph is simply already there when you arrive.
   const resetTime = () => {
-    gsap.set('#time .time-photo', {opacity:0});
     gsap.set('#time .time-glow', {opacity:.32});
     gsap.set('#time .time-glow-q', {opacity:0});
     gsap.set($$('#time .ln > span'), {yPercent:112});
@@ -1198,27 +1193,26 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   tl4.fromTo(whatifLn[0], {yPercent:-118},
     {yPercent:0, duration:.72, ease:'back.out(1.5)', immediateRender:false}, 0.1);
   tl4.to({}, {duration:1.0}, 0.9);
-  // the photograph fades up out of the black — one named length, so what follows can
-  // key off the moment it has arrived rather than guessing at it
-  const PHOTO_IN = .75, PHOTO_UP = 1.9 + PHOTO_IN;
-  tl4.fromTo('#time .time-photo', {opacity:0},
-    {opacity:1, duration:PHOTO_IN, ease:'power1.inOut', immediateRender:false}, 1.9);
-  // and the rest of the sentence trickles onto it once the photograph is up — a wider
-  // stagger than the first line took, so the two lines arrive one after the other
-  // rather than together
+  // A photograph used to fade up here over 1.75s and the rest of the sentence waited
+  // on it. The screen is one ground throughout now, so there is nothing to wait for —
+  // holding that long on a screen that no longer changes would read as a stall. The
+  // sentence carries on a beat after the first line settles instead.
+  const REST = 1.3;
+  // a wider stagger than the first line took, so the two lines arrive one after the
+  // other rather than together
   tl4.fromTo(whatifLn.slice(1), {yPercent:-118},
-    {yPercent:0, duration:.72, stagger:.22, ease:'back.out(1.8)', immediateRender:false}, PHOTO_UP);
-  tl4.to({}, {duration:1.4}, PHOTO_UP + .9);
+    {yPercent:0, duration:.72, stagger:.22, ease:'back.out(1.8)', immediateRender:false}, REST);
+  tl4.to({}, {duration:1.4}, REST + .9);
   // THE HANDOVER. The sentence keeps falling on the way out and the question falls
   // into the same panel behind it, overlapping so the screen never sits empty. Both
   // halves are quicker and the overlap tighter than they were: 1.25s down to 0.9s.
-  const HAND = PHOTO_UP + 2.3;   // where the sentence starts to leave
+  const HAND = REST + 2.3;   // where the sentence starts to leave
   const HAND_LAP = .15;          // how soon the question follows it in
-  // The screen falls back to the ground it opened on as the question arrives: the
-  // photograph goes, the opening glow with it, and the question's own glow comes up
-  // in its place — a different disc, lower and smaller.
+  // The ground moves as the question arrives: the opening glow goes and the question's
+  // own comes up in its place — a different disc, lower and smaller. Both are the same
+  // #2731B6 over the same near-black, so the screen stays purple throughout; only
+  // where the light sits changes.
   const BACK = .75;
-  tl4.to('#time .time-photo', {opacity:0, duration:BACK, ease:'power1.inOut'}, HAND);
   tl4.to('#time .time-glow', {opacity:0, duration:BACK, ease:'power1.inOut'}, HAND);
   tl4.fromTo('#time .time-glow-q', {opacity:0},
     {opacity:.32, duration:BACK, ease:'power1.inOut', immediateRender:false}, HAND);
