@@ -211,9 +211,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .solution-preview .sol-headline{font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2.2rem,6.25vw,7.5rem);line-height:.99;letter-spacing:-.03em;color:#E3E3E3}
 .solution-preview .sol-blue{color:#278EFF}
 .solution-preview .sol-body{margin-top:1.93vw;max-width:none;font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.95rem,1.04vw,1.25rem);line-height:1.5;color:#fff;opacity:0}
-.solution-preview .sol-cta{position:absolute;left:5.75vw;top:69.8vh;z-index:2;pointer-events:auto;display:inline-flex;align-items:center;padding:12px 24px;border-radius:100px;background:#fff;color:#090908;font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(.85rem,.94vw,1.125rem);line-height:1;opacity:0;transition:background .25s}
+.solution-preview .sol-cta{position:absolute;left:5.75vw;top:75.5vh;z-index:2;pointer-events:auto;display:inline-flex;align-items:center;padding:12px 24px;border-radius:100px;background:#fff;color:#090908;font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(.85rem,.94vw,1.125rem);line-height:1;opacity:0;transition:background .25s}
 .solution-preview .sol-cta:hover{background:#E3E3E3}
-.solution-preview .sol-link{position:absolute;left:5.75vw;top:78.3vh;transform:translateY(-50%);z-index:2;pointer-events:auto;font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(.85rem,.94vw,1.125rem);line-height:1;color:#278EFF;opacity:0}
 /* THE DSP CARD — Figma 3260-117245, measured off the 1920x1080 frame.
    Built the way the design builds it: a photo bled past the clip, two blurred
    colour casts over it, and the branding set on top — not one flat export, which
@@ -394,7 +393,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .solution-preview #solStateA{transform:none;width:auto;max-width:84vw}
   .solution-preview .sol-body{max-width:84vw;margin-top:1.4em}
   .solution-preview .sol-cta{left:8vw;top:auto;bottom:22vh}
-  .solution-preview .sol-link{left:8vw;top:auto;bottom:17vh;transform:none}
   .solution-preview .sol-card{right:auto;left:8vw;top:auto;bottom:30vh;width:84vw}
   /* the vw paddings and gaps are a few pixels at this width, so set them in their own terms */
   .closing{padding-top:0}
@@ -505,7 +503,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     </div>
 
     <a class="sol-cta" href="#">Open a Data Savings Account</a>
-    <a class="sol-link" href="#">View offer details &gt;</a>
 
     <div class="sol-card">
       <div class="sol-card-glow" aria-hidden="true"><img src="assets/img/dsp-card-glow.svg" alt=""></div>
@@ -1066,7 +1063,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const h = solHowFit.getBoundingClientRect().height;
     if(h > room && h > 0) solHowFit.style.transform = 'scale(' + (room / h).toFixed(4) + ')';
   };
-  ScrollTrigger.addEventListener('refresh', fitSolHow);
+  // The second framing's button sat at a fixed 69.8vh, the way the design's frame
+  // places it. But the headline above it is sized in vw while the button was placed in
+  // vh, so the space between them swung with the window — 38px at 714 tall, 135px at
+  // 900. Anchor it under the headline instead, which is what that space is measured
+  // from. The CSS keeps a static top as the pre-script fallback.
+  const solCta = $('#solutionPreview .sol-cta'), solStateB = $('#solStateB');
+  const SOL_CTA_GAP = 3.4;   // vw — about 65px at 1920, the gap the designs use
+  const placeSolCta = () => {
+    if(!solCta || !solStateB) return;
+    solCta.style.top = '';
+    // on a phone the card sits between the two and the button is laid out from the
+    // bottom of the screen, so there is no headline gap to hold
+    if(window.matchMedia('(max-width:760px)').matches) return;
+    const top = solStateB.offsetTop + solStateB.offsetHeight + innerWidth * SOL_CTA_GAP / 100;
+    solCta.style.top = Math.round(top) + 'px';
+  };
+  placeSolCta();
+  ScrollTrigger.addEventListener('refresh', () => { fitSolHow(); placeSolCta(); });
 
   const buildSolTl = withCards => {
     const tl = gsap.timeline({defaults:{ease:'none', immediateRender:false}});
@@ -1091,7 +1105,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     tl.fromTo('#solutionPreview .sol-card', {y:0}, {y:cardRise, duration:.6, ease:'power2.inOut'}, 1.04);
     tl.fromTo(solB, {yPercent:112}, {yPercent:0, duration:.34, stagger:.1, ease:'power3.out'}, 1.24);
     tl.fromTo('#solutionPreview .sol-cta', {opacity:0, y:12}, {opacity:1, y:0, duration:.26, ease:'power2.out'}, 1.56);
-    tl.fromTo('#solutionPreview .sol-link', {opacity:0}, {opacity:1, duration:.22, ease:'power2.out'}, 1.7);
 
     // 3 — how does a Data Savings Plan work. The card and the copy that framed it clear
     // out, and the four cards come up in their place. This is the beat that used to be a
@@ -1099,7 +1112,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     if(withCards){
       tl.fromTo(solB, {yPercent:0}, {yPercent:-112, duration:.3, stagger:.06}, 2.0);
       tl.fromTo('#solutionPreview .sol-cta', {opacity:1, y:0}, {opacity:0, y:-10, duration:.26}, 2.0);
-      tl.fromTo('#solutionPreview .sol-link', {opacity:1}, {opacity:0, duration:.22}, 2.0);
       tl.fromTo('#solutionPreview .sol-card', {opacity:1}, {opacity:0, duration:.4, ease:'power1.inOut'}, 2.06);
       tl.fromTo('#solHow', {opacity:0}, {opacity:1, duration:.46, ease:'power1.inOut'}, 2.3);
       tl.fromTo('#solHow .how-title', {y:26}, {y:0, duration:.4, ease:'power2.out'}, 2.34);
