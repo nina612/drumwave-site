@@ -795,12 +795,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // half a second each on the running and coffee frames, a full second on the tap
   // frame where the pacing slows, then half a second on the delivery frame.
   // A TAG'S OWN CLOCK. TAG_MIN is what it needs to arrive, rest long enough to be
-  // read, and leave. A 0.3s frame is shorter than that, so rather than crushing the
-  // tag into the frame the tag is allowed to outlive the cut and carry on over the
-  // next photo — which is what these are: a day's timestamps accumulating, not
-  // captions bolted to one image. The markers sit far enough apart that two being up
-  // together never collides, and act 1's markers paint above act 2, so the last one
-  // carries across the act boundary rather than being clipped.
+  // read, and leave. A 0.3s frame is shorter than that, so a tag may outlive its own
+  // cut and carry on over the next photo — these are a day's timestamps accumulating,
+  // not captions bolted to one image. But never past the copy it belongs with: every
+  // call passes a hard limit, and the tag is cut to fit inside it. Without one the
+  // delivery tag ran half a second into act 2, hanging over the next act's photo.
   const TAG_IN = .3, TAG_REST = .25, TAG_OUT = .25;
   const TAG_MIN = TAG_IN + TAG_REST + TAG_OUT;   // .8
   const HERO = 1.5, QUICK = .3, TAP = 1.5;
@@ -811,8 +810,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // half-second tag. fromTo with immediateRender off rather than a set plus a to: a
   // zero-duration set reverts to its pre-set value when the timeline sits before it,
   // which left every tag painted on screen until the first one fired.
-  const tagOn = (tl, sel, at, span) => {
-    const life = Math.max(span, TAG_MIN);
+  const tagOn = (tl, sel, at, span, limit) => {
+    const room = limit == null ? Infinity : Math.max(span, limit - at);
+    const life = Math.min(Math.max(span, TAG_MIN), room);
     const inD = Math.min(TAG_IN, life * .4), outD = Math.min(TAG_OUT, life * .35);
     tl.fromTo(sel + ' i', {scale:0},
       {scale:1, duration:Math.min(.22, inD * .75), ease:'back.out(2)', immediateRender:false}, at);
@@ -833,7 +833,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     tl1.set(f1(k ? act1Frames[k-1][0] : 0), {opacity:0}, at);
     tl1.set(f1(fi), {opacity:1}, at);
     if(fi === 10) arrive(tl1, f1(fi), at, false, TAP);
-    tagOn(tl1, act1Tags[k], at, span);
+    tagOn(tl1, act1Tags[k], at, span, ACT1_END);
   });
 
   // "Your life creates data." stands over the whole run and clears on the last frame
@@ -929,12 +929,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // Same helper as act 1, so each tag lives on its own frame. These used to be
   // written as explicit in/out times, which went NEGATIVE once the frames were short
   // — the shopping tag's fade-out was scheduled 0.02s before its fade-in.
-  tagOn(tl2, '#markerStream', .15, HOLD0 - .5);
-  tagOn(tl2, '#markerShop', HOLD0, RAPID);
-  tagOn(tl2, '#markerCharge', HOLD0 + RAPID, RAPID);
+  const WORDS_GONE = WORDS_OUT + WORDS_OUT_DUR;
+  tagOn(tl2, '#markerStream', .15, HOLD0 - .5, WORDS_GONE);
+  tagOn(tl2, '#markerShop', HOLD0, RAPID, WORDS_GONE);
+  tagOn(tl2, '#markerCharge', HOLD0 + RAPID, RAPID, WORDS_GONE);
   tl2.to(lines('#act2 .esd'), {yPercent:-112, duration:WORDS_OUT_DUR, ease:'power2.in'}, WORDS_OUT);
   // the grocery tag belongs to the baby frame, which carries no word
-  tagOn(tl2, '#markerGrocery', BABY, BABY_HOLD);
+  tagOn(tl2, '#markerGrocery', BABY, BABY_HOLD, FAMILY);
   // The run just stops here, on the family photo with the question in white, and holds
   // for FINAL_HOLD before starting over. Nothing is faded out and nothing is cleared:
   // the restart re-states every baseline itself (see resetRun), so the loop point is a
