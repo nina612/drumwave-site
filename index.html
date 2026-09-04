@@ -258,14 +258,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 /* ACT 7 : HOW IT WORKS + FAQ + FOOTER — one long scrolling screen */
 .how-scene{position:relative;background:var(--ink);overflow:hidden}
-.how-scene::before{content:"";position:absolute;left:-28vw;top:-42vw;width:86vw;height:86vw;border-radius:50%;background:radial-gradient(circle,rgba(39,142,255,.09),rgba(39,142,255,0) 62%);pointer-events:none}
-.how-scene::after{content:"";position:absolute;right:-30vw;top:-48vw;width:90vw;height:90vw;border-radius:50%;background:radial-gradient(circle,rgba(75,39,255,.09),rgba(75,39,255,0) 62%);pointer-events:none}
-/* the two corner glows light the top of the lit stretch, which is now the cards
-   screen — the FAQ that follows keeps the ground without a second pair */
-.how-scene.no-glow::before,.how-scene.no-glow::after{display:none}
-/* a screen of its own, so one gesture lands on it whole; min-height rather than
-   height so a short viewport lets the cards run on instead of clipping them */
-#howwork{min-height:100svh;padding-bottom:6.5vw}
+.sol-how::before{content:"";position:absolute;left:-28vw;top:-42vw;width:86vw;height:86vw;border-radius:50%;background:radial-gradient(circle,rgba(39,142,255,.09),rgba(39,142,255,0) 62%);pointer-events:none}
+.sol-how::after{content:"";position:absolute;right:-30vw;top:-48vw;width:90vw;height:90vw;border-radius:50%;background:radial-gradient(circle,rgba(75,39,255,.09),rgba(75,39,255,0) 62%);pointer-events:none}
+/* The cards framing of the plan screen. It sits over the other two, centred rather
+   than padded from the top, because it has a screen's height to live in and not a
+   section that can grow. .sol-how-fit takes the shrink-to-fit scale: everything
+   inside is vw-scaled, so on a wide, short window the block is taller than the
+   screen and would otherwise be clipped by the pin. */
+.sol-how{position:absolute;inset:0;z-index:3;display:flex;align-items:center;opacity:0;pointer-events:none}
+.sol-how-fit{width:100%;transform-origin:50% 50%}
+.sol-how .how-title{padding-top:0}
+.sol-how .how-steps{padding-bottom:0}
+/* the phone placement: an ordinary block in an ordinary section, no fit, no fade */
+#howHost:empty{display:none}
+#howHost{padding-bottom:9vw}
+#howHost .sol-how{position:static;display:block;opacity:1;padding-top:0}
+#howHost .sol-how-fit{transform:none}
+#howHost .sol-how .how-title{padding-top:8vw}
 /* the heading's left edge lines up with the step copy in the first column below */
 .how-title{position:relative;z-index:2;max-width:none;margin:0;padding:4.53vw 5vw 0 6.25vw;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,3.33vw,4rem);line-height:.93;letter-spacing:-.04em;color:#fff}
 
@@ -451,12 +460,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   </div>
 </section>
 
-<!-- INTRODUCING THE DATA SAVINGS PLAN — its own screen now, straight off the
-     opening run rather than the tail of the age timeline. Two framings on one pin:
-     the reveal scrubs in over the gesture that brings the reader here, holds, then
-     the next gesture dissolves "Introducing the" into "Open an account" and lifts
-     the card between them. The last third of the pin holds the second framing, so it
-     stays put while the section scrolls away rather than unwinding on the way out. -->
+<!-- THE DATA SAVINGS PLAN — one screen that changes its mind three times, straight
+     off the opening run. Nothing here is reached by scrolling into it: the reveal
+     scrubs in over the gesture that brings the reader to the screen, and each further
+     gesture crossfades the screen in place — "Introducing the" becomes "Open an
+     account" with the card lifting between them, and that becomes the four cards as
+     the card and its copy leave. The last quarter of the pin holds the cards, so they
+     stay put while the section scrolls away rather than unwinding on the way out. -->
 <section class="act" id="solution" aria-label="Introducing the Data Savings Plan">
   <div class="solution-preview" id="solutionPreview">
     <div class="sol-glow sol-glow-l" aria-hidden="true"></div>
@@ -502,51 +512,61 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       </div>
     </div>
   </div>
-</section>
+  <!-- The third framing. It used to be a section of its own that you scrolled down
+       to; it arrives in place now, so the plan reads as one screen changing its mind
+       three times. Everything in it is vw-scaled and it no longer sits in a section
+       that can grow, so .sol-how-fit carries a shrink-to-fit scale — see fitSolHow. -->
+  <div class="sol-how" id="solHow">
+    <div class="sol-how-fit" id="solHowFit">
+      <h2 class="how-title">How does a Data Savings Plan work?</h2>
 
-<!-- HOW A DATA SAVINGS PLAN WORKS — the third beat of the plan, still on the
-     lit ground, before the page turns back to the reader's own data. -->
-<section class="how-scene" id="howwork" aria-label="How a Data Savings Plan works">
-  <h2 class="how-title">How does a Data Savings Plan work?</h2>
+      <div class="how-steps">
+        <article class="step" id="step1">
+          <div class="step-card"><img src="assets/img/how-card-1.jpg" alt="A woman stepping out of a rideshare car, with a card reading: You deposited data, Rideshare to 265 Horizon Rd, added to savings plan" loading="lazy"></div>
+          <div class="step-copy">
+            <p class="step-eyebrow">Own your data</p>
+            <h3 class="step-h">Sign up &amp; request your data</h3>
+            <p class="step-body">With dWallet, you can request your data from companies you interact with. From streaming to shopping, the data you generate will finally belong to you.</p>
+          </div>
+        </article>
 
-  <div class="how-steps">
-    <article class="step" id="step1">
-      <div class="step-card"><img src="assets/img/how-card-1.jpg" alt="A woman stepping out of a rideshare car, with a card reading: You deposited data, Rideshare to 265 Horizon Rd, added to savings plan" loading="lazy"></div>
-      <div class="step-copy">
-        <p class="step-eyebrow">Own your data</p>
-        <h3 class="step-h">Sign up &amp; request your data</h3>
-        <p class="step-body">With dWallet, you can request your data from companies you interact with. From streaming to shopping, the data you generate will finally belong to you.</p>
+        <article class="step" id="step2">
+          <div class="step-card"><img src="assets/img/how-card-2.jpg" alt="Toggles for travel and transportation, finance and investments, retail and food, and entertainment and gaming, each switched on" loading="lazy"></div>
+          <div class="step-copy">
+            <p class="step-eyebrow">Save your data</p>
+            <h3 class="step-h">Save &amp; manage it</h3>
+            <p class="step-body">Contribute your data to a Data Savings Plan and grow its value, much like money builds in a traditional bank account. You decide what data to add and what you're open to licensing.</p>
+          </div>
+        </article>
+
+        <article class="step" id="step3">
+          <div class="step-card"><img src="assets/img/how-card-3.jpg" alt="An offer card reading: license your streaming data and earn $, with a view offer button" loading="lazy"></div>
+          <div class="step-copy">
+            <p class="step-eyebrow">Participate in offers</p>
+            <h3 class="step-h">Earn from its value</h3>
+            <p class="step-body">You're always in control. When companies want to license your data, you decide which offers to accept. Once an offer is accepted, you'll get paid directly in your dWallet. Save it or cash out anytime.</p>
+          </div>
+        </article>
+
+        <article class="step" id="step4">
+          <div class="step-card"><img src="assets/img/how-card-4.jpg" alt="A woman smiling beside a QR code and a paying-from panel showing $50 available" loading="lazy"></div>
+          <div class="step-copy">
+            <p class="step-eyebrow">Pay with data <span class="step-note">(coming soon)</span></p>
+            <h3 class="step-h">Transact using its value</h3>
+            <p class="step-body">Soon you'll be able to make purchases using the balance from your Data Savings Plan. Using a QR code, dPay enables you to pay with the value of your data.</p>
+          </div>
+        </article>
       </div>
-    </article>
-
-    <article class="step" id="step2">
-      <div class="step-card"><img src="assets/img/how-card-2.jpg" alt="Toggles for travel and transportation, finance and investments, retail and food, and entertainment and gaming, each switched on" loading="lazy"></div>
-      <div class="step-copy">
-        <p class="step-eyebrow">Save your data</p>
-        <h3 class="step-h">Save &amp; manage it</h3>
-        <p class="step-body">Contribute your data to a Data Savings Plan and grow its value, much like money builds in a traditional bank account. You decide what data to add and what you're open to licensing.</p>
-      </div>
-    </article>
-
-    <article class="step" id="step3">
-      <div class="step-card"><img src="assets/img/how-card-3.jpg" alt="An offer card reading: license your streaming data and earn $, with a view offer button" loading="lazy"></div>
-      <div class="step-copy">
-        <p class="step-eyebrow">Participate in offers</p>
-        <h3 class="step-h">Earn from its value</h3>
-        <p class="step-body">You're always in control. When companies want to license your data, you decide which offers to accept. Once an offer is accepted, you'll get paid directly in your dWallet. Save it or cash out anytime.</p>
-      </div>
-    </article>
-
-    <article class="step" id="step4">
-      <div class="step-card"><img src="assets/img/how-card-4.jpg" alt="A woman smiling beside a QR code and a paying-from panel showing $50 available" loading="lazy"></div>
-      <div class="step-copy">
-        <p class="step-eyebrow">Pay with data <span class="step-note">(coming soon)</span></p>
-        <h3 class="step-h">Transact using its value</h3>
-        <p class="step-body">Soon you'll be able to make purchases using the balance from your Data Savings Plan. Using a QR code, dPay enables you to pay with the value of your data.</p>
-      </div>
-    </article>
+    </div>
   </div>
 </section>
+
+<!-- Where the four cards live on a phone. Four columns cannot be one legible screen
+     at 375px — stacked they are 2180px of content in an 812px window — so below the
+     breakpoint the cards move out of the plan screen and back into a section the
+     reader scrolls, which is how they read before. Empty, and display:none, on
+     anything wider. -->
+<section class="how-scene" id="howHost" aria-label="How a Data Savings Plan works"></section>
 
 <!-- EVERY TAP. EVERY STEP. — a screen of its own, reached by scrolling
      rather than played out of the opening run, so it starts whenever the reader
@@ -609,7 +629,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 </section>
 
 <!-- FAQ + FOOTER + DISCLOSURES — closes the page. -->
-<section class="how-scene no-glow" id="how" aria-label="Questions and disclosures">
+<section class="how-scene" id="how" aria-label="Questions and disclosures">
   <div class="faq">
     <div class="faq-head">
       <p class="faq-label">FAQS</p>
@@ -985,46 +1005,108 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // This used to play on the tail of the age timeline, dissolving the $31,800 screen
   // to black first. It now stands on its own, straight off the opening run, and it is
   // scrubbed rather than autoplayed: the reader's gesture IS the transition. The pin
-  // is three viewports and the timeline three units, one per viewport, so each screen
+  // is four viewports and the timeline four units, one per viewport, so each screen
   // stop sits on a plateau —
   //   0 -> 1   the reveal, ending held on "Introducing the Data Savings Plan"
   //   1 -> 2   the dissolve to "Open an account", the card lifting between them
-  //   2 -> 3   held, so the second framing stays put while the section scrolls
-  //            away instead of unwinding on the way out
+  //   2 -> 3   the card and its copy leave, the four cards come up in their place
+  //   3 -> 4   held, so the cards stay put while the section scrolls away instead
+  //            of unwinding on the way out
   // Every fromTo takes immediateRender:false so the timeline does not paint its
   // start values over the page the moment it is built.
   const cardRise = () => -window.innerHeight * 0.0333;
   const solA = lines('#solStateA .sol-headline'), solB = lines('#solStateB .sol-headline');
-  const solTl = gsap.timeline({defaults:{ease:'none', immediateRender:false}});
+  // header.nav is the bar; the bare <nav> inside it is only the Personal/Business links
+  const solHowEl = $('#solHow'), solHowFit = $('#solHowFit'),
+        solHost = $('#howHost'), solSec = $('#solution'), navEl = $('header.nav');
 
-  // 1 — introducing the Data Savings Plan. The two blue casts come up first, so the
-  // copy lands on a lit page rather than on flat black — .4 and .2, the levels the
-  // design gives them.
-  solTl.fromTo('#solutionPreview .sol-glow-l', {opacity:0}, {opacity:.4, duration:.5, ease:'power1.out'}, 0);
-  solTl.fromTo('#solutionPreview .sol-glow-r', {opacity:0}, {opacity:.2, duration:.5, ease:'power1.out'}, 0);
-  solTl.fromTo(solA, {yPercent:112}, {yPercent:0, duration:.34, stagger:.1, ease:'power3.out'}, .14);
-  solTl.fromTo('#solutionPreview .sol-card', {opacity:0, scale:1.04}, {opacity:1, scale:1, duration:.36, ease:'power2.out'}, .24);
-  solTl.fromTo('#solStateA .sol-body', {opacity:0, y:16}, {opacity:.7, y:0, duration:.26, ease:'power2.out'}, .52);
-  solTl.to({}, {duration:.22}, .78);
+  // Everything in the cards framing is sized in vw, and as a framing it has a pinned
+  // screen's height to fit rather than a section that grows to hold it. On a wide,
+  // short window the block is taller than the screen, so scale it down from the middle
+  // — never up, because at the design's proportions it sits at its natural size.
+  const fitSolHow = () => {
+    if(!solHowFit) return;
+    solHowFit.style.transform = 'none';
+    solHowEl.style.paddingTop = '';
+    if(solHowEl.parentElement !== solSec) return;   // flowing on a phone, nothing to fit
+    // Centre in the space the fixed nav leaves, not in the whole screen. At the
+    // design's proportions the block clears the nav by a hair; centring on the full
+    // height would slide the title up under it as soon as the window got shorter.
+    const pad = navEl ? Math.round(navEl.getBoundingClientRect().bottom) + 14 : 0;
+    solHowEl.style.paddingTop = pad + 'px';
+    const room = solSec.clientHeight - pad - 20;
+    const h = solHowFit.getBoundingClientRect().height;
+    if(h > room && h > 0) solHowFit.style.transform = 'scale(' + (room / h).toFixed(4) + ')';
+  };
+  ScrollTrigger.addEventListener('refresh', fitSolHow);
 
-  // 2 — open an account, the card easing up between the two framings. The blue casts
-  // belong to the introducing screen only; the open-an-account screen wants a clean
-  // corner, so they leave with the copy that brought them in.
-  solTl.fromTo(solA, {yPercent:0}, {yPercent:-112, duration:.3, stagger:.06}, 1.0);
-  solTl.fromTo('#solStateA .sol-body', {opacity:.7}, {opacity:0, duration:.24}, 1.0);
-  solTl.fromTo('#solutionPreview .sol-glow-l', {opacity:.4}, {opacity:0, duration:.34, ease:'power1.inOut'}, 1.0);
-  solTl.fromTo('#solutionPreview .sol-glow-r', {opacity:.2}, {opacity:0, duration:.34, ease:'power1.inOut'}, 1.0);
-  solTl.fromTo('#solutionPreview .sol-card', {y:0}, {y:cardRise, duration:.6, ease:'power2.inOut'}, 1.04);
-  solTl.fromTo(solB, {yPercent:112}, {yPercent:0, duration:.34, stagger:.1, ease:'power3.out'}, 1.24);
-  solTl.fromTo('#solutionPreview .sol-cta', {opacity:0, y:12}, {opacity:1, y:0, duration:.26, ease:'power2.out'}, 1.56);
-  solTl.fromTo('#solutionPreview .sol-link', {opacity:0}, {opacity:1, duration:.22, ease:'power2.out'}, 1.7);
+  const buildSolTl = withCards => {
+    const tl = gsap.timeline({defaults:{ease:'none', immediateRender:false}});
 
-  // 3 — the hold that carries the second framing out of view unchanged.
-  solTl.to({}, {duration:1.0}, 2.0);
+    // 1 — introducing the Data Savings Plan. The two blue casts come up first, so the
+    // copy lands on a lit page rather than on flat black — .4 and .2, the levels the
+    // design gives them.
+    tl.fromTo('#solutionPreview .sol-glow-l', {opacity:0}, {opacity:.4, duration:.5, ease:'power1.out'}, 0);
+    tl.fromTo('#solutionPreview .sol-glow-r', {opacity:0}, {opacity:.2, duration:.5, ease:'power1.out'}, 0);
+    tl.fromTo(solA, {yPercent:112}, {yPercent:0, duration:.34, stagger:.1, ease:'power3.out'}, .14);
+    tl.fromTo('#solutionPreview .sol-card', {opacity:0, scale:1.04}, {opacity:1, scale:1, duration:.36, ease:'power2.out'}, .24);
+    tl.fromTo('#solStateA .sol-body', {opacity:0, y:16}, {opacity:.7, y:0, duration:.26, ease:'power2.out'}, .52);
+    tl.to({}, {duration:.22}, .78);
 
-  const solST = ScrollTrigger.create({
-    trigger:'#solution', start:'top top', end:'+=300%', pin:true, scrub:true, animation:solTl
+    // 2 — open an account, the card easing up between the two framings. The blue casts
+    // belong to the introducing screen only; the open-an-account screen wants a clean
+    // corner, so they leave with the copy that brought them in.
+    tl.fromTo(solA, {yPercent:0}, {yPercent:-112, duration:.3, stagger:.06}, 1.0);
+    tl.fromTo('#solStateA .sol-body', {opacity:.7}, {opacity:0, duration:.24}, 1.0);
+    tl.fromTo('#solutionPreview .sol-glow-l', {opacity:.4}, {opacity:0, duration:.34, ease:'power1.inOut'}, 1.0);
+    tl.fromTo('#solutionPreview .sol-glow-r', {opacity:.2}, {opacity:0, duration:.34, ease:'power1.inOut'}, 1.0);
+    tl.fromTo('#solutionPreview .sol-card', {y:0}, {y:cardRise, duration:.6, ease:'power2.inOut'}, 1.04);
+    tl.fromTo(solB, {yPercent:112}, {yPercent:0, duration:.34, stagger:.1, ease:'power3.out'}, 1.24);
+    tl.fromTo('#solutionPreview .sol-cta', {opacity:0, y:12}, {opacity:1, y:0, duration:.26, ease:'power2.out'}, 1.56);
+    tl.fromTo('#solutionPreview .sol-link', {opacity:0}, {opacity:1, duration:.22, ease:'power2.out'}, 1.7);
+
+    // 3 — how does a Data Savings Plan work. The card and the copy that framed it clear
+    // out, and the four cards come up in their place. This is the beat that used to be a
+    // section below; on anything wider than a phone it happens on the spot.
+    if(withCards){
+      tl.fromTo(solB, {yPercent:0}, {yPercent:-112, duration:.3, stagger:.06}, 2.0);
+      tl.fromTo('#solutionPreview .sol-cta', {opacity:1, y:0}, {opacity:0, y:-10, duration:.26}, 2.0);
+      tl.fromTo('#solutionPreview .sol-link', {opacity:1}, {opacity:0, duration:.22}, 2.0);
+      tl.fromTo('#solutionPreview .sol-card', {opacity:1}, {opacity:0, duration:.4, ease:'power1.inOut'}, 2.06);
+      tl.fromTo('#solHow', {opacity:0}, {opacity:1, duration:.46, ease:'power1.inOut'}, 2.3);
+      tl.fromTo('#solHow .how-title', {y:26}, {y:0, duration:.4, ease:'power2.out'}, 2.34);
+      tl.fromTo('#solHow .step', {y:36, opacity:0}, {y:0, opacity:1, duration:.42, stagger:.07, ease:'power2.out'}, 2.44);
+    }
+
+    // the hold that carries the last framing out of view unchanged
+    tl.to({}, {duration:1.0}, withCards ? 3.0 : 2.0);
+    return tl;
+  };
+
+  // One framing fewer on a phone, and the cards parented to their own section instead.
+  // matchMedia rebuilds the pin and the timeline on either side of the breakpoint and
+  // reverts what the other side had set.
+  gsap.matchMedia().add('(min-width: 761px)', () => {
+    solSec.appendChild(solHowEl);
+    const tl = buildSolTl(true);
+    const trig = ScrollTrigger.create({trigger:'#solution', start:'top top',
+      end:'+=400%', pin:true, scrub:true, animation:tl});
+    fitSolHow();
+    return () => { trig.kill(); tl.kill(); };
+  }).add('(max-width: 760px)', () => {
+    solHost.appendChild(solHowEl);
+    fitSolHow();
+    const tl = buildSolTl(false);
+    const trig = ScrollTrigger.create({trigger:'#solution', start:'top top',
+      end:'+=300%', pin:true, scrub:true, animation:tl});
+    // the cards lift into view on the way past, the way every other block in the
+    // scrolling part of the page does
+    const lift = gsap.fromTo('#howHost .step', {opacity:0, y:28},
+      {opacity:1, y:0, duration:.6, stagger:.08, ease:'power2.out',
+       scrollTrigger:{trigger:'#howHost', start:'top 82%'}});
+    return () => { trig.kill(); tl.kill(); lift.scrollTrigger && lift.scrollTrigger.kill(); lift.kill(); };
   });
+
 
 
   /* ---------- ACT 3 : WHAT IF YOUR DATA COULD GROW WITH YOU ---------- */
@@ -1257,12 +1339,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     Object.assign({opacity:1, y:0, duration:.7, ease:'power2.out',
       scrollTrigger:{ trigger:at, start:'top 82%' }}, extra));
 
-  rise('#howwork .how-title', '#howwork .how-title');
-  // one column at a time: the card lifts, its copy follows a beat later
-  $$('#howwork .step').forEach((step, i) => {
-    rise(step.querySelector('.step-card'), step, {duration:.6, delay:i*.08});
-    rise(step.querySelector('.step-copy'), step, {duration:.6, delay:i*.08 + .12});
-  });
+  // The title and the four cards are not risen into view any more — they are the
+  // plan screen's third framing, and its timeline brings them in.
   // Every row carries an answer now, so the +/- is a real control rather than a
   // painted-on affordance. Rows open independently — the design shows them all open
   // at once — and the first is open on arrival.
@@ -1327,20 +1405,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const st = id => ScrollTrigger.getAll().find(x => x.trigger && x.trigger.id === id);
     const at = id => { const t = st(id); return t ? Math.round(t.start) : null; };
     const out = [0];
-    // The solution screen carries two framings on one pin, so it contributes two
-    // stops rather than one: a third of the way in, where the reveal has landed on
-    // "Introducing the Data Savings Plan", and two thirds, where it has become
-    // "Open an account". The final third is the hold that carries the second framing
-    // out of view unchanged, so it is not a stop of its own.
+    // The plan screen carries three framings on one pin, so it contributes three
+    // stops rather than one — a quarter of the way in, where the reveal has landed on
+    // "Introducing the Data Savings Plan", a half, where it has become "Open an
+    // account", and three quarters, where the four cards have come up. The final
+    // quarter is the hold that carries the cards out of view unchanged, so it is not
+    // a stop of its own.
     const sol = st('solution');
-    if(sol){
-      const span = sol.end - sol.start;
-      out.push(Math.round(sol.start + span/3), Math.round(sol.start + span*2/3));
+    if(sol && sol.animation){
+      // one plateau per framing, read off the timeline so the phone's shorter pin and
+      // the wider layout's longer one both come out right
+      const span = sol.end - sol.start, n = Math.max(2, Math.round(sol.animation.duration()));
+      for(let k = 1; k < n; k++) out.push(Math.round(sol.start + span*k/n));
     }
-    // Not pinned, so it has no trigger of its own to read a start off — its top in
-    // document coordinates is the stop, and pin-spacers above are already in it.
-    const hw = document.getElementById('howwork');
-    if(hw) out.push(Math.round(hw.getBoundingClientRect().top + window.scrollY));
+    // On a phone the cards are a section of their own again, so they are a stop again.
+    const host = document.getElementById('howHost');
+    if(host && host.firstElementChild) out.push(Math.round(host.getBoundingClientRect().top + window.scrollY));
     // A screen that plays on its own clock has to be landed just INSIDE its trigger
     // rather than exactly on it. On the boundary ScrollTrigger still counts the screen
     // as not yet entered, so onEnter never fires and the every-tap run sits paused on
