@@ -63,24 +63,26 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    10px blur, 1px hairline at 30% grey. Type is Titillium 18 throughout. */
 .nav{
   position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:50;
-  width:min(1058px,94vw);height:70px;padding:10px 24px;
+  /* Figma 3157-67646: 1200 x 84, padded 16 all round but 24 on the left where the
+     logo sits, and a solid #8b8b8b hairline rather than a faded one */
+  width:min(1200px,94vw);height:84px;padding:16px 16px 16px 24px;
   display:flex;align-items:center;gap:40px;
-  border:1px solid rgba(139,139,139,.3);border-radius:100px;
+  border:1px solid #8B8B8B;border-radius:100px;
   background:rgba(7,7,7,.7);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   font-family:'Titillium Web',system-ui,sans-serif;font-size:18px;line-height:1;
 }
 .nav .logo{display:flex;align-items:center;gap:24px;margin-right:auto}
 .nav .logo .mark{width:36px;height:36px;display:block;object-fit:contain;flex:none}
-.nav .logo .rule{width:1px;height:35px;background:rgba(243,242,238,.3);flex:none}
-.nav .logo b{font-weight:600;font-size:32px;letter-spacing:-.01em}
+.nav .logo .rule{width:1px;height:35px;background:rgba(153,153,153,.4);flex:none}
+.nav .logo .wordmark{font-weight:600;font-size:32px;letter-spacing:-.01em;color:#fff;flex:none}
 .nav .links{display:flex;align-items:center;gap:40px}
 .nav .links a{font-weight:400;color:#fff}
 .nav .links a.cur{font-weight:600}
-.nav .sep{width:1px;height:40.5px;background:rgba(243,242,238,.3);flex:none}
+.nav .sep{width:1px;height:40.5px;background:rgba(255,255,255,.3);flex:none}
 .nav .ctas{display:flex;align-items:center;gap:14px}
 .nav .pill{
   display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;
-  padding:12px 24px;border-radius:500px;border:1px solid #fff;
+  padding:12px 24px;border-radius:500px;border:.911px solid #fff;
   font-weight:400;line-height:24px;color:#fff;transition:background .25s,filter .25s;
 }
 .nav .pill:hover{background:rgba(243,242,238,.12)}
@@ -88,11 +90,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .nav .pill.p{border:1px solid transparent;border-radius:56px;font-weight:600;background:linear-gradient(138.73deg,#4B27FF 1.94%,#0091FF 100.59%)}
 .nav .pill.p:hover{background:linear-gradient(138.73deg,#4B27FF 1.94%,#0091FF 100.59%);filter:brightness(1.12)}
 @media (max-width:900px){
-  .nav{gap:20px;height:56px;padding:8px 16px}
+  .nav{gap:20px;height:64px;padding:8px 12px 8px 16px}
   .nav .links,.nav .sep{display:none}
   .nav .logo{gap:14px}
   .nav .logo .rule{height:28px}
-  .nav .logo b{font-size:22px}
+  .nav .logo .wordmark{font-size:22px}
   .nav .pill{padding:10px 16px;font-size:15px}
   .nav .pill:not(.p){display:none}
 }
@@ -256,19 +258,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    The cards are flat exports on purpose: three of the four are single flattened
    images in the design, so their photo crops and panel placement can't be had as
    layers. Taking all four the same way keeps them consistent with each other. */
-.how-steps{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);gap:5.518vw;padding:4.581vw 6.247vw 0}
+.how-steps{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);gap:2.742vw;padding:4.581vw 6.247vw 0}
 .step{position:relative}
-.step-card{position:relative;width:94.19%;aspect-ratio:320.24/442;overflow:hidden;border-radius:6.25%/4.53%}
-/* Figma 3265-80232: the last card is wider than the other three — 380 against their
-   320 — and it grows leftward into the gap, so its right edge stays on the same 1678
-   measure the row is built on. Its copy shifts with it and keeps the 340 column. */
-.how-steps .step:last-child{margin-left:-2.082vw}
-.how-steps .step:last-child .step-card{width:19.781vw;aspect-ratio:380/442;border-radius:5.27%/4.53%}
-/* the wider card makes its 1fr track grow with it; the copy stays on the 340 column
-   the design keeps it on, so it sits in from the card's right edge */
-.how-steps .step:last-child .step-copy{width:17.699vw}
+/* Figma 3265-80136: four equal 380-wide cards with 52.667 gaps on a 1678 measure.
+   The copy stays on a 340 column, so it sits in from each card's right edge. */
+.step-card{position:relative;width:100%;aspect-ratio:380/442;overflow:hidden;border-radius:5.27%/4.53%}
 .step-card img{display:block;width:100%;height:100%;object-fit:cover}
-.step-copy{margin-top:1.458vw;display:flex;flex-direction:column;gap:.625vw}
+.step-copy{margin-top:1.458vw;display:flex;flex-direction:column;gap:.625vw;width:17.699vw;max-width:100%}
 .step-eyebrow{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(.65rem,.833vw,1rem);letter-spacing:.1em;line-height:1.1;color:#278EFF;text-transform:uppercase}
 .step-h{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(1rem,1.249vw,1.5rem);letter-spacing:-.03em;line-height:1.1;color:#fff}
 .step-body{font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.75rem,.729vw,.875rem);line-height:1.4;color:#999}
@@ -293,6 +289,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .faq-row.open .faq-q{color:#fff}
 .faq-row .faq-a{display:none;margin-top:16px;font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.8rem,.729vw,.875rem);line-height:1.4;color:#999}
 .faq-row.open .faq-a{display:block}
+/* several answers run to two or three paragraphs; the design separates them with a
+   blank line, which is a margin here rather than an empty paragraph */
+.faq-row .faq-a p{margin:0 0 1.4em}
+.faq-row .faq-a p:last-child{margin-bottom:0}
+.faq-row{cursor:pointer}
+.faq-row:focus-visible{outline:2px solid #278EFF;outline-offset:3px}
 
 /* Figma 3157-69704: the disclosures block — text at x164 on a 1464 measure, 18px
    at #666, with a rule above it the full width of the footer's columns */
@@ -324,10 +326,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 @media (max-width:980px){
   .how-steps{grid-template-columns:repeat(2,1fr);gap:4vw}
-  /* stacked, an odd card out would just look ragged */
-  .how-steps .step:last-child{margin-left:0}
-  .how-steps .step:last-child .step-card{width:94.19%;aspect-ratio:320.24/442;border-radius:6.25%/4.53%}
-  .how-steps .step:last-child .step-copy{width:auto}
+  .step-copy{width:auto}
   .how-title{padding-left:4.25vw}
   .faq{flex-direction:column;gap:40px}
   .faq-list{width:100%}
@@ -336,7 +335,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 @media (max-width:760px){
   .how-steps{grid-template-columns:1fr;gap:8vw;padding:8vw 8vw 0}
   .how-title{padding-left:8.5vw}
-  .step-card,.how-steps .step:last-child .step-card{width:100%}
+  .step-card{width:100%}
   .step-eyebrow{font-size:.8rem}
   .step-h{font-size:1.35rem}
   .step-body{font-size:.9rem}
@@ -361,6 +360,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .solution-preview .sol-link{left:8vw;top:auto;bottom:17vh;transform:none}
   .solution-preview .sol-card{right:auto;left:8vw;top:auto;bottom:30vh;width:84vw}
 }
+/* On a phone the nav's own content is wider than 94vw — logo, rule, wordmark and a
+   CTA whose label runs to 25 characters — so the CTA's text was being clipped. The
+   logo disc carries the brand on its own down here. */
+@media (max-width:440px){
+  .nav .logo .rule,.nav .logo .wordmark{display:none}
+}
 @media (prefers-reduced-motion:reduce){
   .marker i.pulse{animation:none}
 }
@@ -372,7 +377,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <a class="logo" href="#">
     <img class="mark" src="assets/img/logo.png" alt="" width="36" height="36">
     <span class="rule" aria-hidden="true"></span>
-    <b>dWallet.</b>
+    <b class="wordmark">DrumWave</b>
   </a>
   <nav class="links"><a class="cur" href="#">Personal</a><a href="#">Business</a></nav>
   <span class="sep" aria-hidden="true"></span>
@@ -587,16 +592,94 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       <h2 class="faq-title">Questions? We&rsquo;ve got answers.</h2>
     </div>
     <div class="faq-list">
-      <div class="faq-row open">
+        <div class="faq-row open">
         <div class="faq-text">
-          <p class="faq-q">Is a Data Savings Account a bank account?</p>
-          <p class="faq-a">A dWallet is a data wallet to help you manage the value of your data. It lets you own, save, exchange, invest, and benefit from the value of the data you generate every day. With a dWallet, you can request your data from the companies you interact with, apply for a Data Savings Plan, and use it for personal, professional, and financial reasons, all with a secure way to keep it protected and under your control.</p>
+          <p class="faq-q">What is dWallet?</p>
+          <div class="faq-a">
+          <p>A dWallet is a data wallet to help you manage the value of your data. It lets you own, save, exchange, invest, and benefit from the value of the data you generate every day. With a dWallet, you can request your data from the companies you interact with, apply for a Data Savings Plan, and use it for personal, professional, and financial reasons, all with a secure way to keep it protected and under your control.</p>
+          </div>
         </div><i>&minus;</i>
       </div>
-      <div class="faq-row"><div class="faq-text"><p class="faq-q">What is a Data Savings Plan?</p></div><i>+</i></div>
-      <div class="faq-row"><div class="faq-text"><p class="faq-q">How much is my data worth?</p></div><i>+</i></div>
-      <div class="faq-row"><div class="faq-text"><p class="faq-q">Why would a company pay for something it currently gets free?</p></div><i>+</i></div>
-      <div class="faq-row"><div class="faq-text"><p class="faq-q">Is my data safe with dWallet?</p></div><i>+</i></div>
+      <div class="faq-row">
+        <div class="faq-text">
+          <p class="faq-q">Why do I need a dWallet?</p>
+          <div class="faq-a">
+          <p>The economy is becoming a data economy. Your dWallet gives you a place in it. Think about your money. You keep it in an account you control. You can save, move, invest, spend, or use your money to benefit yourself, your family, and the world around you. Your data should work the same way.</p>
+          <p>Today, your data lives across the cloud, where companies control it and benefit from its value. A dWallet changes that. It puts the data you generate every day back in your hands, so you can own, save, control, and benefit from its value. Your money has a wallet. Now your data does too.</p>
+          </div>
+        </div><i>+</i>
+      </div>
+      <div class="faq-row">
+        <div class="faq-text">
+          <p class="faq-q">What is a data transaction?</p>
+          <div class="faq-a">
+          <p>A data transaction happens whenever you move or put the value of your data to work from your dWallet, just like a money transaction from your bank account.</p>
+          <p>Data transactions use Data Certificates, secure digital records that represent your rights to specific data and allow your dWallet to transact with it.</p>
+          <p>When you wire, withdraw, or pay with money, you make a money transaction. When you request your data from a company and receive a Data Certificate in your wallet, save it in a Data Savings Plan, exchange it, or invest it, you make a data transaction.</p>
+          </div>
+        </div><i>+</i>
+      </div>
+      <div class="faq-row">
+        <div class="faq-text">
+          <p class="faq-q">Who is in control of a data transaction?</p>
+          <div class="faq-a">
+          <p>You are. Your dWallet is non-custodial, which means you start every data transaction. Nothing moves in or out of your wallet without your authorization. Your data never leaves the ecosystem. You decide when and how to license your data, while your dWallet keeps it protected and under your control.</p>
+          </div>
+        </div><i>+</i>
+      </div>
+      <div class="faq-row">
+        <div class="faq-text">
+          <p class="faq-q">What is a Data Savings Plan?</p>
+          <div class="faq-a">
+          <p>A Data Savings Plan (DSP) is a data-backed financial instrument that builds data wealth, as traditional savings plans build wealth from money. With a DSP the data you generate and contribute is owned by you, and you can save, and benefit from the value it generates.</p>
+          <p>The plan defines how data contributions are governed, how they may be used, and how value generated from them is tracked and allocated. Data is treated as an asset that can be saved and managed within a defined financial and governance structure. And in the DSP you set and control preferences so the plan operates under terms you define.</p>
+          </div>
+        </div><i>+</i>
+      </div>
+      <div class="faq-row">
+        <div class="faq-text">
+          <p class="faq-q">How does a Data Savings Plan generate value?</p>
+          <div class="faq-a">
+          <p>A Data Savings Plan (DSP) generates value by allocating your data contributions into monetization use cases, and companies pay to license data. Nothing is allocated without your approval. The value of your data has the potential to grow over time, so the more data you contribute and the earlier you start, the more value you will have.</p>
+          <p>In your DSP, you set up an exit payment account, and the accumulated cash value can be transferred to that account. Alternatively, the DSP can be integrated with other solutions that align with your financial goals, such as investing in education, retirement, or paying down your loans.</p>
+          </div>
+        </div><i>+</i>
+      </div>
+      <div class="faq-row">
+        <div class="faq-text">
+          <p class="faq-q">How much is my data worth?</p>
+          <div class="faq-a">
+          <p>Your data has value. Companies already make money from it, but today, you don&rsquo;t get a share. Data Savings is designed so that a portion of the value your data generates comes back to you.</p>
+          <p>What you can earn depends on owning and saving your data: what you choose to contribute and what you are open to licensing. Value builds from the moment you start saving, so if you have zero data saved, your data is worth zero. Over time, your contributions increase and so does the number of use cases, so the value of your data tends to grow exponentially.</p>
+          </div>
+        </div><i>+</i>
+      </div>
+      <div class="faq-row">
+        <div class="faq-text">
+          <p class="faq-q">Why would a company pay for something it currently gets free?</p>
+          <div class="faq-a">
+          <p>Because it was never free &ndash; you paid for it. The phone, the data plan, the electricity, the time. Companies collect data at no cost to themselves because the cost sits with you.</p>
+          <p>So the real question isn&rsquo;t why a company would pay. It&rsquo;s what it gets in return. On a DSP, the data you choose to contribute is combined with certified data from other participants, which makes all of it more valuable. Better data means higher revenue, lower operating costs, and less compliance risk. And it gives companies something free data never could: a direct, trusted relationship with the people behind the data. That trust comes from being transparent about what&rsquo;s collected and from returning a share of the value to the person who created it.</p>
+          </div>
+        </div><i>+</i>
+      </div>
+      <div class="faq-row">
+        <div class="faq-text">
+          <p class="faq-q">Does DrumWave sell my data?</p>
+          <div class="faq-a">
+          <p>No. Your data stays where it already is. DrumWave never holds your data, only the value it generates, like a bank that holds your money but does not own it.</p>
+          <p>Your Data Savings Plan holds Data Certificates that represent your data and its value. Nothing happens with them without your approval.</p>
+          </div>
+        </div><i>+</i>
+      </div>
+      <div class="faq-row">
+        <div class="faq-text">
+          <p class="faq-q">Is my data safe?</p>
+          <div class="faq-a">
+          <p>Yes. Your dWallet is designed with banking-level security to keep your data protected and under your control. We treat your data with the same care and security banks use to protect your money. Because your dWallet is non-custodial, you don&rsquo;t hand control of your data to someone else. You decide what comes into your wallet, what goes out, and when your data is used. Your data stays yours. Protected like your money. Controlled by you.</p>
+          </div>
+        </div><i>+</i>
+      </div>
     </div>
   </div>
 
@@ -1114,6 +1197,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     rise(step.querySelector('.step-card'), step, {duration:.6, delay:i*.08});
     rise(step.querySelector('.step-copy'), step, {duration:.6, delay:i*.08 + .12});
   });
+  // Every row carries an answer now, so the +/- is a real control rather than a
+  // painted-on affordance. Rows open independently — the design shows them all open
+  // at once — and the first is open on arrival.
+  $$('#how .faq-row').forEach(row => {
+    const mark = row.querySelector('i');
+    row.setAttribute('role', 'button');
+    row.setAttribute('tabindex', '0');
+    row.setAttribute('aria-expanded', row.classList.contains('open') ? 'true' : 'false');
+    const toggle = () => {
+      const open = row.classList.toggle('open');
+      row.setAttribute('aria-expanded', open ? 'true' : 'false');
+      mark.innerHTML = open ? '&minus;' : '+';
+    };
+    row.addEventListener('click', toggle);
+    row.addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar'){ e.preventDefault(); toggle(); }
+    });
+  });
+
   rise('#how .faq-head', '#how .faq');
   rise($$('#how .faq-row'), '#how .faq', {duration:.5, stagger:.07});
   rise('#how .site-footer > *', '#how .site-footer', {duration:.5, stagger:.08});
