@@ -1574,30 +1574,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // used to sit beside is gone, its sentence having moved into the run itself.
     const w = at('worth');
     if(w != null) out.push(w + 8);
-    // The timeline is one screen, so it gets one stop and one traversal — not a stop
-    // per age. It had ten for a moment, which meant coming to rest on every one of
-    // them: ten gestures to cross the picker, and it read as stopping over and over
-    // rather than moving. Landing on it is a gesture; crossing it is the next one, and
-    // the whole life scrubs past during that glide.
+    // The timeline gets one stop, at its start, and nothing below it. From there down
+    // the page is an ordinary document: the ages answer the scroll directly, a year at
+    // a time, because there the scroll IS the interaction and anything that takes it
+    // away — a stop per photograph, or one long glide across the whole life — gets
+    // between the reader and the control. One gesture still lands them on it, and one
+    // still takes them back up to the question.
     const ag = st('ages');
-    if(ag){
-      const pin = ag.end - ag.start;
-      out.push(Math.round(ag.start));
-      // the far side: the closing screen, once its crossfade is through. The scrub
-      // spans the age part of the pin and the buffer after it carries this.
-      out.push(Math.round(ag.start + ((ageBaseTotal + .9 * ageBufferPct) / ageGrandTotal) * pin));
-    }
-    // The tail — the questions, the footer, the disclosures — used to have no stops at
-    // all, so the last 2200px of the page scrolled freely while everything above it
-    // stepped. Going down it took several gestures to leave the closing screen, and
-    // coming back up the page changed behaviour halfway with nothing to explain it.
-    // The questions get a stop, and so does the foot of the page.
-    const how = document.getElementById('how');
-    if(how){
-      const faq = how.querySelector('.faq');
-      if(faq) out.push(Math.round(faq.getBoundingClientRect().top + window.scrollY));
-      out.push(document.documentElement.scrollHeight - window.innerHeight);
-    }
+    if(ag) out.push(Math.round(ag.start));
     return out.filter(v => v != null);
   };
   // A single physical gesture fires dozens of wheel events over a second or more of
