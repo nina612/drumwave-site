@@ -1594,13 +1594,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // bottom. One snap per gesture: the latch holds from the moment a snap is taken
   // until the wheel has been quiet long enough for the gesture to be over AND the
   // glide has landed.
-  let gliding = false, latched = false, quiet = null, glideGuard = null;
+  let gliding = false, latched = false, quiet = null, glideGuard = null, glideRaf = 0,
+      glideTo = null, glideDir = 0;
   const holdLatch = () => {
     clearTimeout(quiet);
-    quiet = setTimeout(() => {
-      if(gliding) holdLatch();     // the glide is still running; keep waiting
-      else latched = false;
-    }, 320);
+    // Release once the wheel has been quiet long enough for the gesture to be over.
+    // This used to keep re-arming for as long as a glide was running, which meant a
+    // long glide swallowed everything: the picker takes 3.7s and nothing could be
+    // asked of the page until it landed. Momentum events arrive tens of milliseconds
+    // apart, so 320ms of silence is the flick ending, glide or no glide.
+    quiet = setTimeout(() => { latched = false; }, 320);
+  };
+  // Stop a glide where it is. The reader has asked for something else.
+  const stopGlide = () => {
+    if(glideRaf) cancelAnimationFrame(glideRaf);
+    glideRaf = 0;
+    clearTimeout(glideGuard);
+    gliding = false;
   };
   const glide = to => {
     if(RM){ window.scrollTo(0, to); return; }
@@ -1617,6 +1627,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const dist = Math.abs(to - from), far = Math.max(0, dist - 2 * window.innerHeight);
     const ms = Math.max(520, Math.min(4200, 380 + dist * 0.24 + far * 0.40));
     gliding = true;
+    glideTo = to;
+    glideDir = to > from ? 1 : -1;
+    if(glideRaf) cancelAnimationFrame(glideRaf);
     // requestAnimationFrame is throttled to nothing in a hidden or backgrounded tab.
     // Without this the tween would never finish, `gliding` would stay raised and every
     // later gesture would be swallowed for good — so land the scroll and drop the flag
@@ -1627,16 +1640,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       const p = Math.min(1, (now - t0) / ms);
       const e = p < .5 ? 2*p*p : 1 - Math.pow(-2*p + 2, 2) / 2;   // power2.inOut
       window.scrollTo(0, Math.round(from + (to - from) * e));
-      if(p < 1) requestAnimationFrame(step);
-      else { gliding = false; clearTimeout(glideGuard); }
+      if(p < 1) glideRaf = requestAnimationFrame(step);
+      else { glideRaf = 0; gliding = false; clearTimeout(glideGuard); }
     };
-    requestAnimationFrame(step);
+    glideRaf = requestAnimationFrame(step);
   };
   // which stop are we sitting on, and where does `dir` take us?
-  const stepTo = dir => {
+  const stepTo = (dir, origin) => {
     const stops = screenStops();
     if(!stops.length) return null;
-    const y = window.scrollY;
+    const y = origin == null ? window.scrollY : origin;
     if(y < stops[0] - 4) return null;                  // above them: the scrub owns it
     if(y > stops[stops.length - 1] + 4) return null;   // past the screens entirely
     let i = 0;
@@ -1649,9 +1662,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     return (n < 0 || n >= stops.length) ? null : stops[n];
   };
   const takeGesture = dir => {
-    // already mid-gesture: swallow it rather than stacking another jump
-    if(gliding || latched){ holdLatch(); return true; }
-    const to = stepTo(dir);
+    // Still the same flick: its momentum is dozens more events, and taking each would
+    // chain several snaps and run the reader to the bottom. Swallow those.
+    if(latched){ holdLatch(); return true; }
+    // A NEW gesture while a glide is running interrupts it rather than being thrown
+    // away. Before, the page ignored the reader for the whole length of a glide — 3.7
+    // seconds of it at the picker — so asking to stop, turn back or go on did nothing.
+    // Stopping first also means the step is taken from where they actually are.
+    // Going the same way as the glide, count from where it was headed rather than the
+    // point it happened to have reached — otherwise a second flick simply re-aims at
+    // the stop already being travelled to, and reads as having been ignored. Going the
+    // other way, count from here, so turning back lands on the stop behind you.
+    const from = (gliding && dir === glideDir) ? glideTo : window.scrollY;
+    if(gliding) stopGlide();
+    const to = stepTo(dir, from);
     if(to == null || to === window.scrollY) return false;
     latched = true;
     holdLatch();
