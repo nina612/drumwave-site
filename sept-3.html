@@ -1526,14 +1526,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   ScrollTrigger.addEventListener('refresh', hideTags);
   hideTags();
 
-  /* ---------- ONE GESTURE, ONE SCREEN ---------- */
-  // The opening and the every-tap screen each play on their own clock behind a pin,
-  // so their pin distance is scroll that changes nothing on screen — grinding through
-  // two viewport heights to reach the next screen. A single gesture in that stretch
-  // now carries the reader to the next screen instead. This is not auto-triggering:
-  // nothing moves until the reader asks it to. From the timeline down the page is an
-  // ordinary document and scrolls normally, because there the scroll IS the
-  // interaction — snapping past it would skip the years.
+  /* ---------- COME TO REST ON A SCREEN ---------- */
+  // Every framing in the run and on the plan screen is composed to be looked at whole,
+  // and the scroll between them is a pin scrubbing a cut or a push. Stop anywhere in
+  // between and you are looking at half of two things. So the page keeps a list of the
+  // settled moments and eases onto the nearest one when the scrolling stops. It does
+  // not take the gesture — see the settle below — it only decides where the gesture
+  // ends up. From the timeline down there are no stops at all: the ages answer the
+  // scroll directly, and settling there would skip the years.
   const screenStops = () => {
     const st = id => ScrollTrigger.getAll().find(x => x.trigger && x.trigger.id === id);
     const at = id => { const t = st(id); return t ? Math.round(t.start) : null; };
@@ -1584,30 +1584,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     if(ag) out.push(Math.round(ag.start));
     return out.filter(v => v != null);
   };
-  // A single physical gesture fires dozens of wheel events over a second or more of
-  // momentum, so taking each one would chain several snaps and run the reader to the
-  // bottom. One snap per gesture: the latch holds from the moment a snap is taken
-  // until the wheel has been quiet long enough for the gesture to be over AND the
-  // glide has landed.
-  let gliding = false, latched = false, quiet = null, glideGuard = null, glideRaf = 0,
-      glideTo = null, glideDir = 0, lastStepAt = 0, gestureMax = 0;
-  // A step keeps the floor for this long. Long enough not to feel frantic, short
-  // enough that scrolling on keeps moving.
-  const STEP_MIN = 560;
-  // Momentum decays; a hand still moving does not. So a second step is only allowed to
-  // a wheel event still pulling at least half as hard as the hardest one of this
-  // gesture. Time alone could not tell the two apart: a floor low enough for unbroken
-  // scrolling to keep moving also let one flick's tail chain a second screen.
-  const LIVE = 0.5;
-  const holdLatch = () => {
-    clearTimeout(quiet);
-    // Release once the wheel has been quiet long enough for the gesture to be over.
-    // This used to keep re-arming for as long as a glide was running, which meant a
-    // long glide swallowed everything: the picker takes 3.7s and nothing could be
-    // asked of the page until it landed. Momentum events arrive tens of milliseconds
-    // apart, so 320ms of silence is the flick ending, glide or no glide.
-    quiet = setTimeout(() => { latched = false; gestureMax = 0; }, 320);
-  };
+  // Nothing here intercepts the wheel any more. The page scrolls natively, so the
+  // picture moves with the hand at 1:1 and a long push crosses as much of the page as
+  // it would in any document. What the stops do now is settle: once the scrolling has
+  // genuinely stopped — the gesture over AND its momentum spent — the nearest stop is
+  // eased into, so the reader comes to rest on a composed screen rather than halfway
+  // through a cut.
+  //
+  // This replaced a system that swallowed each gesture and animated the page itself.
+  // It landed every screen exactly, but it also meant the page never moved while the
+  // reader was moving: you pushed, and then it went. Direct beats exact here — the
+  // settle still ends them on the screen, it just stops arguing with them on the way.
+  let gliding = false, glideGuard = null, glideRaf = 0, glideTo = null, lastStepAt = 0;
+  let settleTimer = null, touching = false;
+  // How long the scroll has to be quiet before it counts as over. Trackpad momentum on
+  // macOS keeps firing wheel events the whole way down, so the timer is reset by wheel
+  // and scroll alike: it only reaches the end once the hand has stopped and the
+  // momentum has run out. Short enough not to be a pause, long enough not to fire into
+  // the middle of a slow drag.
+  const SETTLE_IDLE = 150;
   // Stop a glide where it is. The reader has asked for something else.
   const stopGlide = () => {
     if(glideRaf) cancelAnimationFrame(glideRaf);
@@ -1615,106 +1610,94 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     clearTimeout(glideGuard);
     gliding = false;
   };
-  const glide = to => {
+  const glide = (to, ms) => {
+    const from = window.scrollY;
+    if(Math.abs(to - from) < 2) return;
     if(RM){ window.scrollTo(0, to); return; }
-    const from = window.scrollY, t0 = performance.now();
-    // A fixed duration made the long steps lurch and the short ones crawl. The steps
-    // are not equal: reaching the solution screen crosses the opening's pin release
-    // as well as the reveal, where moving between its two framings is a single
-    // viewport. Scale with the distance so they all travel at about the same speed.
-    // A flat rate suits the ordinary steps, which are a screen or so each. It does not
-    // suit the picker: that is one gesture across ~6200px and a whole life of
-    // photographs, and at the same rate per pixel the years went by too quickly to
-    // read. So the rate steepens past two screens — everything shorter than that keeps
-    // exactly the time it had, and only the traversal gets longer.
-    const dist = Math.abs(to - from), far = Math.max(0, dist - 2 * window.innerHeight);
-    const ms = Math.max(520, Math.min(4200, 380 + dist * 0.24 + far * 0.40));
+    const t0 = performance.now();
     gliding = true;
     glideTo = to;
-    glideDir = to > from ? 1 : -1;
     if(glideRaf) cancelAnimationFrame(glideRaf);
     // requestAnimationFrame is throttled to nothing in a hidden or backgrounded tab.
     // Without this the tween would never finish, `gliding` would stay raised and every
-    // later gesture would be swallowed for good — so land the scroll and drop the flag
+    // later settle would be suppressed for good — so land the scroll and drop the flag
     // on a timer regardless of whether a frame ever arrives.
     clearTimeout(glideGuard);
     glideGuard = setTimeout(() => { window.scrollTo(0, to); gliding = false; }, ms + 140);
     const step = now => {
       const p = Math.min(1, (now - t0) / ms);
-      const e = p < .5 ? 2*p*p : 1 - Math.pow(-2*p + 2, 2) / 2;   // power2.inOut
+      const e = 1 - Math.pow(1 - p, 3);         // power3.out: leaves at once, lands soft
       window.scrollTo(0, Math.round(from + (to - from) * e));
       if(p < 1) glideRaf = requestAnimationFrame(step);
       else { glideRaf = 0; gliding = false; clearTimeout(glideGuard); }
     };
     glideRaf = requestAnimationFrame(step);
   };
-  // which stop are we sitting on, and where does `dir` take us?
+  // The last stop is the timeline's start; below it there is nothing to settle onto.
+  // From there down the page is an ordinary document — the ages answer the scroll
+  // directly, a year at a time, because there the scroll IS the interaction, and
+  // pulling it anywhere would get between the reader and the control.
+  const nearestStop = y => {
+    const stops = screenStops();
+    if(!stops.length || y > stops[stops.length - 1] + 4) return null;
+    let best = null, gap = Infinity;
+    for(const s of stops){
+      const d = Math.abs(s - y);
+      if(d < gap){ gap = d; best = s; }
+    }
+    return best;
+  };
+  const settle = () => {
+    if(gliding || touching) return;
+    const y = window.scrollY, to = nearestStop(y);
+    if(to == null) return;
+    const dist = Math.abs(to - y);
+    if(dist < 3) return;
+    // Short and flat. This is a settle, not a journey: the reader has already arrived,
+    // and anything long enough to be watched reads as the page moving on its own again.
+    glide(to, Math.max(240, Math.min(620, 170 + dist * 0.32)));
+  };
+  const armSettle = () => {
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(settle, SETTLE_IDLE);
+  };
+  // Passive, all of it: none of these listeners may so much as think about blocking the
+  // scroll they are watching.
+  window.addEventListener('scroll', () => { if(!gliding) armSettle(); }, {passive:true});
+  window.addEventListener('wheel', () => { stopGlide(); armSettle(); }, {passive:true});
+  window.addEventListener('touchstart', () => { touching = true; stopGlide(); }, {passive:true});
+  window.addEventListener('touchend', () => { touching = false; armSettle(); }, {passive:true});
+
+  // Keys are the one place a step still earns its keep. An arrow press has no momentum
+  // and no distance of its own, and the browser's own forty-odd pixels would just be
+  // settled straight back where they came from — so the keys move a whole screen.
   const stepTo = (dir, origin) => {
     const stops = screenStops();
     if(!stops.length) return null;
     const y = origin == null ? window.scrollY : origin;
-    if(y < stops[0] - 4) return null;                  // above them: the scrub owns it
-    if(y > stops[stops.length - 1] + 4) return null;   // past the screens entirely
+    if(y < stops[0] - 4 || y > stops[stops.length - 1] + 4) return null;
     let i = 0;
     for(let k = 0; k < stops.length; k++) if(y >= stops[k] - 4) i = k;
-    // Stops work both ways, the timeline's included: standing at its start, one gesture
-    // up goes to the question screen, symmetrical with the gesture that brought the
-    // reader down onto it. Only its start — deeper in, the scroll is past the last stop
-    // and released, so scrubbing back through the ages is untouched.
     const n = i + dir;
     return (n < 0 || n >= stops.length) ? null : stops[n];
   };
-  const takeGesture = (dir, force) => {
-    const now = performance.now();
-    // Still the same flick: its momentum is dozens more events, and taking each would
-    // chain several snaps and run the reader to the bottom. Swallow those — but only
-    // until the step they belong to has had its time. The latch used to hold until the
-    // wheel fell silent, which meant input that never paused was refused for as long as
-    // it lasted: three seconds of unbroken scrolling moved one screen and then nothing,
-    // which is exactly the getting-stuck. A step now yields the floor after STEP_MIN
-    // whether or not the reader has stopped, so scrolling on keeps moving on.
-    if(latched && (now - lastStepAt < STEP_MIN || !force)){ holdLatch(); return true; }
-    // A NEW gesture while a glide is running interrupts it rather than being thrown
-    // away. Before, the page ignored the reader for the whole length of a glide — 3.7
-    // seconds of it at the picker — so asking to stop, turn back or go on did nothing.
-    // Stopping first also means the step is taken from where they actually are.
-    // Going the same way as the glide, count from where it was headed rather than the
-    // point it happened to have reached — otherwise a second flick simply re-aims at
-    // the stop already being travelled to, and reads as having been ignored. Going the
-    // other way, count from here, so turning back lands on the stop behind you.
-    const from = (gliding && dir === glideDir) ? glideTo : window.scrollY;
-    if(gliding) stopGlide();
-    const to = stepTo(dir, from);
-    if(to == null || to === window.scrollY) return false;
-    latched = true;
-    lastStepAt = now;
-    holdLatch();
-    glide(to);
-    return true;
-  };
-  window.addEventListener('wheel', e => {
-    const mag = Math.abs(e.deltaY);
-    if(mag < 2) return;
-    gestureMax = Math.max(gestureMax, mag);
-    // still pulling hard relative to this gesture's hardest: a hand, not a tail
-    if(takeGesture(e.deltaY > 0 ? 1 : -1, mag >= gestureMax * LIVE)) e.preventDefault();
-  }, {passive:false});
   const SNAP_KEYS = {ArrowDown:1, PageDown:1, ' ':1, Spacebar:1, ArrowUp:-1, PageUp:-1};
   window.addEventListener('keydown', e => {
     const t = e.target;
     if(t && t !== document.body && t !== document.documentElement) return;
     const dir = SNAP_KEYS[e.key];
-    if(dir && takeGesture(dir, true)) e.preventDefault();
+    if(!dir) return;
+    // Held down, the key repeats about every 30ms; take one screen at a time.
+    const now = performance.now();
+    if(now - lastStepAt < 220){ e.preventDefault(); return; }
+    const to = stepTo(dir, gliding ? glideTo : window.scrollY);
+    if(to == null) return;
+    lastStepAt = now;
+    stopGlide();
+    const dist = Math.abs(to - window.scrollY);
+    glide(to, Math.max(320, Math.min(900, 240 + dist * 0.22)));
+    e.preventDefault();
   });
-  let snapTouchY = null;
-  window.addEventListener('touchstart', e => { snapTouchY = e.touches[0].clientY; }, {passive:true});
-  window.addEventListener('touchmove', e => {
-    if(snapTouchY == null) return;
-    const dy = snapTouchY - e.touches[0].clientY;
-    if(Math.abs(dy) < 24) return;
-    snapTouchY = null;
-    takeGesture(dy > 0 ? 1 : -1, true);
-  }, {passive:true});
 
   window.addEventListener('load', () => {
     ScrollTrigger.refresh();
