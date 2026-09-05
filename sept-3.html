@@ -1621,7 +1621,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // read. So the rate steepens past two screens — everything shorter than that keeps
     // exactly the time it had, and only the traversal gets longer.
     const dist = Math.abs(to - from), far = Math.max(0, dist - 2 * window.innerHeight);
-    const ms = Math.max(520, Math.min(3200, 380 + dist * 0.24 + far * 0.22));
+    const ms = Math.max(520, Math.min(4200, 380 + dist * 0.24 + far * 0.40));
     gliding = true;
     // requestAnimationFrame is throttled to nothing in a hidden or backgrounded tab.
     // Without this the tween would never finish, `gliding` would stay raised and every
