@@ -1606,7 +1606,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // until the wheel has been quiet long enough for the gesture to be over AND the
   // glide has landed.
   let gliding = false, latched = false, quiet = null, glideGuard = null, glideRaf = 0,
-      glideTo = null, glideDir = 0;
+      glideTo = null, glideDir = 0, lastStepAt = 0, gestureMax = 0;
+  // A step keeps the floor for this long. Long enough not to feel frantic, short
+  // enough that scrolling on keeps moving.
+  const STEP_MIN = 560;
+  // Momentum decays; a hand still moving does not. So a second step is only allowed to
+  // a wheel event still pulling at least half as hard as the hardest one of this
+  // gesture. Time alone could not tell the two apart: a floor low enough for unbroken
+  // scrolling to keep moving also let one flick's tail chain a second screen.
+  const LIVE = 0.5;
   const holdLatch = () => {
     clearTimeout(quiet);
     // Release once the wheel has been quiet long enough for the gesture to be over.
@@ -1614,7 +1622,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // long glide swallowed everything: the picker takes 3.7s and nothing could be
     // asked of the page until it landed. Momentum events arrive tens of milliseconds
     // apart, so 320ms of silence is the flick ending, glide or no glide.
-    quiet = setTimeout(() => { latched = false; }, 320);
+    quiet = setTimeout(() => { latched = false; gestureMax = 0; }, 320);
   };
   // Stop a glide where it is. The reader has asked for something else.
   const stopGlide = () => {
@@ -1672,10 +1680,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const n = i + dir;
     return (n < 0 || n >= stops.length) ? null : stops[n];
   };
-  const takeGesture = dir => {
+  const takeGesture = (dir, force) => {
+    const now = performance.now();
     // Still the same flick: its momentum is dozens more events, and taking each would
-    // chain several snaps and run the reader to the bottom. Swallow those.
-    if(latched){ holdLatch(); return true; }
+    // chain several snaps and run the reader to the bottom. Swallow those — but only
+    // until the step they belong to has had its time. The latch used to hold until the
+    // wheel fell silent, which meant input that never paused was refused for as long as
+    // it lasted: three seconds of unbroken scrolling moved one screen and then nothing,
+    // which is exactly the getting-stuck. A step now yields the floor after STEP_MIN
+    // whether or not the reader has stopped, so scrolling on keeps moving on.
+    if(latched && (now - lastStepAt < STEP_MIN || !force)){ holdLatch(); return true; }
     // A NEW gesture while a glide is running interrupts it rather than being thrown
     // away. Before, the page ignored the reader for the whole length of a glide — 3.7
     // seconds of it at the picker — so asking to stop, turn back or go on did nothing.
@@ -1689,20 +1703,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const to = stepTo(dir, from);
     if(to == null || to === window.scrollY) return false;
     latched = true;
+    lastStepAt = now;
     holdLatch();
     glide(to);
     return true;
   };
   window.addEventListener('wheel', e => {
-    if(Math.abs(e.deltaY) < 2) return;
-    if(takeGesture(e.deltaY > 0 ? 1 : -1)) e.preventDefault();
+    const mag = Math.abs(e.deltaY);
+    if(mag < 2) return;
+    gestureMax = Math.max(gestureMax, mag);
+    // still pulling hard relative to this gesture's hardest: a hand, not a tail
+    if(takeGesture(e.deltaY > 0 ? 1 : -1, mag >= gestureMax * LIVE)) e.preventDefault();
   }, {passive:false});
   const SNAP_KEYS = {ArrowDown:1, PageDown:1, ' ':1, Spacebar:1, ArrowUp:-1, PageUp:-1};
   window.addEventListener('keydown', e => {
     const t = e.target;
     if(t && t !== document.body && t !== document.documentElement) return;
     const dir = SNAP_KEYS[e.key];
-    if(dir && takeGesture(dir)) e.preventDefault();
+    if(dir && takeGesture(dir, true)) e.preventDefault();
   });
   let snapTouchY = null;
   window.addEventListener('touchstart', e => { snapTouchY = e.touches[0].clientY; }, {passive:true});
@@ -1711,7 +1729,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const dy = snapTouchY - e.touches[0].clientY;
     if(Math.abs(dy) < 24) return;
     snapTouchY = null;
-    takeGesture(dy > 0 ? 1 : -1);
+    takeGesture(dy > 0 ? 1 : -1, true);
   }, {passive:true});
 
   window.addEventListener('load', () => {
