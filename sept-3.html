@@ -1587,6 +1587,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // spans the age part of the pin and the buffer after it carries this.
       out.push(Math.round(ag.start + ((ageBaseTotal + .9 * ageBufferPct) / ageGrandTotal) * pin));
     }
+    // The tail — the questions, the footer, the disclosures — used to have no stops at
+    // all, so the last 2200px of the page scrolled freely while everything above it
+    // stepped. Going down it took several gestures to leave the closing screen, and
+    // coming back up the page changed behaviour halfway with nothing to explain it.
+    // The questions get a stop, and so does the foot of the page.
+    const how = document.getElementById('how');
+    if(how){
+      const faq = how.querySelector('.faq');
+      if(faq) out.push(Math.round(faq.getBoundingClientRect().top + window.scrollY));
+      out.push(document.documentElement.scrollHeight - window.innerHeight);
+    }
     return out.filter(v => v != null);
   };
   // A single physical gesture fires dozens of wheel events over a second or more of
