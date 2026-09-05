@@ -1615,10 +1615,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // are not equal: reaching the solution screen crosses the opening's pin release
     // as well as the reveal, where moving between its two framings is a single
     // viewport. Scale with the distance so they all travel at about the same speed.
-    // The cap used to be 1050ms, which was fine when the longest step was a screen or
-    // two. Crossing the picker is ~6200px in one gesture and a whole life of
-    // photographs scrubbing past, and a second flat was not enough to read it.
-    const ms = Math.max(520, Math.min(1900, 380 + Math.abs(to - from) * 0.24));
+    // A flat rate suits the ordinary steps, which are a screen or so each. It does not
+    // suit the picker: that is one gesture across ~6200px and a whole life of
+    // photographs, and at the same rate per pixel the years went by too quickly to
+    // read. So the rate steepens past two screens — everything shorter than that keeps
+    // exactly the time it had, and only the traversal gets longer.
+    const dist = Math.abs(to - from), far = Math.max(0, dist - 2 * window.innerHeight);
+    const ms = Math.max(520, Math.min(3200, 380 + dist * 0.24 + far * 0.22));
     gliding = true;
     // requestAnimationFrame is throttled to nothing in a hidden or backgrounded tab.
     // Without this the tween would never finish, `gliding` would stay raised and every
