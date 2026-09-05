@@ -842,7 +842,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 (function(){
   gsap.registerPlugin(ScrollTrigger);
   const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const scrub = RM ? true : 0.9;
   // Everything up to the age ticker runs on its own clock: the timeline plays
   // when the screen is reached and rewinds if you scroll back above it, rather
   // than being scrubbed. Reduced motion skips straight to each end state.
