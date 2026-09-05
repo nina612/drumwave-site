@@ -1600,9 +1600,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // How long the scroll has to be quiet before it counts as over. Trackpad momentum on
   // macOS keeps firing wheel events the whole way down, so the timer is reset by wheel
   // and scroll alike: it only reaches the end once the hand has stopped and the
-  // momentum has run out. Short enough not to be a pause, long enough not to fire into
-  // the middle of a slow drag.
-  const SETTLE_IDLE = 150;
+  // momentum has run out. 100ms: short enough that the settle reads as the end of your
+  // own gesture rather than a beat of hesitation after it, and still longer than the
+  // gap between events in even a slow drag.
+  const SETTLE_IDLE = 100;
   // Stop a glide where it is. The reader has asked for something else.
   const stopGlide = () => {
     if(glideRaf) cancelAnimationFrame(glideRaf);
