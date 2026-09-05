@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Fold the whole site into one self-contained HTML file.
 
-    python3 build-standalone.py            full quality, about 7MB
-    python3 build-standalone.py --light    re-encoded, about a third the size
+    python3 build-standalone.py                     index.html, full quality
+    python3 build-standalone.py --light             index.html, about a third the size
+    python3 build-standalone.py sept-3.html         any other page in the folder
+    python3 build-standalone.py sept-3.html --light
 
-Reads index.html and writes drumwave-standalone.html with every asset inlined:
+Reads a page and writes <name>-standalone.html beside it with every asset inlined:
 images and fonts as data URIs, GSAP inlined as script text. The result opens with
 no network and no sibling files, so it survives being emailed or copied onto a
 stick — at the cost of front-loading everything before the first paint.
@@ -33,9 +35,22 @@ import sys
 import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SRC = os.path.join(HERE, "index.html")
-OUT = os.path.join(HERE, "drumwave-standalone.html")
-OUT_LIGHT = os.path.join(HERE, "drumwave-standalone-light.html")
+
+
+def sources(argv):
+    """Which page to build, and what to call the two builds of it. index.html keeps
+    the drumwave-standalone name it has always had; anything else is named after
+    itself, so sept-3.html gives sept-3-standalone.html."""
+    named = [a for a in argv[1:] if not a.startswith("-")]
+    page = named[0] if named else "index.html"
+    src = os.path.join(HERE, os.path.basename(page))
+    stem = "drumwave" if os.path.basename(page) == "index.html" else os.path.splitext(os.path.basename(page))[0]
+    return (src,
+            os.path.join(HERE, stem + "-standalone.html"),
+            os.path.join(HERE, stem + "-standalone-light.html"))
+
+
+SRC, OUT, OUT_LIGHT = sources(sys.argv)
 CACHE = os.path.join(HERE, ".build-cache")
 
 # a real browser UA, or Google serves the older truetype format instead of woff2
@@ -97,7 +112,7 @@ def main():
     light = "--light" in sys.argv
     dest = OUT_LIGHT if light else OUT
     if not os.path.exists(SRC):
-        sys.exit("index.html not found next to this script")
+        sys.exit("%s not found next to this script" % os.path.basename(SRC))
     html = open(SRC).read()
     before = len(html)
 
@@ -146,8 +161,9 @@ def main():
     open(dest, "w").write(html)
     mb = os.path.getsize(dest) / 1048576
     print("inlined %d font faces, %d scripts, %d images" % (faces, scripts, images))
-    print("index.html %.0f KB -> %s %.2f MB%s" % (
-        before / 1024, os.path.basename(dest), mb, " (re-encoded)" if light else ""))
+    print("%s %.0f KB -> %s %.2f MB%s" % (
+        os.path.basename(SRC), before / 1024, os.path.basename(dest), mb,
+        " (re-encoded)" if light else ""))
     if missing:
         print("MISSING (left as-is): " + ", ".join(missing))
     if external:
@@ -161,7 +177,7 @@ def main():
     stale = 0
     for other in sorted(glob.glob(os.path.join(HERE, "*.html"))):
         name = os.path.basename(other)
-        if name == "index.html" or "standalone" in name:
+        if name == os.path.basename(SRC) or "standalone" in name:
             continue
         txt = open(other).read()
         gone = sorted(r for r in set(re.findall(

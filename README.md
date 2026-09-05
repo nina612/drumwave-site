@@ -40,10 +40,12 @@ To hand the site to someone who can't be given a link — an email attachment, a
 stick, a laptop with no wifi:
 
 ```bash
-python3 build-standalone.py
+python3 build-standalone.py                # index.html
+python3 build-standalone.py sept-3.html    # or any other page in the folder
 ```
 
-That writes `drumwave-standalone.html`, about 7MB, with every asset folded in
+The first writes `drumwave-standalone.html`, the second `sept-3-standalone.html`.
+About 7MB each, with every asset folded in
 as a data URI: all 32 images, both GSAP scripts, and the fonts. Nothing is
 fetched when it opens. The script refuses to write a file that still has an
 external `src` or `href`, so a silently-broken build isn't possible.
