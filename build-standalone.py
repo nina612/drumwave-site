@@ -5,6 +5,8 @@
     python3 build-standalone.py --light             index.html, about a third the size
     python3 build-standalone.py sept-3.html         any other page in the folder
     python3 build-standalone.py sept-3.html --light
+    python3 build-standalone.py sept-3.html --as drumwavefinal
+                                                    name the build for sending on
 
 Reads a page and writes <name>-standalone.html beside it with every asset inlined:
 images and fonts as data URIs, GSAP inlined as script text. The result opens with
@@ -40,10 +42,24 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 def sources(argv):
     """Which page to build, and what to call the two builds of it. index.html keeps
     the drumwave-standalone name it has always had; anything else is named after
-    itself, so sept-3.html gives sept-3-standalone.html."""
-    named = [a for a in argv[1:] if not a.startswith("-")]
+    itself, so sept-3.html gives sept-3-standalone.html.
+
+    --as NAME overrides that, for a build that is going to someone: the working name
+    of the page it came from is rarely the name you want on a file you send on."""
+    args = argv[1:]
+    alias = None
+    if "--as" in args:
+        i = args.index("--as")
+        if i + 1 < len(args):
+            alias = os.path.splitext(os.path.basename(args[i + 1]))[0]
+        args = args[:i] + args[i + 2:]
+    named = [a for a in args if not a.startswith("-")]
     page = named[0] if named else "index.html"
     src = os.path.join(HERE, os.path.basename(page))
+    if alias:
+        return (src,
+                os.path.join(HERE, alias + ".html"),
+                os.path.join(HERE, alias + "-light.html"))
     stem = "drumwave" if os.path.basename(page) == "index.html" else os.path.splitext(os.path.basename(page))[0]
     return (src,
             os.path.join(HERE, stem + "-standalone.html"),
