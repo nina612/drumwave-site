@@ -854,13 +854,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // where the run plays itself unless ?scroll asks otherwise. ?play gets the clock back
   // on this file if it is ever wanted for comparison.
   const SCROLL_RUN = !/(?:^|[?&#])play(?:=|&|$)/.test(location.search + location.hash);
-  // The run's feel is taken from ~/Downloads/drumwave-site/index.html, which pins its
-  // opening across four screens and scrubs it with a 0.9 smoothing rather than locking
-  // it to the scroll. The smoothing is the part that changes how it handles: the
-  // playhead eases toward the scroll position instead of tracking it exactly, so the
-  // run carries a little weight and settles after the wheel stops rather than halting
-  // on the frame. Reduced motion drops the smoothing, as it does there.
-  const RUN_SCRUB = RM ? true : 0.9;
+  // Locked to the scroll, not eased toward it. The reference file this was taken from
+  // scrubs with 0.9s of smoothing, and that is right there: it free-scrolls, so the
+  // smoothing is the only thing giving the run any weight. Here the page snaps, and the
+  // glide between stops already supplies all of it — so the smoothing only added a
+  // second lag on top of the first. Measured, the scroll finished at 529ms and the
+  // picture went on drifting until 1095: better than half a second of moving after the
+  // reader had stopped, which is what reads as lag.
+  const RUN_SCRUB = true;
   const RUN_PINS = 600;   // six screens. The reference's opening takes four; this file's
                           // run is longer and three of its frames longer again, so the
                           // pin grows with them — otherwise the extra length would just
