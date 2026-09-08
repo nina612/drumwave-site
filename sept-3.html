@@ -144,23 +144,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    the tap frame carries "Every tap. Every step." and the delivery frame finishes the
    sentence. Top-anchored at 558/1080, on the 6.3vw left and 1310/1920 measure the
    every-tap screen already uses, so the two read as the same voice. */
-/* The tails stack on the same two lines under line 1, one shown at a time — the family
-   frame changes what the sentence finishes with (Figma 3406-5908) rather than adding a
-   second block beside it. 1407/1920 is that node's measure, the widest of the set. */
-/* The two statements sit on the same origin, one up at a time. They used to be a line
-   plus two tails stacked under it, which is what a line-by-line build needs; a whole
-   statement arriving at once does not. */
+/* One origin for all three statements.
+   Node 3406-5908 stacks "Own and save your data. Grow its value." in slots two and
+   three of a three-line box, the first slot holding the previous statement at zero
+   alpha — which made the two statements END level rather than start level, and this
+   rule reproduced that with a one-line offset. Asked for instead: the same placement
+   as "Every tap. Every step." and "Your life creates data", so all three begin on the
+   same line. The hero is matched onto this origin too (see #act1 .hero-h), so the
+   three sentences occupy one place on screen and the eye never travels between them.
+   Only one is ever visible: A clears out over .25 before B starts, so stacking the two
+   on one origin costs no overlap. */
 #act1 .run-say .say{position:absolute;left:0;top:0;width:100%}
-/* Figma 3406-5908's text node is named "Every tap. Every step. Own and save your
-   data. Grow its value." and stands 378 tall on a 126 line — three lines, of which
-   the first is the previous statement carried along at zero alpha. So the copy that
-   shows sits in slots two and three, and the two statements end level rather than
-   starting level: 558+378 and 561+378 both land within 3px of the same baseline.
-   One line down, in em so it stays one line at every size. Doing it this way rather
-   than anchoring the block to the bottom of the frame keeps the phone where it is —
-   there the block is 11.7vh, not the 35vh it is here, and a bottom anchor would
-   drop it most of a screen. */
-#act1 .run-say #sayB{top:.9em}
 /* 400, not the 300 .display carries: the node draws this copy at the same weight as
    the headline. Everything else here was already on the node's numbers — 121/1920
    left, 558/1080 top, 140px on 126, -4.2px of tracking. The width is the one figure
@@ -1122,20 +1116,26 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // sentence, which the reader arrives already reading.
   const RUN_TRANSIT = [1, 9];
   act1Frames.forEach(([fi, at, span], k) => {
-    // The tap is the exception to settled(). It rests 2.2 into its 4.2, which is a
-    // little past halfway rather than .6 in or, as it was, .4 from the end.
+    // The tap is the exception to settled(): it rests 1.53 into its 7.5, and the number
+    // comes from the baby rather than from this frame.
     //
-    // At .4 from the end the reader landed on it with 80px of the frame left, so the
-    // next scroll left it more or less at once — landing on the tap barely registered
-    // as landing anywhere. 2.2 leaves 390px of it after the stop, so it holds through a
-    // nudge and lingers into the start of the next gesture. Its zoom still runs mostly
-    // across the scroll that arrives on it, and finishes just after.
+    // Asked for: "Every tap. Every step." should come in the same way "Own and save
+    // your data." does. The tween was already identical — same .45, same .08 stagger,
+    // same power1.out out of the same mask — so what differed was not the manner but
+    // where the arrival sat relative to landing. The baby's sentence finishes .67
+    // before its stop, so the reader lands just as the words settle. The tap's used to
+    // finish 1.44 before its stop, so by the time they arrived the sentence had been
+    // sitting there and the arrival had happened somewhere on the approach.
     //
-    // The stop's position also sets both neighbouring gaps, which is the real
-    // constraint: earlier shortens the approach and lengthens the run on to the baby,
-    // and both have to stay under the step cap or they stop being one gesture.
+    // Starting at .25 after the cut, as the baby's does, three lines at .08 finish at
+    // .86; .86 + .67 is 1.53. Both sentences now land on the reader the same way.
+    //
+    // The stop also sets both neighbouring gaps, and this improves them: 1275px and
+    // 1346px against the 1030 and 967 that follow, a 1.39x spread across the whole run
+    // where it was 2.7x before the frame was lengthened. And the tap photograph keeps
+    // 1242px of itself after the stop, more than the 869 it had at 2.2.
     if(!RUN_TRANSIT.includes(fi))
-      runStops.push(fi === 10 ? at + 2.2 : settled(at, span));
+      runStops.push(fi === 10 ? at + 1.53 : settled(at, span));
     tl1.fromTo(f1(fi), {opacity:0.001},
       {opacity:1, duration:CUT, ease:'none', immediateRender:false}, at);
     tl1.set(f1(k ? act1Frames[k-1][0] : 0), {opacity:0}, at + CUT);
@@ -1174,7 +1174,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // in the first fraction of the scroll, so it snapped in where the other one drifts.
   // Landing on the tap now finds the sentence whole, the way landing on the baby does.
   tl1.fromTo(sayA, {yPercent:SAY_OUT},
-    {yPercent:0, duration:.45, stagger:.08, ease:'power1.out', immediateRender:false}, T_TAP + .15);
+    {yPercent:0, duration:.45, stagger:.08, ease:'power1.out', immediateRender:false}, T_TAP + .25);
 
   /* ---------- ACT 2 ---------- */
   // No trigger of its own: it is appended to act 1 below so the hero runs
