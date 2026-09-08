@@ -1212,24 +1212,34 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // 2 — open an account, the card easing up between the two framings. The blue casts
     // belong to the introducing screen only; the open-an-account screen wants a clean
     // corner, so they leave with the copy that brought them in.
-    tl.fromTo(solA, {yPercent:0}, {yPercent:-112, duration:.3, stagger:.06}, 1.0);
-    tl.fromTo('#solStateA .sol-body', {opacity:.7}, {opacity:0, duration:.24}, 1.0);
-    tl.fromTo('#solutionPreview .sol-glow-l', {opacity:.4}, {opacity:0, duration:.34, ease:'power1.inOut'}, 1.0);
-    tl.fromTo('#solutionPreview .sol-glow-r', {opacity:.2}, {opacity:0, duration:.34, ease:'power1.inOut'}, 1.0);
-    tl.fromTo('#solutionPreview .sol-card', {y:0}, {y:cardRise, duration:.6, ease:'power2.inOut'}, 1.04);
-    tl.fromTo(solB, {yPercent:112}, {yPercent:0, duration:.34, stagger:.1, ease:'power3.out'}, 1.24);
-    tl.fromTo('#solutionPreview .sol-cta', {opacity:0, y:12}, {opacity:1, y:0, duration:.26, ease:'power2.out'}, 1.56);
+    // Every number in this unit is a little quicker than it was, to buy this framing a
+    // plateau. It used to be whole only from 1.74, and its stop is at 2.0 — 281px of
+    // scroll, the least of the three, and it ENDED on the stop, so a nudge past began
+    // dismantling it at once. It is now whole from 1.64 and does not start leaving
+    // until 2.2, which puts the stop inside the plateau rather than at its edge.
+    tl.fromTo(solA, {yPercent:0}, {yPercent:-112, duration:.26, stagger:.05}, 1.0);
+    tl.fromTo('#solStateA .sol-body', {opacity:.7}, {opacity:0, duration:.2}, 1.0);
+    tl.fromTo('#solutionPreview .sol-glow-l', {opacity:.4}, {opacity:0, duration:.3, ease:'power1.inOut'}, 1.0);
+    tl.fromTo('#solutionPreview .sol-glow-r', {opacity:.2}, {opacity:0, duration:.3, ease:'power1.inOut'}, 1.0);
+    tl.fromTo('#solutionPreview .sol-card', {y:0}, {y:cardRise, duration:.5, ease:'power2.inOut'}, 1.02);
+    tl.fromTo(solB, {yPercent:112}, {yPercent:0, duration:.3, stagger:.08, ease:'power3.out'}, 1.18);
+    tl.fromTo('#solutionPreview .sol-cta', {opacity:0, y:12}, {opacity:1, y:0, duration:.24, ease:'power2.out'}, 1.40);
 
     // 3 — how does a Data Savings Plan work. The card and the copy that framed it clear
     // out, and the four cards come up in their place. This is the beat that used to be a
     // section below; on anything wider than a phone it happens on the spot.
     if(withCards){
-      tl.fromTo(solB, {yPercent:0}, {yPercent:-112, duration:.3, stagger:.06}, 2.0);
-      tl.fromTo('#solutionPreview .sol-cta', {opacity:1, y:0}, {opacity:0, y:-10, duration:.26}, 2.0);
-      tl.fromTo('#solutionPreview .sol-card', {opacity:1}, {opacity:0, duration:.4, ease:'power1.inOut'}, 2.06);
-      tl.fromTo('#solHow', {opacity:0}, {opacity:1, duration:.46, ease:'power1.inOut'}, 2.3);
-      tl.fromTo('#solHow .how-title', {y:26}, {y:0, duration:.4, ease:'power2.out'}, 2.34);
-      tl.fromTo('#solHow .step', {y:36, opacity:0}, {y:0, opacity:1, duration:.42, stagger:.07, ease:'power2.out'}, 2.44);
+      // 2.2 rather than 2.0: the extra fifth of a unit is the headroom the open-an-
+      // account framing now has past its stop. The cards then have less of the unit to
+      // arrive in, so their moves are quicker too — they still finish at 2.91, ahead of
+      // their own stop at 3.0, which is what matters. The hold below is untouched, so
+      // the timeline is still 4.0 and the three stops do not move.
+      tl.fromTo(solB, {yPercent:0}, {yPercent:-112, duration:.26, stagger:.05}, 2.2);
+      tl.fromTo('#solutionPreview .sol-cta', {opacity:1, y:0}, {opacity:0, y:-10, duration:.22}, 2.2);
+      tl.fromTo('#solutionPreview .sol-card', {opacity:1}, {opacity:0, duration:.32, ease:'power1.inOut'}, 2.24);
+      tl.fromTo('#solHow', {opacity:0}, {opacity:1, duration:.4, ease:'power1.inOut'}, 2.3);
+      tl.fromTo('#solHow .how-title', {y:26}, {y:0, duration:.34, ease:'power2.out'}, 2.34);
+      tl.fromTo('#solHow .step', {y:36, opacity:0}, {y:0, opacity:1, duration:.36, stagger:.05, ease:'power2.out'}, 2.40);
     }
 
     // the hold that carries the last framing out of view unchanged
