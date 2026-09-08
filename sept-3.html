@@ -237,7 +237,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* Figma 3260-117245: the copy block is vertically centred on the frame and 849px
    wide on a 1920 measure, with the body 37px under the headline */
 .solution-preview #solStateA{top:50%;transform:translateY(-50%);width:44.22vw;max-width:none}
-.solution-preview #solStateB{top:30.8vh}
+/* State B's own node: 115 in from the left, 333 down, and 390 under a block that is
+   three 118.8 lines — 333+357+390 is the 1080 frame. So it is deliberately NOT
+   centred the way state A is; it sits 29px above centre, and the 3px of left is
+   its own too. Both states are drawn on their own frame, and the words differ
+   across the change, so neither offset reads as a jump. */
+.solution-preview #solStateB{left:5.99vw;top:30.8vh}
 .solution-preview .sol-headline{font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2.2rem,6.25vw,7.5rem);line-height:.99;letter-spacing:-.03em;color:#E3E3E3}
 .solution-preview .sol-blue{color:#278EFF}
 .solution-preview .sol-body{margin-top:1.93vw;max-width:none;font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.95rem,1.04vw,1.25rem);line-height:1.5;color:#fff;opacity:0}
@@ -457,6 +462,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .solution-preview .sol-state{left:8vw;max-width:84vw}
   .solution-preview #solStateA,
   .solution-preview #solStateB{top:20vh}
+  /* the desktop 115 is an id rule, so it outranks .sol-state's 8vw here unless said again */
+  .solution-preview #solStateB{left:8vw}
   /* the centred, fixed-width block is a desktop composition only */
   .solution-preview #solStateA{transform:none;width:auto;max-width:84vw}
   .solution-preview .sol-body{max-width:84vw;margin-top:1.4em}
