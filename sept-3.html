@@ -1043,7 +1043,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // The words these frames used to carry are gone — the sentence from the tap frame
   // stands over all three instead — so their lengths answer to their tags now, not to
   // a word arriving on each. WORD_IN and RAPID went with the words.
-  const HOLD0 = 3.4;              // frame 0's whole time on screen
+  // frame 0's whole time on screen. 3.4 was asked for as a longer beat on this
+  // photograph, and it was the right number while the run played on its own clock —
+  // 3.4 seconds. Scrubbed it is not time, it is distance: 1238px, the longest frame in
+  // act 2, of which 1001px falls AFTER the frame's stop with nothing changing across
+  // any of it. The baby frame holds even longer and does not read that way because its
+  // hold carries the change of copy; this one carries nothing, so it reads as the same
+  // picture costing several scrolls. Same reasoning FINAL_HOLD already gets below.
+  const HOLD0 = SCROLL_RUN ? 1.8 : 3.4;
   // The baby photo eases over into the family photo rather than cutting to it, and
   // the run then rests on the family photo before starting over — no fade to black,
   // no clearing the copy. FINAL_HOLD counts from when the family photo is fully
