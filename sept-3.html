@@ -142,6 +142,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    plus two tails stacked under it, which is what a line-by-line build needs; a whole
    statement arriving at once does not. */
 #act1 .run-say .say{position:absolute;left:0;top:0;width:100%}
+/* Figma 3406-5908's text node is named "Every tap. Every step. Own and save your
+   data. Grow its value." and stands 378 tall on a 126 line — three lines, of which
+   the first is the previous statement carried along at zero alpha. So the copy that
+   shows sits in slots two and three, and the two statements end level rather than
+   starting level: 558+378 and 561+378 both land within 3px of the same baseline.
+   One line down, in em so it stays one line at every size. Doing it this way rather
+   than anchoring the block to the bottom of the frame keeps the phone where it is —
+   there the block is 11.7vh, not the 35vh it is here, and a bottom anchor would
+   drop it most of a screen. */
+#act1 .run-say #sayB{top:.9em}
 /* 400, not the 300 .display carries: the node draws this copy at the same weight as
    the headline. Everything else here was already on the node's numbers — 121/1920
    left, 558/1080 top, 140px on 126, -4.2px of tracking. The width is the one figure
