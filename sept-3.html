@@ -884,12 +884,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // picture went on drifting until 1095: better than half a second of moving after the
   // reader had stopped, which is what reads as lag.
   const RUN_SCRUB = true;
-  const RUN_PINS = 600;   // six screens. The reference's opening takes four; this file's
-                          // run is longer and three of its frames longer again, so the
-                          // pin grows with them — otherwise the extra length would just
-                          // go by faster and undo the slowing down. Holds the ~3 units a
-                          // screen the 500 setting landed on. The 0.9 smoothing, which is
-                          // where the handling comes from, is that file's exactly.
+  // Three and a half screens, down from six. This is the number that resolves what the
+  // stops could not.
+  //
+  // The run carries three sentences. One stop per sentence is the only way every rest
+  // shows something new — two stops each meant every second scroll landed on words the
+  // reader had just read, which is what feeling stuck was. But at six screens, one stop
+  // per sentence puts 2200px between them, and a gap that wide either has to be crossed
+  // free (so the reader rests mid-crossing on a transit frame, with the same words
+  // again) or stepped (so the page carries them 1700px unasked). Both were complained
+  // about, correctly.
+  //
+  // Shortening the pin dissolves the choice: at 350% the gaps are 1375, 1313 and 962px,
+  // so each sentence is one ordinary gesture from the next, the settle never carries
+  // more than about a screen, and there is no intermediate rest to repeat anything. The
+  // photographs keep their proportions relative to one another — they are simply denser
+  // on the page, which after this many rounds of "it takes too many scrolls" is the
+  // direction it wanted to go anyway.
+  const RUN_PINS = 350;
 
   const autoPlay = {
     onEnter: self => self.animation.play(),
@@ -1016,18 +1028,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
                       [9, T_COFFEE, QUICK],
                       [10, T_TAP, TAP],
                       [11, T_PKG, PKG]];
-  // Two scrolls to "Every tap. Every step.", two more to "Own and save your data":
+  // One stop per sentence, and nothing else.
   //
-  //   rest    the hero, zooming out as the reader first pushes
-  //   1  ->   the coffee shop, the runner switching past on the way
-  //   2  ->   the tap, its zoom running across the scroll that arrives on it
-  //   3  ->   the headphones, the delivery switching past on the way
-  //   4  ->   the baby, the bag and charger switching past, then it zooms out
-  //   5  ->   free across the dissolve into the family
+  // The run had two stops for each of the three statements — the hero and the coffee
+  // both under "Your life creates data", the tap and the headphones both under "Every
+  // tap. Every step.", the baby and the family both under "Own and save your data". So
+  // every second scroll came to rest on words the reader had just finished reading,
+  // which is what feeling stuck is: the page moved and the sentence did not.
   //
-  // So the runner and the delivery are transit, each rapidly switching inside the
-  // gesture that crosses it.
-  const RUN_TRANSIT = [1, 11];
+  // The beats are the hero, the tap, the baby and the family now. Every other frame is
+  // transit, and the gaps between the beats are all wider than the step cap, so each
+  // crossing is free and takes about two gestures — which is the two scrolls per
+  // statement that was asked for, without a repeat to rest on in the middle.
+  const RUN_TRANSIT = [1, 9, 11];
   act1Frames.forEach(([fi, at, span], k) => {
     // The tap is the exception to settled(): it rests .4 before its stay ends rather
     // than .6 into it. Two things fall out of that. Its slow zoom now runs across the
@@ -1118,14 +1131,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // is through, not half a stay in
     // tl2 is added to tl1 at ACT1_END, so its own times need that offset to become
     // times on the run's clock, which is what runStops is measured in.
-    // 4 the shopping bag and 5 the charger stay transit, passed inside the gesture
-    // that leaves the headphones for the baby. The headphones itself is a beat.
+    // 0 the headphones, 4 the shopping bag and 5 the charger are all transit, crossed
+    // between the tap and the baby. The headphones was a beat and carried the same
+    // sentence as the tap, so resting on it read as the page going nowhere.
     //
     // The baby rests at 1.0 rather than settled()'s .6, because "Own and save your
     // data." starts arriving at .3 and is not whole until .9 — so at .6 the reader
     // came to rest on a sentence still moving, and only read it on the scroll after.
     // Two scrolls from the tap should land on the copy, not just on the photograph.
-    if(i !== 4 && i !== 5)
+    if(i !== 0 && i !== 4 && i !== 5)
       runStops.push(ACT1_END + (i === 7 ? at + DISSOLVE + Math.min(.6, FINAL_HOLD * .5)
                                         : i === 6 ? at + 1.45
                                         : settled(at, act2Spans[i])));
