@@ -1682,42 +1682,50 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // From there down the page is an ordinary document — the ages answer the scroll
   // directly, a year at a time, because there the scroll IS the interaction, and
   // pulling it anywhere would get between the reader and the control.
-  const bracket = y => {
-    const stops = screenStops();
-    if(!stops.length || y > stops[stops.length - 1] + 4) return null;
-    if(y <= stops[0]) return {lo:stops[0], hi:stops[0]};
-    for(let k = 0; k < stops.length - 1; k++)
-      if(y >= stops[k] && y <= stops[k+1]) return {lo:stops[k], hi:stops[k+1]};
-    return {lo:stops[stops.length-1], hi:stops[stops.length-1]};
-  };
-  // How far a gesture has to carry before it counts as going somewhere.
-  //
-  // This started as nearest-stop, which sounds equivalent to going forward and is not:
-  // it makes the price of leaving a stop half the gap, and the gaps here run from 255px
-  // to 2342px. On the widest that was a 1171px gesture, so an ordinary scroll landed
-  // nearer where it started and got pulled back — the page reading as though it had
-  // refused to move. Then a flat 220px, which fixed the flick and not the scroll: from
-  // the family frame to the plan screen, 100px and 200px both still fell back, and
-  // across 2342px of travel that is indistinguishable from being ignored.
-  //
-  // So 90px, which is smaller than one notch of a wheel. The question this is really
-  // asking is not "did you get most of the way there" — on a 2342px gap nobody does —
-  // but "did you mean to move at all". A deliberate scroll always means it; a brush of
-  // the trackpad does not, and that is the only thing still worth reversing.
+  // How far a gesture has to carry before it counts as meaning to move. Not "did you
+  // get most of the way there" — on the 2342px gap nobody does — but "did you mean to
+  // move at all". 90px is under one notch of a wheel, so a deliberate scroll always
+  // qualifies; a brush of the trackpad does not, and that is the only thing worth
+  // reversing. Still fractional on the very short hops, where changing your mind is
+  // cheap.
   const COMMIT = 90;
   const settleTarget = y => {
-    const b = bracket(y);
-    if(!b) return null;
-    if(b.lo === b.hi) return b.lo;
-    // Still fractional on the very short hops, where half a gap is under the commit
-    // and being able to change your mind is cheap.
-    const span = b.hi - b.lo, need = Math.min(span * 0.35, COMMIT);
-    // Which way the gesture went decides which stop it is leaving, so the threshold is
-    // measured from there rather than from whichever stop happens to be closer.
-    const dir = gestureFromY == null ? 0 : Math.sign(y - gestureFromY);
-    if(dir > 0) return (y - b.lo) >= need ? b.hi : b.lo;
-    if(dir < 0) return (b.hi - y) >= need ? b.lo : b.hi;
-    return (y - b.lo) < span / 2 ? b.lo : b.hi;   // no gesture to read: nearest
+    const stops = screenStops();
+    if(!stops.length) return null;
+    const last = stops.length - 1;
+    if(y > stops[last] + 4) return null;              // came to rest in the free region
+    const from = gestureFromY == null ? y : gestureFromY;
+    const dir = Math.sign(y - from);
+    if(dir === 0){                                     // no gesture to read: nearest
+      let best = stops[0];
+      for(const s of stops) if(Math.abs(s - y) < Math.abs(best - y)) best = s;
+      return best;
+    }
+    // Set out from the free region under the stops. Coming back up, the last stop is
+    // the landing, and there is nothing past it to overshoot onto.
+    if(from > stops[last] + 4) return dir < 0 ? stops[last] : null;
+    // The stop the gesture is leaving: going down, the last one at or behind where it
+    // started; going up, the first one at or ahead of it.
+    let origin = dir > 0 ? 0 : last;
+    if(dir > 0){ for(let k = 0; k <= last; k++) if(from >= stops[k] - 4) origin = k; }
+    else       { for(let k = last; k >= 0; k--) if(from <= stops[k] + 4) origin = k; }
+    const target = origin + dir;
+    if(target < 0 || target > last) return stops[origin];
+    // One screen per gesture, however far the momentum carried — the target is fixed
+    // relative to where the gesture BEGAN, not to where it happened to stop.
+    //
+    // This is the third thing the settle has had to learn, and each was the previous
+    // one's blind spot. Nearest-stop made the wide gaps immovable. A commit measured
+    // from wherever you landed made them movable but let one flick cross two or three
+    // screens, because free scrolling means a flick travels 800-2000px while the gaps
+    // here start at 255px — 1500px from the plan screen sailed straight past "Open an
+    // account" onto the cards. Anchoring to the origin cannot do either.
+    //
+    // The page still moves 1:1 under the hand; a long flick simply comes back to one
+    // screen along rather than keeping everything it covered.
+    const span = Math.abs(stops[target] - stops[origin]);
+    const need = Math.min(span * 0.35, COMMIT);
+    return Math.abs(y - stops[origin]) >= need ? stops[target] : stops[origin];
   };
   const settle = () => {
     if(gliding || touching) return;
@@ -1744,9 +1752,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   let prevY = window.scrollY;
   const beginGesture = from => { if(!inGesture){ inGesture = true; gestureFromY = from; } };
   window.addEventListener('scroll', () => {
-    if(gliding){ prevY = window.scrollY; return; }   // our own glide, not a gesture
+    const y = window.scrollY;
+    if(gliding){ prevY = y; return; }                // our own glide, not a gesture
+    // A single scroll event crossing more than a screen and a half is not a hand. It is
+    // scroll restoration on reload, or an anchor jump, or a script — and reading it as
+    // one enormous gesture would anchor the settle at wherever the reader came FROM and
+    // then walk them one stop on from there, which on a reload at the picker means
+    // being thrown back to the top of the page. Re-anchor and let the settle fall back
+    // to the nearest stop, which is the right answer when there is no gesture to read.
+    if(Math.abs(y - prevY) > 1.5 * window.innerHeight){
+      inGesture = false; gestureFromY = null; prevY = y; armSettle(); return;
+    }
     beginGesture(prevY);
-    prevY = window.scrollY;
+    prevY = y;
     armSettle();
   }, {passive:true});
   // A wheel event arrives before its own scrolling lands, so it knows the origin exactly
