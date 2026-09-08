@@ -929,6 +929,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // settles out of a 1.08 push while drifting slowly sideways for its whole time on
   // screen, so a cut arrives into movement instead of onto a still frame.
   const XIMG = 1.0, TXT = .6, TXT_E = 'power2.out';
+  // How long one photograph takes to replace the one before it. The swaps used to be
+  // instant opacity sets, which is the one thing in the run that cannot be smooth at
+  // any speed — a cut is a step function. .25 of a unit is about 110px of scroll, some
+  // five frames at an ordinary scrolling speed, so it reads as a soft cut rather than a
+  // dissolve, and a fast flick crosses it too quickly to see, which is to say it
+  // degrades back into the cut the dev notes originally asked for.
+  //
+  // Done the way the family dissolve is: the outgoing frame stays at FULL opacity
+  // underneath while the incoming one fades in on top of it, and is only dropped once
+  // it is covered. Fading them past each other would show the dark section through
+  // both at the midpoint, which reads as a blink through black.
+  const CUT = .25;
   // The copy's clock on the final cut: the lead-out and the brighten. The photo itself
   // cuts, so this times only the text that rides over the change.
   const BF = .5, BF_E = 'none';   // fits inside the last frame
@@ -1004,24 +1016,30 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
                       [9, T_COFFEE, QUICK],
                       [10, T_TAP, TAP],
                       [11, T_PKG, PKG]];
-  // Six scrolls through the run. The two quick groups take two scrolls each rather
-  // than one, so each of them keeps a stop in its middle:
+  // Two scrolls to "Every tap. Every step.", two more to "Own and save your data":
   //
   //   rest    the hero, zooming out as the reader first pushes
-  //   1  ->   the runner        | "Your life creates data" over both
-  //   2  ->   the coffee shop   |
-  //   3  ->   the tap, zooming out as it is reached
-  //   4  ->   the headphones    | "Every tap. Every step." over both, with the
-  //   5  ->   the baby, zooming | delivery, shopping bag and charger passed on the way
-  //   6  ->   the baby dissolving into the family
+  //   1  ->   the coffee shop, the runner switching past on the way
+  //   2  ->   the tap, its zoom running across the scroll that arrives on it
+  //   3  ->   the headphones, the delivery switching past on the way
+  //   4  ->   the baby, the bag and charger switching past, then it zooms out
+  //   5  ->   free across the dissolve into the family
   //
-  // Only 11, the delivery, is transit in act 1 — "straight cut to the next frame, no
-  // zoom or delay" is the one frame here meant purely to go by.
-  const RUN_TRANSIT = [11];
+  // So the runner and the delivery are transit, each rapidly switching inside the
+  // gesture that crosses it.
+  const RUN_TRANSIT = [1, 11];
   act1Frames.forEach(([fi, at, span], k) => {
-    if(!RUN_TRANSIT.includes(fi)) runStops.push(settled(at, span));
-    tl1.set(f1(k ? act1Frames[k-1][0] : 0), {opacity:0}, at);
-    tl1.set(f1(fi), {opacity:1}, at);
+    // The tap is the exception to settled(): it rests .4 before its stay ends rather
+    // than .6 into it. Two things fall out of that. Its slow zoom now runs across the
+    // scroll that ARRIVES on it — "takes the user to the tap photo, and the tap photo
+    // zooms out" — instead of being left to play afterwards. And the gap on to the
+    // headphones drops from 1858px to 904px, which is what lets that be a single
+    // scroll without the page carrying the reader a screen and a half unasked.
+    if(!RUN_TRANSIT.includes(fi))
+      runStops.push(fi === 10 ? at + span - .4 : settled(at, span));
+    tl1.fromTo(f1(fi), {opacity:0.001},
+      {opacity:1, duration:CUT, ease:'none', immediateRender:false}, at);
+    tl1.set(f1(k ? act1Frames[k-1][0] : 0), {opacity:0}, at + CUT);
     // The tap frame is the one that pushes: 1.04 rather than the 1.08 the hero and the
     // baby take, eased across its whole stay, so it reads as a drift rather than a
     // zoom. Every other frame in the run is a flat cut.
@@ -1079,10 +1097,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // where nothing moves — a third of the whole run. The reader decides when to leave a
   // held frame, so it only needs enough to register as a hold at all.
   const BABY_HOLD = 2.6, DISSOLVE = 1.5, FINAL_HOLD = SCROLL_RUN ? 1.0 : 5.0;
-  // The shopping and charging frames are the second transit group: one scroll takes the
-  // reader through both and lands on the baby. They were 1.2 apiece to give their tags
-  // room to arrive, sit and go; with the tags gone that is just distance.
-  const SHOP = .3, CHARGE = .3;
+  // The shopping and charging frames are transit, crossed inside the scroll that leaves
+  // the headphones for the baby — but at .3 they were half the length of the other two
+  // transit frames, and measurably too short to see. Counted on a hard flick, where the
+  // reader's own scroll crosses the gap rather than the settle: the runner got 3 frames
+  // and the delivery 4, while these two got ONE each, 17ms, which is not a glimpse but
+  // an absence. .7 puts them on the runner's footing.
+  const SHOP = .7, CHARGE = .7;
   const BABY = HOLD0 + SHOP + CHARGE, FAMILY = BABY + BABY_HOLD;
   const END = FAMILY + DISSOLVE + FINAL_HOLD;
   const ESD2 = [[0, 0], [4, HOLD0], [5, HOLD0 + SHOP]];
@@ -1099,16 +1120,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // times on the run's clock, which is what runStops is measured in.
     // 4 the shopping bag and 5 the charger stay transit, passed inside the gesture
     // that leaves the headphones for the baby. The headphones itself is a beat.
+    //
+    // The baby rests at 1.0 rather than settled()'s .6, because "Own and save your
+    // data." starts arriving at .3 and is not whole until .9 — so at .6 the reader
+    // came to rest on a sentence still moving, and only read it on the scroll after.
+    // Two scrolls from the tap should land on the copy, not just on the photograph.
     if(i !== 4 && i !== 5)
       runStops.push(ACT1_END + (i === 7 ? at + DISSOLVE + Math.min(.6, FINAL_HOLD * .5)
+                                        : i === 6 ? at + 1.0
                                         : settled(at, act2Spans[i])));
     if(i === 7){
       tl2.fromTo(f2(i), {opacity:0.001},
         {opacity:1, duration:DISSOLVE, ease:'none', immediateRender:false}, at);
       tl2.set(f2(arr[k-1][0]), {opacity:0}, at + DISSOLVE);
     } else {
-      if(k) tl2.set(f2(arr[k-1][0]), {opacity:0}, at);
-      tl2.set(f2(i), {opacity:1}, at);
+      tl2.fromTo(f2(i), {opacity:0.001},
+        {opacity:1, duration:CUT, ease:'none', immediateRender:false}, at);
+      if(k) tl2.set(f2(arr[k-1][0]), {opacity:0}, at + CUT);
     }
   });
   // The baby frame is where the act slows down, and it is the one image in act 2 that
@@ -1719,6 +1747,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // whatever the gap, and 255px hops and 2342px ones should not ask different things of
   // the same wrist.
   const COMMIT = 160;
+  // Going back costs more than going on. Forward, 160px is right: it is under one notch
+  // of a wheel so the page never moves on a touch, and over it so an ordinary scroll
+  // always lands. Backward at the same price is too cheap — a small upward nudge, or the
+  // tail of a trackpad gesture that overshoots and rebounds, would take a whole beat off
+  // the reader and put a photograph they had finished with back on screen. Deliberately
+  // going back still works; it just has to be deliberate.
+  const COMMIT_BACK = 420;
   // A floor on how often the wide-gap step below may fire. The settle runs 100ms after
   // scrolling stops and a drag pauses for longer than that, so one gesture can arrive
   // as two settles — and with the run down to five beats that meant a single scroll
@@ -1746,11 +1781,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     if(!stops.length) return null;
     const last = stops.length - 1;
     if(y > stops[last] + 4){ anchor = null; return null; }   // free region under the stops
-    if(anchor == null) return (anchor = nearestStop(stops, y));   // arriving with no history
+    // With no anchor yet, take it from where the gesture STARTED, not from where it
+    // ended, and then read the gesture normally. Anchoring on the end swallowed the
+    // very first scroll of the page: 500px down from the hero, the nearest stop to
+    // 500 is still the hero, so it settled straight back and nothing happened.
+    if(anchor == null) anchor = nearestStop(stops, gestureFromY == null ? y : gestureFromY);
     const delta = gestureFromY == null ? 0 : y - gestureFromY;
     // No real gesture: back to the screen they are anchored on. This is also the stray
     // event mid-glide — it has no displacement, so the journey simply resumes.
-    if(Math.abs(delta) < COMMIT) return anchor;
+    if(Math.abs(delta) < (delta < 0 ? COMMIT_BACK : COMMIT)) return anchor;
     // A deliberate gesture lands on the nearest stop to where the scrolling actually
     // stopped. Stepping exactly one stop from the anchor instead is what made the top
     // section go back and forth: the gaps up there are 255, 346, 400 and 437px while an
