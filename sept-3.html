@@ -1690,20 +1690,28 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       if(y >= stops[k] && y <= stops[k+1]) return {lo:stops[k], hi:stops[k+1]};
     return {lo:stops[stops.length-1], hi:stops[stops.length-1]};
   };
-  // How far a gesture has to carry before it counts as going somewhere. This used to
-  // settle to whichever stop was nearest, which sounds equivalent and is not: the gaps
-  // between stops run from 255px to 2342px, and nearest-stop means the price of leaving
-  // one is half the gap. On the widest ones that is a 1171px gesture, far past a normal
-  // flick, so an ordinary scroll landed nearer where it started and got pulled back —
-  // the page reading as though it had refused to move, several times in a row.
-  // A flat 220px instead, capped at half the gap so short hops stay reversible: one
-  // ordinary scroll now clears any gap on the page, and a nudge still falls back.
-  const COMMIT = 220;
+  // How far a gesture has to carry before it counts as going somewhere.
+  //
+  // This started as nearest-stop, which sounds equivalent to going forward and is not:
+  // it makes the price of leaving a stop half the gap, and the gaps here run from 255px
+  // to 2342px. On the widest that was a 1171px gesture, so an ordinary scroll landed
+  // nearer where it started and got pulled back — the page reading as though it had
+  // refused to move. Then a flat 220px, which fixed the flick and not the scroll: from
+  // the family frame to the plan screen, 100px and 200px both still fell back, and
+  // across 2342px of travel that is indistinguishable from being ignored.
+  //
+  // So 90px, which is smaller than one notch of a wheel. The question this is really
+  // asking is not "did you get most of the way there" — on a 2342px gap nobody does —
+  // but "did you mean to move at all". A deliberate scroll always means it; a brush of
+  // the trackpad does not, and that is the only thing still worth reversing.
+  const COMMIT = 90;
   const settleTarget = y => {
     const b = bracket(y);
     if(!b) return null;
     if(b.lo === b.hi) return b.lo;
-    const span = b.hi - b.lo, need = Math.min(span / 2, COMMIT);
+    // Still fractional on the very short hops, where half a gap is under the commit
+    // and being able to change your mind is cheap.
+    const span = b.hi - b.lo, need = Math.min(span * 0.35, COMMIT);
     // Which way the gesture went decides which stop it is leaving, so the threshold is
     // measured from there rather than from whichever stop happens to be closer.
     const dir = gestureFromY == null ? 0 : Math.sign(y - gestureFromY);
