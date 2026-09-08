@@ -1096,7 +1096,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // there is no starting over, so five seconds of it becomes five seconds of scrolling
   // where nothing moves — a third of the whole run. The reader decides when to leave a
   // held frame, so it only needs enough to register as a hold at all.
-  const BABY_HOLD = 2.6, DISSOLVE = 1.5, FINAL_HOLD = SCROLL_RUN ? 1.0 : 5.0;
+  const BABY_HOLD = 2.6, DISSOLVE = 2.2, FINAL_HOLD = SCROLL_RUN ? 1.0 : 5.0;
   // The shopping and charging frames are transit, crossed inside the scroll that leaves
   // the headphones for the baby — but at .3 they were half the length of the other two
   // transit frames, and measurably too short to see. Counted on a hard flick, where the
@@ -1127,7 +1127,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // Two scrolls from the tap should land on the copy, not just on the photograph.
     if(i !== 4 && i !== 5)
       runStops.push(ACT1_END + (i === 7 ? at + DISSOLVE + Math.min(.6, FINAL_HOLD * .5)
-                                        : i === 6 ? at + 1.0
+                                        : i === 6 ? at + 1.45
                                         : settled(at, act2Spans[i])));
     if(i === 7){
       tl2.fromTo(f2(i), {opacity:0.001},
@@ -1188,9 +1188,26 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // as the baby frame cuts in; statement three arrives whole in its place. Both move as
   // a block — the line-by-line build these used to do, and the transparent first line
   // that went with it, are gone.
-  tl2.to(sayA, {yPercent:-SAY_OUT, duration:.34, ease:'power2.in'}, BABY);
+  // The change of copy is the choppy part of this beat, and it was choppy because it
+  // was fast: 150 yPercent of travel in .34 of a unit, which at this density is 153px
+  // of scroll — about 26px of moving text per frame. Nearly twice the distance the
+  // pictures move per frame, in the one element made of readable edges.
+  //
+  // .6 out and .7 in now, and the two overlap by .1 rather than butting together, so
+  // the sentences pass each other instead of one stopping and the next starting. The
+  // baby's stop moves out to 1.45 to match, since that is where the new sentence has
+  // finished arriving.
+  // The easings matter more than the durations here, because this is scrubbed: an ease
+  // is a distribution of travel over SCROLL, not over time. power3.out put most of the
+  // sentence's 150 units into the first fraction of its distance and left it crawling
+  // the rest — measured peaks of 48 and 54px of moving text per frame, against the
+  // 22px a photograph moves. Snap, then crawl, which is what choppy is.
+  //
+  // power1 in both directions spreads it far more evenly, which for a masked line
+  // arriving is also the more legible reveal.
+  tl2.to(sayA, {yPercent:-SAY_OUT, duration:.6, ease:'power1.in'}, BABY);
   tl2.fromTo(sayB, {yPercent:SAY_OUT},
-    {yPercent:0, duration:.5, ease:'power3.out', immediateRender:false}, BABY + .3);
+    {yPercent:0, duration:.7, stagger:.12, ease:'power1.out', immediateRender:false}, BABY + .5);
   // the grocery tag belongs to the baby frame, which carries no word
   // The run just stops here, on the family photo with the question in white, and holds
   // for FINAL_HOLD before starting over. Nothing is faded out and nothing is cleared:
