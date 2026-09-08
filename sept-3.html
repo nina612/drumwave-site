@@ -1888,7 +1888,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // most of the way and the settle is short, because there is little left to cover.
   const travelMs = dist => Math.max(260, Math.min(1400, 200 + dist * 0.55));
   const settle = () => {
-    if(gliding || touching) return;
+    // Even when there is nothing to do, clear the gesture accounting. Returning early
+    // and leaving it behind is what has caused this every time: gestureMoved kept a
+    // whole fling's distance, the settle was armed again, read that stale distance as a
+    // fresh deliberate scroll and stepped — over and over, with no one touching
+    // anything. Measured 7320px of drift while idle.
+    if(gliding || touching){
+      inGesture = false; gestureFromY = null; gestureMoved = 0; deferUntil = 0;
+      return;
+    }
     const y = window.scrollY, to = settleTarget(y);
     // barrier and barrierDir deliberately survive: the settle fires while momentum is
     // still running, and the barrier is what holds that momentum at the beat. They are
@@ -1956,6 +1964,37 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // while NOT gliding counts, so the page can never talk itself into moving on.
   let gestureMoved = 0;
   let barrier = null, barrierDir = 0;
+  // A fling that has been released is handed to the compositor, and its wheel events
+  // stop being cancelable partway through — so preventDefault silently stops working
+  // during exactly the tail that overflows. A drag with the fingers still down stays on
+  // the main thread, which is why only the released fling ever got past the beat.
+  //
+  // So the position is held rather than the events refused. This runs in
+  // requestAnimationFrame, which fires BEFORE the frame is painted, so the compositor's
+  // overshoot is corrected in the same frame it happens and never reaches the screen.
+  // It keeps going until the scrolling has been still for a dozen frames, because the
+  // inertia it is holding back can run for the better part of two seconds.
+  let clampRaf = 0;
+  const stopClamp = () => { if(clampRaf) cancelAnimationFrame(clampRaf); clampRaf = 0; };
+  const startClamp = () => {
+    if(clampRaf) return;
+    let quiet = 0, was = window.scrollY;
+    const tick = () => {
+      if(barrier == null || barrierDir === 0){ clampRaf = 0; return; }
+      const y = window.scrollY;
+      if((barrierDir > 0 && y > barrier) || (barrierDir < 0 && y < barrier)){
+        glideWrote = barrier;
+        window.scrollTo(0, barrier);
+        quiet = 0;
+      } else {
+        quiet = (y === was) ? quiet + 1 : 0;
+      }
+      was = window.scrollY;
+      if(quiet > 12){ clampRaf = 0; return; }
+      clampRaf = requestAnimationFrame(tick);
+    };
+    clampRaf = requestAnimationFrame(tick);
+  };
   const setBarrier = (from, dir) => {
     barrier = null; barrierDir = dir;
     const stops = screenStops();
@@ -1964,6 +2003,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const j = i + dir;
     if(j < 0 || j > stops.length - 1) return;
     if(Math.abs(stops[j] - stops[i]) <= window.innerHeight * 1.5) barrier = stops[j];
+    if(barrier != null) startClamp();
   };
   let prevY = window.scrollY;
   const beginGesture = from => { if(!inGesture){ inGesture = true; gestureFromY = from; } };
@@ -2004,6 +2044,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // stale one clamps the next gesture against the wrong stop. It did: a hard flick
     // from the hero went nowhere at all.
     lastScrollAt = performance.now();
+    // The rAF clamp is what holds a released fling, but it cannot act until the next
+    // frame, so the first burst of one lands before it. Snapping back here as well
+    // takes the residual overshoot from a few hundred px to a few.
+    if(barrier != null && barrierDir !== 0 &&
+       ((barrierDir > 0 && y > barrier) || (barrierDir < 0 && y < barrier))){
+      glideWrote = barrier;
+      window.scrollTo(0, barrier);
+      prevY = barrier;
+      armSettle();
+      return;
+    }
     beginGesture(prevY);
     gestureMoved += y - prevY;
     prevY = y;
@@ -2023,7 +2074,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   window.addEventListener('wheel', e => {
     if(Math.abs(e.deltaY) < 1) return;
     const y = window.scrollY, now = performance.now();
-    if(!inGesture && now - lastWheelAt > GESTURE_GAP) setBarrier(y, Math.sign(e.deltaY));
+    // A gap in the wheel events is the ONLY test for a new gesture. It used to also
+    // require !inGesture, and inGesture is cleared in settle() — which returns early
+    // while a glide is running, so it could stay raised indefinitely. A gesture then
+    // never counted as new, setBarrier was never called, and the previous gesture's
+    // barrier stayed in force and pinned the reader where they were: stuck on "Own and
+    // save your data", one scroll doing nothing. A time gap cannot get stuck.
+    if(now - lastWheelAt > GESTURE_GAP){
+      setBarrier(y, Math.sign(e.deltaY));
+      gestureMoved = 0; inGesture = false; gestureFromY = null; deferUntil = 0;
+    }
     lastWheelAt = now;
     // Refuse the event that WOULD cross the beat, and land exactly on it — rather than
     // waiting until the page is already past. Checking after the fact left one event's
