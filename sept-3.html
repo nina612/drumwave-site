@@ -1607,8 +1607,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // It landed every screen exactly, but it also meant the page never moved while the
   // reader was moving: you pushed, and then it went. Direct beats exact here — the
   // settle still ends them on the screen, it just stops arguing with them on the way.
-  let gliding = false, glideGuard = null, glideRaf = 0, glideTo = null, lastStepAt = 0;
-  let settleTimer = null, touching = false, inGesture = false, gestureFromY = null;
+  let gliding = false, glideGuard = null, glideRaf = 0, glideTo = null, lastStepAt = 0, glideWrote = 0;
+  let settleTimer = null, touching = false, inGesture = false, gestureFromY = null, anchor = null;
   // How long the scroll has to be quiet before it counts as over. Trackpad momentum on
   // macOS keeps firing wheel events the whole way down, so the timer is reset by wheel
   // and scroll alike: it only reaches the end once the hand has stopped and the
@@ -1636,11 +1636,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // later settle would be suppressed for good — so land the scroll and drop the flag
     // on a timer regardless of whether a frame ever arrives.
     clearTimeout(glideGuard);
-    glideGuard = setTimeout(() => { window.scrollTo(0, to); gliding = false; }, ms + 140);
+    glideGuard = setTimeout(() => { glideWrote = to; window.scrollTo(0, to); gliding = false; }, ms + 140);
     const step = now => {
       const p = Math.min(1, (now - t0) / ms);
       const e = 1 - Math.pow(1 - p, 3);         // power3.out: leaves at once, lands soft
-      window.scrollTo(0, Math.round(from + (to - from) * e));
+      glideWrote = Math.round(from + (to - from) * e);
+      window.scrollTo(0, glideWrote);
       if(p < 1) glideRaf = requestAnimationFrame(step);
       else { glideRaf = 0; gliding = false; clearTimeout(glideGuard); }
     };
@@ -1657,43 +1658,39 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // reversing. Still fractional on the very short hops, where changing your mind is
   // cheap.
   const COMMIT = 90;
+  const nearestStop = (stops, y) => {
+    let best = stops[0];
+    for(const v of stops) if(Math.abs(v - y) < Math.abs(best - y)) best = v;
+    return best;
+  };
+  const stopIndex = (stops, v) => {
+    let b = 0;
+    for(let k = 1; k < stops.length; k++) if(Math.abs(stops[k] - v) < Math.abs(stops[b] - v)) b = k;
+    return b;
+  };
   const settleTarget = y => {
     const stops = screenStops();
     if(!stops.length) return null;
     const last = stops.length - 1;
-    if(y > stops[last] + 4) return null;              // came to rest in the free region
-    const from = gestureFromY == null ? y : gestureFromY;
-    const dir = Math.sign(y - from);
-    if(dir === 0){                                     // no gesture to read: nearest
-      let best = stops[0];
-      for(const s of stops) if(Math.abs(s - y) < Math.abs(best - y)) best = s;
-      return best;
-    }
-    // Set out from the free region under the stops. Coming back up, the last stop is
-    // the landing, and there is nothing past it to overshoot onto.
-    if(from > stops[last] + 4) return dir < 0 ? stops[last] : null;
-    // The stop the gesture is leaving: going down, the last one at or behind where it
-    // started; going up, the first one at or ahead of it.
-    let origin = dir > 0 ? 0 : last;
-    if(dir > 0){ for(let k = 0; k <= last; k++) if(from >= stops[k] - 4) origin = k; }
-    else       { for(let k = last; k >= 0; k--) if(from <= stops[k] + 4) origin = k; }
-    const target = origin + dir;
-    if(target < 0 || target > last) return stops[origin];
-    // One screen per gesture, however far the momentum carried — the target is fixed
-    // relative to where the gesture BEGAN, not to where it happened to stop.
-    //
-    // This is the third thing the settle has had to learn, and each was the previous
-    // one's blind spot. Nearest-stop made the wide gaps immovable. A commit measured
-    // from wherever you landed made them movable but let one flick cross two or three
-    // screens, because free scrolling means a flick travels 800-2000px while the gaps
-    // here start at 255px — 1500px from the plan screen sailed straight past "Open an
-    // account" onto the cards. Anchoring to the origin cannot do either.
-    //
-    // The page still moves 1:1 under the hand; a long flick simply comes back to one
-    // screen along rather than keeping everything it covered.
-    const span = Math.abs(stops[target] - stops[origin]);
+    if(y > stops[last] + 4){ anchor = null; return null; }   // free region under the stops
+    // The settle anchors on the stop the page is resting at or TRAVELLING TO — never on
+    // whichever is nearest. Nearest is what threw the reader backwards: brush the mouse
+    // 300ms into a 1400ms glide and you are only a quarter of the way across a 2342px
+    // gap, so the nearest stop is the one you just left, and one wheel unit sent you
+    // home. Lengthening the glides for smoothness had doubled how long that window was
+    // open. Anchoring forward cannot do it, however early the interruption lands.
+    if(anchor == null) return (anchor = nearestStop(stops, y));   // arriving with no history
+    const i = stopIndex(stops, anchor);
+    // And whether to move at all is this gesture's OWN displacement, not the distance
+    // from a stop. A stray event has no displacement, so it cannot move anything; a
+    // deliberate push has plenty, and can still turn round mid-glide.
+    const delta = gestureFromY == null ? 0 : y - gestureFromY;
+    if(Math.abs(delta) < 1) return (anchor = stops[i]);
+    const j = i + Math.sign(delta);
+    if(j < 0 || j > last) return (anchor = stops[i]);
+    const span = Math.abs(stops[j] - stops[i]);
     const need = Math.min(span * 0.35, COMMIT);
-    return Math.abs(y - stops[origin]) >= need ? stops[target] : stops[origin];
+    return (anchor = Math.abs(delta) >= need ? stops[j] : stops[i]);
   };
   // How long to take over a given distance. Both callers used to cap out — the settle
   // at 620ms, the keys at 900 — which meant the longest travels were also the fastest:
@@ -1730,7 +1727,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   const beginGesture = from => { if(!inGesture){ inGesture = true; gestureFromY = from; } };
   window.addEventListener('scroll', () => {
     const y = window.scrollY;
-    if(gliding){ prevY = y; return; }                // our own glide, not a gesture
+    if(gliding){
+      // Our own glide — unless the page has moved somewhere the glide did not put it,
+      // which means something else is scrolling. Only wheel and touch events cancel a
+      // glide, so without this a scrollbar drag mid-glide would be silently overwritten
+      // frame by frame and the page would appear to fight the reader.
+      if(Math.abs(y - glideWrote) > 4){ stopGlide(); beginGesture(prevY); prevY = y; armSettle(); return; }
+      prevY = y;
+      return;
+    }
     // A single scroll event crossing more than a screen and a half is not a hand. It is
     // scroll restoration on reload, or an anchor jump, or a script — and reading it as
     // one enormous gesture would anchor the settle at wherever the reader came FROM and
@@ -1738,7 +1743,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // being thrown back to the top of the page. Re-anchor and let the settle fall back
     // to the nearest stop, which is the right answer when there is no gesture to read.
     if(Math.abs(y - prevY) > 1.5 * window.innerHeight){
-      inGesture = false; gestureFromY = null; prevY = y; armSettle(); return;
+      inGesture = false; gestureFromY = null; anchor = null; prevY = y; armSettle(); return;
     }
     beginGesture(prevY);
     prevY = y;
@@ -1772,9 +1777,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // Held down, the key repeats about every 30ms; take one screen at a time.
     const now = performance.now();
     if(now - lastStepAt < 220){ e.preventDefault(); return; }
-    const to = stepTo(dir, gliding ? glideTo : window.scrollY);
+    const to = stepTo(dir, anchor != null ? anchor : window.scrollY);
     if(to == null) return;
     lastStepAt = now;
+    anchor = to;
     stopGlide();
     const dist = Math.abs(to - window.scrollY);
     glide(to, travelMs(dist));
