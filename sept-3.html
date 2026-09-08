@@ -105,8 +105,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .frame{position:absolute;inset:0;opacity:0;will-change:opacity,transform}
 .frame img{width:100%;height:100%;object-fit:cover}
 #act1 > .frame::after,#act2 .frame::after{content:none}
-.photo-veil{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(7,7,7,.12) 0%,rgba(7,7,7,.28) 55%,rgba(7,7,7,.62) 100%)}
-#act2 .photo-veil{background:linear-gradient(180deg,rgba(7,7,7,.05),rgba(7,7,7,.4))}
+.photo-veil{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(7,7,7,.06) 0%,rgba(7,7,7,.17) 55%,rgba(7,7,7,.40) 100%)}
+#act2 .photo-veil{background:linear-gradient(180deg,rgba(7,7,7,.03),rgba(7,7,7,.26))}
 .frame::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,7,7,.12) 0%,rgba(7,7,7,.28) 55%,rgba(7,7,7,.62) 100%)}
 .frame.on{opacity:1}
 .pad{position:absolute;left:5vw;right:5vw}
@@ -117,13 +117,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    vertical overflow in a 16:9 box; the node's y of -105 is 52.5% of that, not the 50%
    cover would centre on. Five pixels, but it is the difference the node asks for. */
 #act2 .frame-baby img{object-position:50% 52.5%}
-/* Type and placement come straight off the design: Titillium 400 at 140/112px with
-   -4.2px of tracking, in a box that hugs its own text 121px in from the left and
-   138px up from the bottom of a 1920x1080 frame. As fractions that is 6.3vw — the
-   same left margin the run's copy already sits on — and 12.78vh. The 718px above it
-   and 1061px to its right are what is left over, not measurements to hold. */
-#act1 .hero-h{
-  position:absolute;left:6.3vw;bottom:12.78vh;max-width:92vw;color:#fff;
+/* Type comes straight off the design: Titillium 400 at 140/112px with -4.2px of
+   tracking. Placement does not — asked for: sit exactly where "Every tap. Every step."
+   sits, so the two statements read as one voice in one place rather than as two blocks
+   the eye has to travel between. So this is top-anchored on .run-say's 51.67vh (558 of
+   1080) instead of the 12.78vh up from the bottom the node draws it at.
+   The 6.3vw left was already shared. The one number that is not simply copied is the
+   nudge below: the two blocks set different line-heights, .8 here against .9 there, and
+   a line box shorter than its own text overflows symmetrically — so at equal box tops
+   this headline's glyphs would ride 0.05em, about 7px at 140, above the other's. The
+   .025em pushes them back down onto it. */
+/* z-index 6, the same as .run-say. Without it this headline paints below #act2, which
+   comes after it in the DOM with an automatic z-index — and #act2's own scrim is at full
+   opacity from the start, so "Your life creates data" was reading through an extra layer
+   of it that none of the other copy had over it. */
+#act1 .hero-h{z-index:6;
+  position:absolute;left:6.3vw;top:calc(51.67vh + .05em);bottom:auto;max-width:92vw;color:#fff;
   /* 7.29vw is 140/1920, so the cap is reached at exactly the frame it was drawn on.
      The floor stays at the 3rem it has always been: the spec is for the wide screen,
      and letting it set the phone's size too would have shrunk the headline there
@@ -239,7 +248,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .solution-preview #solStateB{left:5.99vw;top:30.8vh}
 .solution-preview .sol-headline{font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2.2rem,6.25vw,7.5rem);line-height:.99;letter-spacing:-.03em;color:#E3E3E3}
 .solution-preview .sol-blue{color:#278EFF}
-.solution-preview .sol-body{margin-top:1.93vw;max-width:none;font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.95rem,1.04vw,1.25rem);line-height:1.5;color:#fff;opacity:0}
+/* 28px. Node 3260:117251 gives this paragraph 84px across two lines, which is 42 a
+   line — 28px on 1.5 leading, where it had been 20. */
+.solution-preview .sol-body{margin-top:1.93vw;max-width:none;font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(1rem,1.458vw,1.75rem);line-height:1.5;color:#fff;opacity:0}
 .solution-preview .sol-cta{position:absolute;left:5.75vw;top:75.5vh;z-index:2;pointer-events:auto;display:inline-flex;align-items:center;padding:12px 24px;border-radius:100px;background:#fff;color:#090908;font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(.85rem,.94vw,1.125rem);line-height:1;opacity:0;transition:background .25s}
 .solution-preview .sol-cta:hover{background:#E3E3E3}
 /* THE DSP CARD — Figma 3260-117245, measured off the 1920x1080 frame.
@@ -359,8 +370,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    Unverified against 3381-35616 — check it before assuming the two still agree. */
 .closing{position:absolute;inset:0;z-index:10;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:7.4vh;background:#070707;opacity:0;pointer-events:none}
 .closing-copy{width:94.59%;text-align:center}
-.closing-h{margin:0;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,3.33vw,4rem);line-height:.93;letter-spacing:-.04em;color:#fff}
-.closing-sub{margin:1.04vw 0 0;font-family:'Open Sans',sans-serif;font-weight:500;font-size:clamp(.85rem,.94vw,1.125rem);line-height:1.38;color:#fff;opacity:.7}
+/* 120px: 6.25vw is 120/1920, so the cap is reached on the frame it was drawn on. */
+.closing-h{margin:0;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,6.25vw,7.5rem);line-height:.93;letter-spacing:-.04em;color:#fff}
+/* 28px, matching the plan screen's subtext. 1.458vw is 28/1920. */
+.closing-sub{margin:1.04vw 0 0;font-family:'Open Sans',sans-serif;font-weight:500;font-size:clamp(1rem,1.458vw,1.75rem);line-height:1.38;color:#fff;opacity:.7}
 .closing-cta{margin-top:3.38vw;pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;padding:.83vw 1.25vw;border-radius:100px;background:linear-gradient(133.78deg,#4B27FF 1.94%,#0091FF 100.59%);font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(.85rem,.94vw,1.125rem);line-height:1;color:#fff;white-space:nowrap;transition:filter .25s}
 .closing-cta:hover{filter:brightness(1.12)}
 
@@ -566,7 +579,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         <span class="ln"><span>Introducing the</span></span>
         <span class="ln"><span class="sol-blue">Data Savings Plan</span></span>
       </div>
-      <p class="sol-body">A Data Savings Plan lets you turn the data you generate every day into a source of financial opportunity, today and for the future.</p>
+      <p class="sol-body">Turn the data you generate every day into a source of financial opportunity, today and for the future.</p>
     </div>
 
     <div class="sol-state" id="solStateB">
@@ -750,24 +763,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       </div>
       <div class="faq-row">
         <div class="faq-text">
-          <p class="faq-q">What is a data transaction?</p>
-          <div class="faq-a">
-          <p>A data transaction happens whenever you move or put the value of your data to work from your dWallet, just like a money transaction from your bank account.</p>
-          <p>Data transactions use Data Certificates, secure digital records that represent your rights to specific data and allow your dWallet to transact with it.</p>
-          <p>When you wire, withdraw, or pay with money, you make a money transaction. When you request your data from a company and receive a Data Certificate in your wallet, save it in a Data Savings Plan, exchange it, or invest it, you make a data transaction.</p>
-          </div>
-        </div><i>+</i>
-      </div>
-      <div class="faq-row">
-        <div class="faq-text">
-          <p class="faq-q">Who is in control of a data transaction?</p>
-          <div class="faq-a">
-          <p>You are. Your dWallet is non-custodial, which means you start every data transaction. Nothing moves in or out of your wallet without your authorization. Your data never leaves the ecosystem. You decide when and how to license your data, while your dWallet keeps it protected and under your control.</p>
-          </div>
-        </div><i>+</i>
-      </div>
-      <div class="faq-row">
-        <div class="faq-text">
           <p class="faq-q">What is a Data Savings Plan?</p>
           <div class="faq-a">
           <p>A Data Savings Plan (DSP) is a data-backed financial instrument that builds data wealth, as traditional savings plans build wealth from money. With a DSP the data you generate and contribute is owned by you, and you can save, and benefit from the value it generates.</p>
@@ -866,6 +861,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 <script>
 (function(){
   gsap.registerPlugin(ScrollTrigger);
+  // Always open at the top. The browser otherwise restores the last scroll position on
+  // reload, and with the run pinned across fifteen thousand pixels that drops the reader
+  // into the middle of a scrubbed sequence — which, arriving a moment after load, looks
+  // exactly like the page scrolling itself. Measured: a reload jumped 11106px on its
+  // own before this.
+  if('scrollRestoration' in history) history.scrollRestoration = 'manual';
   const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   // Everything up to the age ticker runs on its own clock: the timeline plays
   // when the screen is reached and rewinds if you scroll back above it, rather
@@ -909,7 +910,29 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // photographs keep their proportions relative to one another — they are simply denser
   // on the page, which after this many rounds of "it takes too many scrolls" is the
   // direction it wanted to go anyway.
-  const RUN_PINS = 350;
+  // Four and a half screens of pinned scrolling for the run.
+  //
+  // With ScrollTrigger's directional snap, a gentle scroll advances exactly one beat
+  // whatever the distance between them — measured: a 601px scroll crosses a 5300px gap
+  // and still lands on the next beat, no further. So the gaps cost the reader nothing,
+  // and how wide they are decides only one thing: whether a released fling can clear
+  // more than one. At 350% they were 1325px and a single fling cleared the whole run,
+  // which is what "one scroll skips through the whole thing" was.
+  //
+  // Longer was tried and is worse. At 1400% the gaps beat the fling outright, but
+  // snapping across pins that long visibly destabilised everything after the run: one
+  // 601px scroll jumped 15,720px, out of the plan screen and into the picker. 450% is
+  // the length where the gaps are wide enough to slow a fling and the snap tween is
+  // still covering a distance it can handle.
+  //
+  // Nothing about the run's look changes with the pin length: the frames keep their
+  // proportions, and the snap covers whatever distance it has in its own 0.25-0.6s, so
+  // the passing photographs get the same share of that time either way — measured at
+  // 134-752ms each, all well clear of the ~100ms an image needs to register.
+  //
+  // What the length DOES change is every duration below, because on a scrubbed
+  // timeline a duration is a distance. See the note above XIMG.
+  const RUN_PINS = 450;
 
   const autoPlay = {
     onEnter: self => self.animation.play(),
@@ -948,6 +971,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // it read as smooth is that the photo is already in motion when it lands: it
   // settles out of a 1.08 push while drifting slowly sideways for its whole time on
   // screen, so a cut arrives into movement instead of onto a still frame.
+  // A sentence's arrival is a distance, not a duration, because this timeline is
+  // scrubbed: .45 of a unit is 113px of scrolling at this pin length, where the .7 it
+  // used to be was 175px, and at the 900% pin briefly tried it would have been 351.
+  // That is why the copy read as taking forever to turn up — the number had not
+  // changed but the pixels behind it had.
   const XIMG = 1.0, TXT = .6, TXT_E = 'power2.out';
   // How long one photograph takes to replace the one before it. The swaps used to be
   // instant opacity sets, which is the one thing in the run that cannot be smooth at
@@ -1055,11 +1083,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // every second scroll came to rest on words the reader had just finished reading,
   // which is what feeling stuck is: the page moved and the sentence did not.
   //
-  // The beats are the hero, the tap, the baby and the family now. Every other frame is
-  // transit, and the gaps between the beats are all wider than the step cap, so each
-  // crossing is free and takes about two gestures — which is the two scrolls per
-  // statement that was asked for, without a repeat to rest on in the middle.
-  const RUN_TRANSIT = [1, 9, 11];
+  // Two stops per statement, one per frame that carries it.
+  //
+  // Cutting this to one stop per statement is what made the tap skippable. Measured
+  // with only four stops in the run — hero 0, tap 1420, baby 2975, family 3946 — the
+  // tap had a single stop and 1555px of nothing after it, so one gesture that carried
+  // past it went all the way to the baby and "Every tap. Every step." was never landed
+  // on at all. "Own and save your data." never had that problem, because it has always
+  // had two frames with a stop each, the baby and the family.
+  //
+  // So the delivery frame is a beat again and statement A is built the same way:
+  // land on the tap, one more gesture to the delivery, and only then out. That is the
+  // two scrolls to get past each statement that was asked for, and unlike the earlier
+  // version of two-per-statement the pair here are two DIFFERENT photographs under one
+  // sentence, not the same sentence twice on frames the reader has already read.
+  //
+  // 1 the runner and 9 the coffee shop stay transit: they are under the hero's
+  // sentence, which the reader arrives already reading.
+  const RUN_TRANSIT = [1, 9];
   act1Frames.forEach(([fi, at, span], k) => {
     // The tap is the exception to settled(). It rests 2.2 into its 4.2, which is a
     // little past halfway rather than .6 in or, as it was, .4 from the end.
@@ -1113,7 +1154,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // in the first fraction of the scroll, so it snapped in where the other one drifts.
   // Landing on the tap now finds the sentence whole, the way landing on the baby does.
   tl1.fromTo(sayA, {yPercent:SAY_OUT},
-    {yPercent:0, duration:.7, stagger:.12, ease:'power1.out', immediateRender:false}, T_TAP + .5);
+    {yPercent:0, duration:.45, stagger:.08, ease:'power1.out', immediateRender:false}, T_TAP + .15);
 
   /* ---------- ACT 2 ---------- */
   // No trigger of its own: it is appended to act 1 below so the hero runs
@@ -1206,7 +1247,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // on the untinted photo, and the tint then arrived on their next scroll, which reads
   // as the same photograph costing two. Done by .45 it is on screen when the frame
   // settles, and it is still inside that frame's hold rather than on a handover.
-  tl2.to('#act2 .line-veil', {opacity:.18, duration:.4}, .05);
+  tl2.to('#act2 .line-veil', {opacity:.12, duration:.4}, .05);
   // The photo swap here is the same cut as the others; what sets the beat apart is
   // the text riding on it — an eased lead-out and a brighten. Both are kept short so
   // they land with the cut rather than running long past it.
@@ -1251,9 +1292,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   //
   // power1 in both directions spreads it far more evenly, which for a masked line
   // arriving is also the more legible reveal.
-  tl2.to(sayA, {yPercent:-SAY_OUT, duration:.6, ease:'power1.in'}, BABY);
+  // .25 out and in at .25, rather than .4 and .4. The two cannot overlap — they share
+  // an origin — so the first has to be clear before the second starts, and shortening
+  // the exit is what buys the arrival its earlier start.
+  tl2.to(sayA, {yPercent:-SAY_OUT, duration:.25, ease:'power1.in'}, BABY);
   tl2.fromTo(sayB, {yPercent:SAY_OUT},
-    {yPercent:0, duration:.7, stagger:.12, ease:'power1.out', immediateRender:false}, BABY + .5);
+    {yPercent:0, duration:.45, stagger:.08, ease:'power1.out', immediateRender:false}, BABY + .25);
   // the grocery tag belongs to the baby frame, which carries no word
   // The run just stops here, on the family photo with the question in white, and holds
   // for FINAL_HOLD before starting over. Nothing is faded out and nothing is cleared:
@@ -1413,6 +1457,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const solSnap = [0, 1, 2, 3].filter(t => t < tl.duration() - .05)
                                 .map(t => t / tl.duration()).concat([1]);
     const trig = ScrollTrigger.create({trigger:'#solution', start:'top top',
+      // 500% for the same reason as RUN_PINS: the three framings sit far enough apart
+      // that a fling cannot take all three, and wider gaps cost no extra scrolls, since
+      // a gentle scroll advances one framing whatever the distance.
       end:'+=500%', pin:true, scrub:true, animation:tl,
       snap:{snapTo:solSnap, duration:{min:.25, max:.6}, delay:.08, ease:'power2.inOut'}});
     fitSolHow();
