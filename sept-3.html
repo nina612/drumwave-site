@@ -1676,18 +1676,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // whatever the gap, and 255px hops and 2342px ones should not ask different things of
   // the same wrist.
   const COMMIT = 160;
-  // One screen per gesture needs a floor on how often a step may be taken, because the
-  // settle fires 100ms after the scrolling stops and a slow drag pauses for longer than
-  // that. The gesture is then over as far as the page knows: it steps, the finger moves
-  // again, and it steps a second time — one drag, two screens. Measured gaps of 134ms
-  // inside a single continuous gesture, so this is not hypothetical.
-  //
-  // Inside the cooldown a settle still runs and still returns the reader to the stop
-  // they are anchored on; it just will not take another step. Deliberate scrolls are
-  // rarely less than half a second apart, and pauses within one gesture almost always
-  // are.
-  const STEP_COOLDOWN = 450;
-  let lastCommitAt = 0;
   const nearestStop = (stops, y) => {
     let best = stops[0];
     for(const v of stops) if(Math.abs(v - y) < Math.abs(best - y)) best = v;
@@ -1703,26 +1691,28 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     if(!stops.length) return null;
     const last = stops.length - 1;
     if(y > stops[last] + 4){ anchor = null; return null; }   // free region under the stops
-    // The settle anchors on the stop the page is resting at or TRAVELLING TO — never on
-    // whichever is nearest. Nearest is what threw the reader backwards: brush the mouse
-    // 300ms into a 1400ms glide and you are only a quarter of the way across a 2342px
-    // gap, so the nearest stop is the one you just left, and one wheel unit sent you
-    // home. Lengthening the glides for smoothness had doubled how long that window was
-    // open. Anchoring forward cannot do it, however early the interruption lands.
     if(anchor == null) return (anchor = nearestStop(stops, y));   // arriving with no history
-    const i = stopIndex(stops, anchor);
-    // And whether to move at all is this gesture's OWN displacement, not the distance
-    // from a stop. A stray event has no displacement, so it cannot move anything; a
-    // deliberate push has plenty, and can still turn round mid-glide.
     const delta = gestureFromY == null ? 0 : y - gestureFromY;
-    if(Math.abs(delta) < 1) return (anchor = stops[i]);
+    // No real gesture: back to the screen they are anchored on. This is also the stray
+    // event mid-glide — it has no displacement, so the journey simply resumes.
+    if(Math.abs(delta) < COMMIT) return anchor;
+    // A deliberate gesture lands on the nearest stop to where the scrolling actually
+    // stopped. Stepping exactly one stop from the anchor instead is what made the top
+    // section go back and forth: the gaps up there are 255, 346, 400 and 437px while an
+    // ordinary gesture is 500px or more, so the scroll always overshot the one-stop
+    // target and was hauled back — measured, a 500px scroll from 673 ran to 1213 and
+    // was pulled 285px backwards. Nearest only ever corrects by less than half a gap,
+    // and usually forwards.
+    const near = nearestStop(stops, y);
+    if(near !== anchor) return (anchor = near);
+    // Unless the gesture has not brought any other stop closer, which happens on the
+    // wide gaps — the family frame to the plan screen is 2342px, so 200px in, the stop
+    // you just left is still the nearest one and nearest alone would refuse to move.
+    // Take the next one along. This is the getting-stuck, and the only case that needs
+    // the anchor rather than the position.
+    const i = stopIndex(stops, anchor);
     const j = i + Math.sign(delta);
-    if(j < 0 || j > last) return (anchor = stops[i]);
-    if(Math.abs(delta) < COMMIT) return (anchor = stops[i]);
-    const now = performance.now();
-    if(now - lastCommitAt < STEP_COOLDOWN) return (anchor = stops[i]);
-    lastCommitAt = now;
-    return (anchor = stops[j]);
+    return (anchor = (j < 0 || j > last) ? stops[i] : stops[j]);
   };
   // How long to take over a given distance. Both callers used to cap out — the settle
   // at 620ms, the keys at 900 — which meant the longest travels were also the fastest:
