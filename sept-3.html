@@ -254,6 +254,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    across the change, so neither offset reads as a jump. */
 .solution-preview #solStateB{left:5.99vw;top:30.8vh}
 .solution-preview .sol-headline{font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2.2rem,6.25vw,7.5rem);line-height:.99;letter-spacing:-.03em;color:#E3E3E3}
+/* The descender of the g in "Introducing" and "Savings" was being cut off.
+   Titillium's font box is 124px where line-height .99 gives an 81px line box, so the
+   glyphs overhang their own line by 21.5px at the bottom — and .ln masks at the padding
+   edge, which the shared rule opens by only .08em (6.5px). Measured spill past the
+   clip: 14.97px. .27em is 22.1px, which clears the ink with a little to spare.
+   Scoped here rather than raised on .ln, because that rule masks every reveal on the
+   page and its bottom edge is doing real work in each of them.
+   The negative margin matches the padding, as the shared rule does, so the block
+   occupies exactly the height it did — this changes what is clipped, not the layout.
+   The cost is that this same edge hides the queued state, so SOL_OUT below has to grow
+   with it. */
+.solution-preview .sol-headline .ln{padding-bottom:.27em;margin-bottom:-.27em}
 .solution-preview .sol-blue{color:#278EFF}
 /* 28px. Node 3260:117251 gives this paragraph 84px across two lines, which is 42 a
    line — 28px on 1.5 leading, where it had been 20. */
@@ -974,8 +986,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   const lines = (sel, r) => $$(sel + ' .ln > span', r);
 
   // Prepare all line reveals hidden
+  // 158 rather than the 112 every other reveal uses, and only because the plan
+  // headline's mask had to be opened at the bottom to stop it cutting the descenders
+  // off (see .sol-headline .ln). That same edge is what holds the queued state out of
+  // sight, so it has to start further down: 112% of an 81px line is 90.7px, which no
+  // longer reaches, where 158% is 128px against the 124px it needs to clear. The
+  // travel the reader actually sees is unchanged — a line only becomes visible once it
+  // enters the mask — so this lengthens the hidden run-up, not the reveal.
+  const SOL_OUT = 158;
+  const solHeadSpans = '.solution-preview .sol-headline .ln > span';
   gsap.set($$('.ln > span'), { yPercent: 112 });
   gsap.set('#act1 .hero-h .ln > span', { yPercent: 0 });
+  gsap.set($$(solHeadSpans), { yPercent: SOL_OUT });
   // pin the tags' start state explicitly: leaving it to the CSS alone let them
   // all render visible on first paint, before their tweens had run
 
@@ -1441,7 +1463,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // design gives them.
     tl.fromTo('#solutionPreview .sol-glow-l', {opacity:0}, {opacity:.4, duration:.5, ease:'power1.out'}, 0);
     tl.fromTo('#solutionPreview .sol-glow-r', {opacity:0}, {opacity:.2, duration:.5, ease:'power1.out'}, 0);
-    tl.fromTo(solA, {yPercent:112}, {yPercent:0, duration:.3, stagger:.08, ease:'power3.out'}, .14);
+    tl.fromTo(solA, {yPercent:SOL_OUT}, {yPercent:0, duration:.3, stagger:.08, ease:'power3.out'}, .14);
     tl.fromTo('#solutionPreview .sol-card', {opacity:0, scale:1.04}, {opacity:1, scale:1, duration:.34, ease:'power2.out'}, .24);
     tl.fromTo('#solStateA .sol-body', {opacity:0, y:16}, {opacity:.7, y:0, duration:.24, ease:'power2.out'}, .40);
     tl.to({}, {duration:.22}, .64);
@@ -1461,7 +1483,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // The card used to ease up 3.33vh here, which is what gave it two different y
     // values across the two framings. It rests at the risen height now (see
     // .sol-card's top) and does not move between them at all.
-    tl.fromTo(solB, {yPercent:112}, {yPercent:0, duration:.3, stagger:.08, ease:'power3.out'}, 1.25);
+    tl.fromTo(solB, {yPercent:SOL_OUT}, {yPercent:0, duration:.3, stagger:.08, ease:'power3.out'}, 1.25);
     tl.fromTo('#solutionPreview .sol-cta', {opacity:0, y:12}, {opacity:1, y:0, duration:.24, ease:'power2.out'}, 1.47);
 
     // 3 — how does a Data Savings Plan work. The card and the copy that framed it clear
@@ -1793,6 +1815,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     gsap.set($$('.ln > span'), {yPercent:112});
     gsap.set('#act1 .hero-h .ln > span', {yPercent:0});
     gsap.set($$('#act1 .run-say .ln > span'), {yPercent:150});
+    // this runs on every refresh, so the plan headline's deeper offset has to be
+    // reapplied here too or a refresh leaves the queued state peeking below its mask
+    gsap.set($$(solHeadSpans), {yPercent:SOL_OUT});
     gsap.set($$('#runSay > .ln > span'), {opacity:1});
   };
   const hideTags = resetRun;
