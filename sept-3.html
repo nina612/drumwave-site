@@ -961,11 +961,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // eases out of a slight push, the delivery cuts straight on with no zoom and nothing
   // held after its copy lands. So they pull in opposite directions — 2.2 against 1.0 —
   // which is the pacing contrast the note is asking for.
-  // QUICK is the running and coffee frames, which are transit rather than beats: one
-  // scroll carries the reader from the hero THROUGH both of them and lands on the tap.
-  // .7 was not a pacing choice — it was the length a tag needed to arrive, sit and go,
-  // and the tags are gone, so this returns to something that reads as rapid succession.
-  const HERO = 1.5, QUICK = .3, TAP = 3.0, PKG = 1.0;
+  // The running and coffee frames are beats again, one scroll apart, so they need
+  // enough length for their stops to be distinct: at .3 they were 148px wide and one
+  // ordinary gesture crossed both. .7 gives them about 330px each — still the quickest
+  // frames in the run by a distance, with the tap at 1570px, but far enough apart to
+  // be landed on separately.
+  const HERO = 1.5, QUICK = .7, TAP = 3.0, PKG = 1.0;
   const T_RUN = HERO, T_COFFEE = T_RUN + QUICK, T_TAP = T_COFFEE + QUICK, T_PKG = T_TAP + TAP;
   const ACT1_END = T_PKG + PKG;   // act 2 begins here, whatever the tag tails do
 
@@ -1003,19 +1004,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
                       [9, T_COFFEE, QUICK],
                       [10, T_TAP, TAP],
                       [11, T_PKG, PKG]];
-  // Four scrolls through the run, and the groups are the copy that sits over them:
+  // Six scrolls through the run. The two quick groups take two scrolls each rather
+  // than one, so each of them keeps a stop in its middle:
   //
   //   rest    the hero, zooming out as the reader first pushes
-  //   1  ->   through the rest of the "Your life creates data" photos, resting on the
-  //          coffee shop, the last of them. 1, the runner, is passed on the way.
-  //   2  ->   the tap, which zooms out as it is reached
-  //   3  ->   through the rest of the "Every tap. Every step." photos in one go and
-  //          onto the baby, which zooms out. 11 the delivery, and the headphones,
-  //          shopping and charger in act 2, are all passed on the way.
-  //   4  ->   the baby dissolving into the family
+  //   1  ->   the runner        | "Your life creates data" over both
+  //   2  ->   the coffee shop   |
+  //   3  ->   the tap, zooming out as it is reached
+  //   4  ->   the headphones    | "Every tap. Every step." over both, with the
+  //   5  ->   the baby, zooming | delivery, shopping bag and charger passed on the way
+  //   6  ->   the baby dissolving into the family
   //
-  // So five stops, and every frame that is not one of them is transit.
-  const RUN_TRANSIT = [1, 11];
+  // Only 11, the delivery, is transit in act 1 — "straight cut to the next frame, no
+  // zoom or delay" is the one frame here meant purely to go by.
+  const RUN_TRANSIT = [11];
   act1Frames.forEach(([fi, at, span], k) => {
     if(!RUN_TRANSIT.includes(fi)) runStops.push(settled(at, span));
     tl1.set(f1(k ? act1Frames[k-1][0] : 0), {opacity:0}, at);
@@ -1067,7 +1069,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // any of it. The baby frame holds even longer and does not read that way because its
   // hold carries the change of copy; this one carries nothing, so it reads as the same
   // picture costing several scrolls. Same reasoning FINAL_HOLD already gets below.
-  const HOLD0 = SCROLL_RUN ? .5 : 3.4;
+  const HOLD0 = SCROLL_RUN ? 1.0 : 3.4;
   // The baby photo eases over into the family photo rather than cutting to it, and
   // the run then rests on the family photo before starting over — no fade to black,
   // no clearing the copy. FINAL_HOLD counts from when the family photo is fully
@@ -1095,9 +1097,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // is through, not half a stay in
     // tl2 is added to tl1 at ACT1_END, so its own times need that offset to become
     // times on the run's clock, which is what runStops is measured in.
-    // 0 the headphones, 4 the shopping bag and 5 the charger: all transit, passed
-    // inside the one gesture that leaves the tap and comes to rest on the baby.
-    if(i !== 0 && i !== 4 && i !== 5)
+    // 4 the shopping bag and 5 the charger stay transit, passed inside the gesture
+    // that leaves the headphones for the baby. The headphones itself is a beat.
+    if(i !== 4 && i !== 5)
       runStops.push(ACT1_END + (i === 7 ? at + DISSOLVE + Math.min(.6, FINAL_HOLD * .5)
                                         : settled(at, act2Spans[i])));
     if(i === 7){
@@ -1807,11 +1809,21 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   window.addEventListener('scroll', () => {
     const y = window.scrollY;
     if(gliding){
-      // Our own glide — unless the page has moved somewhere the glide did not put it,
-      // which means something else is scrolling. Only wheel and touch events cancel a
-      // glide, so without this a scrollbar drag mid-glide would be silently overwritten
-      // frame by frame and the page would appear to fight the reader.
-      if(Math.abs(y - glideWrote) > 4){ stopGlide(); beginGesture(prevY); prevY = y; armSettle(); return; }
+      // Our own glide — unless the page has moved somewhere the glide could not have
+      // put it, which means something else is scrolling. Only wheel and touch cancel a
+      // glide, so without this a scrollbar drag during one would be overwritten frame
+      // by frame and the page would appear to fight the reader.
+      //
+      // The tolerance has to be enormous, and 4px was catastrophic. Scroll events lag
+      // the writes that cause them by a frame or two, and a glide crossing 2187px in
+      // 1400ms moves 26px a frame — so the guard fired on the glide's OWN scrolling,
+      // cancelled it, and opened a new gesture from a stale origin whose direction
+      // could come out either way. The page then scrolled itself, forever: measured
+      // wandering over 6088px while completely idle. Half a screen cannot be frame
+      // lag, and a real drag clears it easily.
+      if(Math.abs(y - glideWrote) > Math.max(240, window.innerHeight * .5)){
+        stopGlide(); beginGesture(prevY); prevY = y; armSettle(); return;
+      }
       prevY = y;
       return;
     }
