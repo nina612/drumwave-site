@@ -142,8 +142,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    plus two tails stacked under it, which is what a line-by-line build needs; a whole
    statement arriving at once does not. */
 #act1 .run-say .say{position:absolute;left:0;top:0;width:100%}
+/* 400, not the 300 .display carries: the node draws this copy at the same weight as
+   the headline. Everything else here was already on the node's numbers — 121/1920
+   left, 558/1080 top, 140px on 126, -4.2px of tracking. The width is the one figure
+   that is not this node's: 1407/1920 is the family tail's measure, the widest of the
+   set, and it only has to be wide enough that no line wraps — the box hugs its text,
+   so this node's 1310 is the width of the line itself, not a constraint on it. */
 #act1 .run-say{position:absolute;left:6.3vw;top:51.67vh;width:73.28vw;z-index:6;
-  font-size:clamp(2.2rem,7.29vw,8.75rem);line-height:.9;letter-spacing:-.03em;color:#fff}
+  font-size:clamp(2.2rem,7.29vw,8.75rem);font-weight:400;
+  line-height:.9;letter-spacing:-.03em;color:#fff}
 
 /* marker: blue pulsing dot + pill tag */
 .marker{position:absolute;display:flex;align-items:center;gap:6px;opacity:0;transform:translateX(-8px);z-index:5}
