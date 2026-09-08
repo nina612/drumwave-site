@@ -932,7 +932,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   //
   // What the length DOES change is every duration below, because on a scrubbed
   // timeline a duration is a distance. See the note above XIMG.
-  const RUN_PINS = 450;
+  // 525 where it was 450, purely to keep the pixels-per-unit the run had before TAP
+  // grew: 22.7 units over 5.25 screens is 208px a unit, the same as 19.4 over 4.5. The
+  // longer pin costs no extra gestures — a gentle scroll advances exactly one stop
+  // whatever the distance, measured at a 601px scroll crossing a 5300px gap — so it
+  // buys the wider gaps above without asking the reader for more scrolling.
+  const RUN_PINS = 525;
 
   const autoPlay = {
     onEnter: self => self.animation.play(),
@@ -1032,7 +1037,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // per unit AND wider gaps between the stops. These three are the largest that keep
   // every gap under the step cap, so each sentence stays one gesture from the next
   // instead of turning back into a free crossing.
-  const HERO = 2.6, QUICK = 1.0, TAP = 4.2, PKG = 1.0;
+  // TAP is 7.5 where it was 4.2, and it is the fix for "we skip over every tap, every
+  // step way too fast".
+  //
+  // The stops either side of a frame are what decide whether one gesture can cross it,
+  // and at 4.2 the tap's two gaps were 1420px and 521px — the 521 was half the size of
+  // every other gap in the run. A trackpad gesture covers more than that, so from the
+  // tap stop the snap overshot the delivery and took the baby instead: statement A's
+  // second stop was skipped and tap went straight to "Own and save" in one gesture.
+  // 7.5 spreads them to 1415 and 1207, in line with the 1031 and 967 that follow, so no
+  // ordinary gesture crosses two stops anywhere in the run.
+  //
+  // It also gives the photograph itself the dwell that was asked for several times over:
+  // the reader lands 1415px in and the tap frame runs to 2518px, so 1103px of it remain
+  // after they arrive. It stays put rather than handing over on the next flick, and its
+  // zoom is keyed to TAP so it simply eases out more slowly with it.
+  const HERO = 2.6, QUICK = 1.0, TAP = 7.5, PKG = 1.0;
   const T_RUN = HERO, T_COFFEE = T_RUN + QUICK, T_TAP = T_COFFEE + QUICK, T_PKG = T_TAP + TAP;
   const ACT1_END = T_PKG + PKG;   // act 2 begins here, whatever the tag tails do
 
