@@ -1003,11 +1003,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
                       [9, T_COFFEE, QUICK],
                       [10, T_TAP, TAP],
                       [11, T_PKG, PKG]];
-  // The run has six beats, not ten. The hero, the tap, the delivery, the headphones,
-  // the baby and the family each get a stop; the four frames between them are transit,
-  // crossed inside the gesture that leaves the beat before them. 1 is the runner and 9
-  // the coffee shop, which one scroll passes on the way to the tap.
-  const RUN_TRANSIT = [1, 9];
+  // Four scrolls through the run, and the groups are the copy that sits over them:
+  //
+  //   rest    the hero, zooming out as the reader first pushes
+  //   1  ->   through the rest of the "Your life creates data" photos, resting on the
+  //          coffee shop, the last of them. 1, the runner, is passed on the way.
+  //   2  ->   the tap, which zooms out as it is reached
+  //   3  ->   through the rest of the "Every tap. Every step." photos in one go and
+  //          onto the baby, which zooms out. 11 the delivery, and the headphones,
+  //          shopping and charger in act 2, are all passed on the way.
+  //   4  ->   the baby dissolving into the family
+  //
+  // So five stops, and every frame that is not one of them is transit.
+  const RUN_TRANSIT = [1, 11];
   act1Frames.forEach(([fi, at, span], k) => {
     if(!RUN_TRANSIT.includes(fi)) runStops.push(settled(at, span));
     tl1.set(f1(k ? act1Frames[k-1][0] : 0), {opacity:0}, at);
@@ -1059,7 +1067,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // any of it. The baby frame holds even longer and does not read that way because its
   // hold carries the change of copy; this one carries nothing, so it reads as the same
   // picture costing several scrolls. Same reasoning FINAL_HOLD already gets below.
-  const HOLD0 = SCROLL_RUN ? 1.8 : 3.4;
+  const HOLD0 = SCROLL_RUN ? .5 : 3.4;
   // The baby photo eases over into the family photo rather than cutting to it, and
   // the run then rests on the family photo before starting over — no fade to black,
   // no clearing the copy. FINAL_HOLD counts from when the family photo is fully
@@ -1087,9 +1095,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // is through, not half a stay in
     // tl2 is added to tl1 at ACT1_END, so its own times need that offset to become
     // times on the run's clock, which is what runStops is measured in.
-    // 4 is the shopping bag and 5 the charger: transit, passed inside the one gesture
-    // that leaves the headphones and comes to rest on the baby.
-    if(i !== 4 && i !== 5)
+    // 0 the headphones, 4 the shopping bag and 5 the charger: all transit, passed
+    // inside the one gesture that leaves the tap and comes to rest on the baby.
+    if(i !== 0 && i !== 4 && i !== 5)
       runStops.push(ACT1_END + (i === 7 ? at + DISSOLVE + Math.min(.6, FINAL_HOLD * .5)
                                         : settled(at, act2Spans[i])));
     if(i === 7){
@@ -1709,6 +1717,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // whatever the gap, and 255px hops and 2342px ones should not ask different things of
   // the same wrist.
   const COMMIT = 160;
+  // A floor on how often the wide-gap step below may fire. The settle runs 100ms after
+  // scrolling stops and a drag pauses for longer than that, so one gesture can arrive
+  // as two settles — and with the run down to five beats that meant a single scroll
+  // stepping twice and crossing the tap without stopping on it.
+  //
+  // This gates ONLY the step, not the settle. The last cooldown returned the reader to
+  // their anchor while it was in force, which is what made the top section slide
+  // backwards; this one falls through to the nearest stop, so the worst it can do is
+  // correct by less than half a gap. It also only ever applies where the nearest stop
+  // IS the anchor, which is to say where the reader has barely left it.
+  const STEP_MIN = 800;
+  let lastSnapAt = 0;
   const nearestStop = (stops, y) => {
     let best = stops[0];
     for(const v of stops) if(Math.abs(v - y) < Math.abs(best - y)) best = v;
@@ -1743,9 +1763,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // you just left is still the nearest one and nearest alone would refuse to move.
     // Take the next one along. This is the getting-stuck, and the only case that needs
     // the anchor rather than the position.
+    const now = performance.now();
+    if(now - lastSnapAt < STEP_MIN) return anchor;   // same gesture arriving twice
     const i = stopIndex(stops, anchor);
     const j = i + Math.sign(delta);
-    return (anchor = (j < 0 || j > last) ? stops[i] : stops[j]);
+    if(j < 0 || j > last) return stops[i];
+    lastSnapAt = now;
+    return (anchor = stops[j]);
   };
   // How long to take over a given distance. Both callers used to cap out — the settle
   // at 620ms, the keys at 900 — which meant the longest travels were also the fastest:
