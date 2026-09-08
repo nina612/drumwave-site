@@ -1204,10 +1204,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // design gives them.
     tl.fromTo('#solutionPreview .sol-glow-l', {opacity:0}, {opacity:.4, duration:.5, ease:'power1.out'}, 0);
     tl.fromTo('#solutionPreview .sol-glow-r', {opacity:0}, {opacity:.2, duration:.5, ease:'power1.out'}, 0);
-    tl.fromTo(solA, {yPercent:112}, {yPercent:0, duration:.34, stagger:.1, ease:'power3.out'}, .14);
-    tl.fromTo('#solutionPreview .sol-card', {opacity:0, scale:1.04}, {opacity:1, scale:1, duration:.36, ease:'power2.out'}, .24);
-    tl.fromTo('#solStateA .sol-body', {opacity:0, y:16}, {opacity:.7, y:0, duration:.26, ease:'power2.out'}, .52);
-    tl.to({}, {duration:.22}, .78);
+    tl.fromTo(solA, {yPercent:112}, {yPercent:0, duration:.3, stagger:.08, ease:'power3.out'}, .14);
+    tl.fromTo('#solutionPreview .sol-card', {opacity:0, scale:1.04}, {opacity:1, scale:1, duration:.34, ease:'power2.out'}, .24);
+    tl.fromTo('#solStateA .sol-body', {opacity:0, y:16}, {opacity:.7, y:0, duration:.24, ease:'power2.out'}, .40);
+    tl.to({}, {duration:.22}, .64);
 
     // 2 — open an account, the card easing up between the two framings. The blue casts
     // belong to the introducing screen only; the open-an-account screen wants a clean
@@ -1217,13 +1217,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // scroll, the least of the three, and it ENDED on the stop, so a nudge past began
     // dismantling it at once. It is now whole from 1.64 and does not start leaving
     // until 2.2, which puts the stop inside the plateau rather than at its edge.
-    tl.fromTo(solA, {yPercent:0}, {yPercent:-112, duration:.26, stagger:.05}, 1.0);
-    tl.fromTo('#solStateA .sol-body', {opacity:.7}, {opacity:0, duration:.2}, 1.0);
-    tl.fromTo('#solutionPreview .sol-glow-l', {opacity:.4}, {opacity:0, duration:.3, ease:'power1.inOut'}, 1.0);
-    tl.fromTo('#solutionPreview .sol-glow-r', {opacity:.2}, {opacity:0, duration:.3, ease:'power1.inOut'}, 1.0);
-    tl.fromTo('#solutionPreview .sol-card', {y:0}, {y:cardRise, duration:.5, ease:'power2.inOut'}, 1.02);
-    tl.fromTo(solB, {yPercent:112}, {yPercent:0, duration:.3, stagger:.08, ease:'power3.out'}, 1.18);
-    tl.fromTo('#solutionPreview .sol-cta', {opacity:0, y:12}, {opacity:1, y:0, duration:.24, ease:'power2.out'}, 1.40);
+    tl.fromTo(solA, {yPercent:0}, {yPercent:-112, duration:.26, stagger:.05}, 1.15);
+    tl.fromTo('#solStateA .sol-body', {opacity:.7}, {opacity:0, duration:.2}, 1.15);
+    tl.fromTo('#solutionPreview .sol-glow-l', {opacity:.4}, {opacity:0, duration:.3, ease:'power1.inOut'}, 1.15);
+    tl.fromTo('#solutionPreview .sol-glow-r', {opacity:.2}, {opacity:0, duration:.3, ease:'power1.inOut'}, 1.15);
+    tl.fromTo('#solutionPreview .sol-card', {y:0}, {y:cardRise, duration:.5, ease:'power2.inOut'}, 1.17);
+    tl.fromTo(solB, {yPercent:112}, {yPercent:0, duration:.3, stagger:.08, ease:'power3.out'}, 1.25);
+    tl.fromTo('#solutionPreview .sol-cta', {opacity:0, y:12}, {opacity:1, y:0, duration:.24, ease:'power2.out'}, 1.47);
 
     // 3 — how does a Data Savings Plan work. The card and the copy that framed it clear
     // out, and the four cards come up in their place. This is the beat that used to be a
@@ -1234,12 +1234,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // arrive in, so their moves are quicker too — they still finish at 2.91, ahead of
       // their own stop at 3.0, which is what matters. The hold below is untouched, so
       // the timeline is still 4.0 and the three stops do not move.
-      tl.fromTo(solB, {yPercent:0}, {yPercent:-112, duration:.26, stagger:.05}, 2.2);
-      tl.fromTo('#solutionPreview .sol-cta', {opacity:1, y:0}, {opacity:0, y:-10, duration:.22}, 2.2);
-      tl.fromTo('#solutionPreview .sol-card', {opacity:1}, {opacity:0, duration:.32, ease:'power1.inOut'}, 2.24);
-      tl.fromTo('#solHow', {opacity:0}, {opacity:1, duration:.4, ease:'power1.inOut'}, 2.3);
-      tl.fromTo('#solHow .how-title', {y:26}, {y:0, duration:.34, ease:'power2.out'}, 2.34);
-      tl.fromTo('#solHow .step', {y:36, opacity:0}, {y:0, opacity:1, duration:.36, stagger:.05, ease:'power2.out'}, 2.40);
+      tl.fromTo(solB, {yPercent:0}, {yPercent:-112, duration:.26, stagger:.05}, 2.25);
+      tl.fromTo('#solutionPreview .sol-cta', {opacity:1, y:0}, {opacity:0, y:-10, duration:.22}, 2.25);
+      tl.fromTo('#solutionPreview .sol-card', {opacity:1}, {opacity:0, duration:.32, ease:'power1.inOut'}, 2.29);
+      tl.fromTo('#solHow', {opacity:0}, {opacity:1, duration:.4, ease:'power1.inOut'}, 2.35);
+      tl.fromTo('#solHow .how-title', {y:26}, {y:0, duration:.34, ease:'power2.out'}, 2.39);
+      tl.fromTo('#solHow .step', {y:36, opacity:0}, {y:0, opacity:1, duration:.36, stagger:.05, ease:'power2.out'}, 2.45);
     }
 
     // the hold that carries the last framing out of view unchanged
@@ -1253,8 +1253,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   gsap.matchMedia().add('(min-width: 761px)', () => {
     solSec.appendChild(solHowEl);
     const tl = buildSolTl(true);
+    // Five viewports rather than four. The timeline is still 4.0 units, so this does not
+    // add a stop — it makes each unit 1350px instead of 1080, which is what buys the two
+    // copy framings a plateau either side of their stop instead of only before it.
     const trig = ScrollTrigger.create({trigger:'#solution', start:'top top',
-      end:'+=400%', pin:true, scrub:true, animation:tl});
+      end:'+=500%', pin:true, scrub:true, animation:tl});
     fitSolHow();
     return () => { trig.kill(); tl.kill(); };
   }).add('(max-width: 760px)', () => {
@@ -1659,13 +1662,32 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // From there down the page is an ordinary document — the ages answer the scroll
   // directly, a year at a time, because there the scroll IS the interaction, and
   // pulling it anywhere would get between the reader and the control.
-  // How far a gesture has to carry before it counts as meaning to move. Not "did you
-  // get most of the way there" — on the 2342px gap nobody does — but "did you mean to
-  // move at all". 90px is under one notch of a wheel, so a deliberate scroll always
-  // qualifies; a brush of the trackpad does not, and that is the only thing worth
-  // reversing. Still fractional on the very short hops, where changing your mind is
-  // cheap.
-  const COMMIT = 90;
+  // How far a gesture has to carry before it counts as meaning to move.
+  //
+  // 90px was wrong in the other direction: one notch of a mouse wheel is about 100px,
+  // so the bar sat UNDER the smallest input a mouse can physically produce, and the
+  // lightest touch of the wheel moved a whole screen. 160 puts it between one notch and
+  // two — a single click of the wheel settles back, two carry you on, and a brush of a
+  // trackpad does nothing.
+  //
+  // Flat, with no fraction of the gap in it any more. That term existed because the
+  // threshold used to be measured from the nearest stop, where a wide gap made leaving
+  // expensive; measured against the gesture's own displacement it is the same question
+  // whatever the gap, and 255px hops and 2342px ones should not ask different things of
+  // the same wrist.
+  const COMMIT = 160;
+  // One screen per gesture needs a floor on how often a step may be taken, because the
+  // settle fires 100ms after the scrolling stops and a slow drag pauses for longer than
+  // that. The gesture is then over as far as the page knows: it steps, the finger moves
+  // again, and it steps a second time — one drag, two screens. Measured gaps of 134ms
+  // inside a single continuous gesture, so this is not hypothetical.
+  //
+  // Inside the cooldown a settle still runs and still returns the reader to the stop
+  // they are anchored on; it just will not take another step. Deliberate scrolls are
+  // rarely less than half a second apart, and pauses within one gesture almost always
+  // are.
+  const STEP_COOLDOWN = 450;
+  let lastCommitAt = 0;
   const nearestStop = (stops, y) => {
     let best = stops[0];
     for(const v of stops) if(Math.abs(v - y) < Math.abs(best - y)) best = v;
@@ -1696,9 +1718,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     if(Math.abs(delta) < 1) return (anchor = stops[i]);
     const j = i + Math.sign(delta);
     if(j < 0 || j > last) return (anchor = stops[i]);
-    const span = Math.abs(stops[j] - stops[i]);
-    const need = Math.min(span * 0.35, COMMIT);
-    return (anchor = Math.abs(delta) >= need ? stops[j] : stops[i]);
+    if(Math.abs(delta) < COMMIT) return (anchor = stops[i]);
+    const now = performance.now();
+    if(now - lastCommitAt < STEP_COOLDOWN) return (anchor = stops[i]);
+    lastCommitAt = now;
+    return (anchor = stops[j]);
   };
   // How long to take over a given distance. Both callers used to cap out — the settle
   // at 620ms, the keys at 900 — which meant the longest travels were also the fastest:
