@@ -1888,15 +1888,33 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   const settle = () => {
     if(gliding || touching) return;
     const y = window.scrollY, to = settleTarget(y);
-    inGesture = false; gestureFromY = null;
+    inGesture = false; gestureFromY = null; deferUntil = 0;
     if(to == null) return;
     const dist = Math.abs(to - y);
     if(dist < 3) return;
     glide(to, travelMs(dist));
   };
+  // A ceiling on how long one gesture may keep putting the settle off.
+  //
+  // The settle fires SETTLE_IDLE after the last scroll of any size, and a flick's
+  // momentum keeps scrolling — by less and less — for the best part of a second. So the
+  // tail held the settle off while the page crawled to a near-stop on whatever frame it
+  // happened to die on, sat there visibly, and only then got taken away. Measured from
+  // the tap: a 725px flick came to rest on the headphones, a 1101px one on the charger.
+  // That is exactly "it keeps landing on the other images".
+  //
+  // Deferring is capped at 700ms from the first scroll of the gesture instead. Tried
+  // reading the tail off the wheel deltas first — momentum decays where a hand does not
+  // — but that needs a flag saying "we are in a tail", and a flag that suppresses the
+  // settle can get stuck holding it suppressed, which is a far worse failure than the
+  // one being fixed: the page then never settles at all. A deadline cannot stick.
+  const SETTLE_MAX = 700;
+  let deferUntil = 0;
   const armSettle = () => {
     clearTimeout(settleTimer);
-    settleTimer = setTimeout(settle, SETTLE_IDLE);
+    const now = performance.now();
+    if(!deferUntil) deferUntil = now + SETTLE_MAX;
+    settleTimer = setTimeout(settle, Math.max(0, Math.min(SETTLE_IDLE, deferUntil - now)));
   };
   // Passive, all of it: none of these listeners may so much as think about blocking the
   // scroll they are watching.
