@@ -999,7 +999,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // per unit AND wider gaps between the stops. These three are the largest that keep
   // every gap under the step cap, so each sentence stays one gesture from the next
   // instead of turning back into a free crossing.
-  const HERO = 2.6, QUICK = 1.0, TAP = 3.6, PKG = 1.0;
+  const HERO = 2.6, QUICK = 1.0, TAP = 4.2, PKG = 1.0;
   const T_RUN = HERO, T_COFFEE = T_RUN + QUICK, T_TAP = T_COFFEE + QUICK, T_PKG = T_TAP + TAP;
   const ACT1_END = T_PKG + PKG;   // act 2 begins here, whatever the tag tails do
 
@@ -1056,14 +1056,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // statement that was asked for, without a repeat to rest on in the middle.
   const RUN_TRANSIT = [1, 9, 11];
   act1Frames.forEach(([fi, at, span], k) => {
-    // The tap is the exception to settled(): it rests .4 before its stay ends rather
-    // than .6 into it. Two things fall out of that. Its slow zoom now runs across the
-    // scroll that ARRIVES on it — "takes the user to the tap photo, and the tap photo
-    // zooms out" — instead of being left to play afterwards. And the gap on to the
-    // headphones drops from 1858px to 904px, which is what lets that be a single
-    // scroll without the page carrying the reader a screen and a half unasked.
+    // The tap is the exception to settled(). It rests 2.2 into its 4.2, which is a
+    // little past halfway rather than .6 in or, as it was, .4 from the end.
+    //
+    // At .4 from the end the reader landed on it with 80px of the frame left, so the
+    // next scroll left it more or less at once — landing on the tap barely registered
+    // as landing anywhere. 2.2 leaves 390px of it after the stop, so it holds through a
+    // nudge and lingers into the start of the next gesture. Its zoom still runs mostly
+    // across the scroll that arrives on it, and finishes just after.
+    //
+    // The stop's position also sets both neighbouring gaps, which is the real
+    // constraint: earlier shortens the approach and lengthens the run on to the baby,
+    // and both have to stay under the step cap or they stop being one gesture.
     if(!RUN_TRANSIT.includes(fi))
-      runStops.push(fi === 10 ? at + span - .4 : settled(at, span));
+      runStops.push(fi === 10 ? at + 2.2 : settled(at, span));
     tl1.fromTo(f1(fi), {opacity:0.001},
       {opacity:1, duration:CUT, ease:'none', immediateRender:false}, at);
     tl1.set(f1(k ? act1Frames[k-1][0] : 0), {opacity:0}, at + CUT);
