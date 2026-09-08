@@ -961,7 +961,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // eases out of a slight push, the delivery cuts straight on with no zoom and nothing
   // held after its copy lands. So they pull in opposite directions — 2.2 against 1.0 —
   // which is the pacing contrast the note is asking for.
-  const HERO = 1.5, QUICK = .7, TAP = 3.0, PKG = 1.0;
+  // QUICK is the running and coffee frames, which are transit rather than beats: one
+  // scroll carries the reader from the hero THROUGH both of them and lands on the tap.
+  // .7 was not a pacing choice — it was the length a tag needed to arrive, sit and go,
+  // and the tags are gone, so this returns to something that reads as rapid succession.
+  const HERO = 1.5, QUICK = .3, TAP = 3.0, PKG = 1.0;
   const T_RUN = HERO, T_COFFEE = T_RUN + QUICK, T_TAP = T_COFFEE + QUICK, T_PKG = T_TAP + TAP;
   const ACT1_END = T_PKG + PKG;   // act 2 begins here, whatever the tag tails do
 
@@ -999,8 +1003,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
                       [9, T_COFFEE, QUICK],
                       [10, T_TAP, TAP],
                       [11, T_PKG, PKG]];
+  // The run has six beats, not ten. The hero, the tap, the delivery, the headphones,
+  // the baby and the family each get a stop; the four frames between them are transit,
+  // crossed inside the gesture that leaves the beat before them. 1 is the runner and 9
+  // the coffee shop, which one scroll passes on the way to the tap.
+  const RUN_TRANSIT = [1, 9];
   act1Frames.forEach(([fi, at, span], k) => {
-    runStops.push(settled(at, span));
+    if(!RUN_TRANSIT.includes(fi)) runStops.push(settled(at, span));
     tl1.set(f1(k ? act1Frames[k-1][0] : 0), {opacity:0}, at);
     tl1.set(f1(fi), {opacity:1}, at);
     // The tap frame is the one that pushes: 1.04 rather than the 1.08 the hero and the
@@ -1060,9 +1069,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // where nothing moves — a third of the whole run. The reader decides when to leave a
   // held frame, so it only needs enough to register as a hold at all.
   const BABY_HOLD = 2.6, DISSOLVE = 1.5, FINAL_HOLD = SCROLL_RUN ? 1.0 : 5.0;
-  // sept-3: the design puts a tag on the shopping and charging frames, and .3s each is
-  // a flash — a tag needs about .55 to arrive, sit and go. They get 1.2 apiece here.
-  const SHOP = 1.2, CHARGE = 1.2;
+  // The shopping and charging frames are the second transit group: one scroll takes the
+  // reader through both and lands on the baby. They were 1.2 apiece to give their tags
+  // room to arrive, sit and go; with the tags gone that is just distance.
+  const SHOP = .3, CHARGE = .3;
   const BABY = HOLD0 + SHOP + CHARGE, FAMILY = BABY + BABY_HOLD;
   const END = FAMILY + DISSOLVE + FINAL_HOLD;
   const ESD2 = [[0, 0], [4, HOLD0], [5, HOLD0 + SHOP]];
@@ -1077,8 +1087,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // is through, not half a stay in
     // tl2 is added to tl1 at ACT1_END, so its own times need that offset to become
     // times on the run's clock, which is what runStops is measured in.
-    runStops.push(ACT1_END + (i === 7 ? at + DISSOLVE + Math.min(.6, FINAL_HOLD * .5)
-                                      : settled(at, act2Spans[i])));
+    // 4 is the shopping bag and 5 the charger: transit, passed inside the one gesture
+    // that leaves the headphones and comes to rest on the baby.
+    if(i !== 4 && i !== 5)
+      runStops.push(ACT1_END + (i === 7 ? at + DISSOLVE + Math.min(.6, FINAL_HOLD * .5)
+                                        : settled(at, act2Spans[i])));
     if(i === 7){
       tl2.fromTo(f2(i), {opacity:0.001},
         {opacity:1, duration:DISSOLVE, ease:'none', immediateRender:false}, at);
