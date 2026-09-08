@@ -319,7 +319,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #howHost .sol-how-fit{transform:none}
 #howHost .sol-how .how-title{padding-top:8vw}
 /* the heading's left edge lines up with the step copy in the first column below */
-.how-title{position:relative;z-index:2;max-width:none;margin:0;padding:4.53vw 5vw 0 6.25vw;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,3.33vw,4rem);line-height:.93;letter-spacing:-.04em;color:#fff}
+/* No tracking. Node 3265:80578 draws this line 988 wide, and at 64px this sentence
+   measures 989.9 untracked against 902.9 at the -.04em it used to carry — so the
+   letter-spacing missing from the node's CSS is a real zero here, not the export
+   artifact it turned out to be on the plan headline, where -3.6px was what matched
+   the drawn box. Worth measuring one at a time rather than generalising. */
+.how-title{position:relative;z-index:2;max-width:none;margin:0;padding:4.53vw 5vw 0 6.25vw;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,3.33vw,4rem);line-height:.93;color:#fff}
 
 /* Figma 3265-80130: four columns on one screen — a card, then the copy under it,
    rather than the four full-height scenes this used to be. 340-wide columns with
@@ -335,8 +340,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .step-card img{display:block;width:100%;height:100%;object-fit:cover}
 .step-copy{margin-top:1.458vw;display:flex;flex-direction:column;gap:.625vw;width:17.699vw;max-width:100%}
 .step-eyebrow{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(.65rem,.833vw,1rem);letter-spacing:.1em;line-height:1.1;color:#278EFF;text-transform:uppercase}
-.step-h{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(1rem,1.249vw,1.5rem);letter-spacing:-.03em;line-height:1.1;color:#fff}
-.step-body{font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.75rem,.729vw,.875rem);line-height:1.4;color:#999}
+.step-h{font-family:'Open Sans',sans-serif;font-weight:600;font-size:clamp(1rem,1.458vw,1.75rem);line-height:1.1;color:#fff}
+.step-body{font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.75rem,.833vw,1rem);line-height:1.4;color:#999}
 .step-note{color:#6F7274;font-weight:600}
 
 /* The closing screen's two discs — Figma 3381-35616: Ellipse 22069 at x646 y-903 and
@@ -355,7 +360,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* Figma 3381-35616 — the closing screen, measured off the 1924x879 frame. The design
    centres the block a shade below the middle: its centre lands at 53.7% of the frame,
    which the padding-top buys against a straight centre. The headline is the same type
-   treatment as .how-title down to the tracking — 64px at 1920, .93 leading, -.04em. */
+   treatment as .how-title at 64px and .93 leading, but keeps -.04em: that came from
+   this node, and .how-title's tracking has since been measured to zero off its own.
+   Unverified against 3381-35616 — check it before assuming the two still agree. */
 .closing{position:absolute;inset:0;z-index:10;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:7.4vh;background:#070707;opacity:0;pointer-events:none}
 .closing-copy{width:94.59%;text-align:center}
 .closing-h{margin:0;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,3.33vw,4rem);line-height:.93;letter-spacing:-.04em;color:#fff}
