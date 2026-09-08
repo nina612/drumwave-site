@@ -1851,7 +1851,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // very first scroll of the page: 500px down from the hero, the nearest stop to
     // 500 is still the hero, so it settled straight back and nothing happened.
     if(anchor == null) anchor = nearestStop(stops, gestureFromY == null ? y : gestureFromY);
-    const delta = gestureFromY == null ? 0 : y - gestureFromY;
+    const delta = gestureMoved;
     // No real gesture: back to the screen they are anchored on. This is also the stray
     // event mid-glide — it has no displacement, so the journey simply resumes.
     if(Math.abs(delta) < (delta < 0 ? COMMIT_BACK : COMMIT)) return anchor;
@@ -1890,7 +1890,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   const settle = () => {
     if(gliding || touching) return;
     const y = window.scrollY, to = settleTarget(y);
-    inGesture = false; gestureFromY = null; deferUntil = 0; barrier = null; barrierDir = 0;
+    // barrier and barrierDir deliberately survive: the settle fires while momentum is
+    // still running, and the barrier is what holds that momentum at the beat. They are
+    // replaced when a genuinely new gesture starts.
+    inGesture = false; gestureFromY = null; deferUntil = 0; gestureMoved = 0;
     if(to == null) return;
     const dist = Math.abs(to - y);
     if(dist < 3) return;
@@ -1936,6 +1939,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   //
   // Only where a step would apply. The wide gaps stay free and unbarriered, because
   // there the reader is meant to cross under their own power.
+  // A gesture begins only after a genuine gap in the scrolling. Momentum arrives every
+  // 10-16ms and can run for the better part of two seconds, so without this its tail
+  // reads as gesture after gesture: the settle lands the reader on a beat, clears the
+  // gesture state, and the momentum still in flight immediately looks like a new push,
+  // sets a barrier one beat further on and carries them to it — over and over. Measured
+  // before this: 1728ms of momentum from the hero flew to 5262px, past the tap and past
+  // the family, and only then came back. That is the overflowing and the skipping.
+  const GESTURE_GAP = 150;
+  let lastScrollAt = 0, lastWheelAt = 0;
+  // How far the READER has scrolled this gesture. Not y - gestureFromY, which counts
+  // the glide's own travel too: a stray wheel event mid-glide cancels the glide and
+  // opens a gesture at that point, the glide then carries the page a few hundred px,
+  // and that shows up as a deliberate scroll and steps again. Measured it stepping
+  // twice off one gentle flick, ending on the shopping bag. Only scroll accumulated
+  // while NOT gliding counts, so the page can never talk itself into moving on.
+  let gestureMoved = 0;
   let barrier = null, barrierDir = 0;
   const setBarrier = (from, dir) => {
     barrier = null; barrierDir = dir;
@@ -1967,6 +1986,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         stopGlide(); beginGesture(prevY); prevY = y; armSettle(); return;
       }
       prevY = y;
+      lastScrollAt = performance.now();
       return;
     }
     // A single scroll event crossing more than a screen and a half is not a hand. It is
@@ -1983,23 +2003,47 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // — settle() clears it, but settle() returns early while a glide is running — and a
     // stale one clamps the next gesture against the wrong stop. It did: a hard flick
     // from the hero went nowhere at all.
-    const starting = !inGesture;
+    lastScrollAt = performance.now();
     beginGesture(prevY);
-    if(starting) setBarrier(prevY, Math.sign(y - prevY));
-    if(barrier != null && barrierDir !== 0 &&
-       ((barrierDir > 0 && y > barrier) || (barrierDir < 0 && y < barrier))){
-      prevY = barrier;
-      glideWrote = barrier;
-      window.scrollTo(0, barrier);      // spend the rest of the flick against the beat
-      armSettle();
-      return;
-    }
+    gestureMoved += y - prevY;
     prevY = y;
     armSettle();
   }, {passive:true});
   // A wheel event arrives before its own scrolling lands, so it knows the origin exactly
   // rather than trailing it — and it is also what cancels a glide in progress.
-  window.addEventListener('wheel', () => { beginGesture(window.scrollY); stopGlide(); armSettle(); }, {passive:true});
+  // The one non-passive listener on the page, and it earns it: preventDefault is the
+  // only thing that can actually refuse momentum. window.scrollTo cannot — the browser
+  // re-applies its own inertia on the next frame and overrides it, which is why
+  // clamping from the scroll listener let a 1728ms flick fly 5267px past the beat and
+  // come back. Everything up to the beat is let through untouched, so the page still
+  // moves 1:1 under the hand; only the excess is absorbed.
+  //
+  // The direction comes from deltaY, so the barrier is known before any scrolling has
+  // happened rather than after the first scroll event.
+  window.addEventListener('wheel', e => {
+    if(Math.abs(e.deltaY) < 1) return;
+    const y = window.scrollY, now = performance.now();
+    if(!inGesture && now - lastWheelAt > GESTURE_GAP) setBarrier(y, Math.sign(e.deltaY));
+    lastWheelAt = now;
+    // Refuse the event that WOULD cross the beat, and land exactly on it — rather than
+    // waiting until the page is already past. Checking after the fact left one event's
+    // worth of overshoot, 75px, for the settle to tidy up afterwards; predicting it
+    // means the gesture ends on the beat itself and the settle has nothing left to do,
+    // which is the whole point: the page stops where the reader stopped pushing.
+    if(barrier != null && barrierDir !== 0){
+      const willBe = y + e.deltaY;
+      if(barrierDir > 0 ? willBe > barrier : willBe < barrier){
+        e.preventDefault();
+        if(y !== barrier){ glideWrote = barrier; window.scrollTo(0, barrier); }
+        beginGesture(barrier);
+        armSettle();
+        return;
+      }
+    }
+    beginGesture(y);
+    stopGlide();
+    armSettle();
+  }, {passive:false});
   window.addEventListener('touchstart', () => { touching = true; beginGesture(window.scrollY); stopGlide(); }, {passive:true});
   window.addEventListener('touchend', () => { touching = false; armSettle(); }, {passive:true});
 
