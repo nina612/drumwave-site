@@ -964,12 +964,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   const arrive = (tl, sel, at, first, dur, from, ease) =>
     tl.fromTo(sel+' img', {scale:from || 1.08},
       {scale:1, duration:dur || XIMG, ease:ease || 'power2.out', immediateRender: !!first}, at);
-  const tl1 = gsap.timeline({
-    defaults:{ease:'none'},
-    scrollTrigger: SCROLL_RUN
-      ? { trigger:'#act1', start:'top top', end:'+=' + RUN_PINS + '%', pin:true, scrub:RUN_SCRUB }
-      : { trigger:'#act1', start:'top top', end:'+=100%', pin:true, ...autoPlay }
-  });
+  // No scrollTrigger here: it is created after the run is built, further down, so the
+  // snap points can be computed from the timeline's finished duration.
+  const tl1 = gsap.timeline({defaults:{ease:'none'}});
   const f1 = i => `#act1 .frame[data-i="${i}"]`;
   // the timeline itself owns the tags' hidden start state at t=0, so however the
   // playhead is rendered they begin cleared rather than painted on the hero
@@ -1256,6 +1253,28 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // delivery frame short of its own time.
   tl1.add(tl2, ACT1_END);
 
+  // The run's trigger, created here rather than in the timeline's own vars, because the
+  // snap points are the run's settled moments as a fraction of the finished duration
+  // and that is not known until every tween is in.
+  //
+  // snapTo is an ARRAY on purpose. GSAP only applies `directional` to an array or a
+  // number, not to a function — and directional is the whole difference between usable
+  // and not. Nearest-snap undoes a gentle scroll: 655px forward from the hero is still
+  // nearer the hero than the tap, so it was pulled straight back and the page appeared
+  // stuck. Directional snaps to the next point the reader was already heading for.
+  if(SCROLL_RUN){
+    const runSnap = runStops.map(t => t / tl1.duration()).concat([1]);
+    ScrollTrigger.create({
+      trigger:'#act1', start:'top top', end:'+=' + RUN_PINS + '%',
+      pin:true, scrub:RUN_SCRUB, animation:tl1,
+      snap:{snapTo:runSnap, directional:true, duration:{min:.25, max:.6},
+            delay:.08, ease:'power2.inOut'}
+    });
+  } else {
+    ScrollTrigger.create({trigger:'#act1', start:'top top', end:'+=100%',
+      pin:true, animation:tl1, ...autoPlay});
+  }
+
   /* ---------- THE DATA SAVINGS PLAN : TWO FRAMINGS ON ONE PIN ---------- */
   // This used to play on the tail of the age timeline, dissolving the the picker's final figure screen
   // to black first. It now stands on its own, straight off the opening run, and it is
@@ -1377,8 +1396,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // Five viewports rather than four. The timeline is still 4.0 units, so this does not
     // add a stop — it makes each unit 1350px instead of 1080, which is what buys the two
     // copy framings a plateau either side of their stop instead of only before it.
+    const solSnap = [0, 1, 2, 3].filter(t => t < tl.duration() - .05)
+                                .map(t => t / tl.duration()).concat([1]);
     const trig = ScrollTrigger.create({trigger:'#solution', start:'top top',
-      end:'+=500%', pin:true, scrub:true, animation:tl});
+      end:'+=500%', pin:true, scrub:true, animation:tl,
+      snap:{snapTo:solSnap, duration:{min:.25, max:.6}, delay:.08, ease:'power2.inOut'}});
     fitSolHow();
     return () => { trig.kill(); tl.kill(); };
   }).add('(max-width: 760px)', () => {
@@ -1670,474 +1692,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   ScrollTrigger.addEventListener('refresh', hideTags);
   hideTags();
 
-  /* ---------- COME TO REST ON A SCREEN ---------- */
-  // Every framing in the run and on the plan screen is composed to be looked at whole,
-  // and the scroll between them is a pin scrubbing a cut or a push. Stop anywhere in
-  // between and you are looking at half of two things. So the page keeps a list of the
-  // settled moments and eases onto the nearest one when the scrolling stops. It does
-  // not take the gesture — see the settle below — it only decides where the gesture
-  // ends up. From the timeline down there are no stops at all: the ages answer the
-  // scroll directly, and settling there would skip the years.
-  const screenStops = () => {
-    const st = id => ScrollTrigger.getAll().find(x => x.trigger && x.trigger.id === id);
-    const at = id => { const t = st(id); return t ? Math.round(t.start) : null; };
-    const out = SCROLL_RUN ? [] : [0];
-    // Scrubbed, the run is a pin six screens deep, and free scrolling through it meant
-    // a gesture could leave the reader anywhere — mid-cut, mid-push, halfway through a
-    // line of copy arriving. So every photograph in it is a stop: one gesture moves one
-    // photograph and comes to rest on it. runStops holds their settled moments on the
-    // run's own clock; this maps them onto the pin.
-    const a1 = st('act1');
-    if(SCROLL_RUN && a1 && a1.animation && runStops.length){
-      const dur = a1.animation.duration(), pinSpan = a1.end - a1.start;
-      for(const t of runStops) out.push(Math.round(a1.start + (t / dur) * pinSpan));
-    }
-    // The plan screen carries three framings on one pin, so it contributes three stops
-    // rather than one: "Introducing the Data Savings Plan", then "Open an account",
-    // then the four cards. Each is built at a whole unit of the timeline, so the stops
-    // are those times mapped onto the pin — NOT an even division of it.
-    //
-    // They used to be span*k/n for n = round(duration), which is the same thing only
-    // while the timeline's last unit is a full-length hold. Shortening that hold to
-    // pull "How much is your data worth?" closer made the two disagree, and an even
-    // division would have put the third stop 635px before the cards had arrived. The
-    // filter drops any framing the current build does not have — the phone has two.
-    const sol = st('solution');
-    if(sol && sol.animation){
-      const span = sol.end - sol.start, dur = sol.animation.duration();
-      for(const t of [1, 2, 3]) if(t < dur - .05) out.push(Math.round(sol.start + span*t/dur));
-    }
-    // On a phone the cards are a section of their own again, so they are a stop again.
-    const host = document.getElementById('howHost');
-    if(host && host.firstElementChild) out.push(Math.round(host.getBoundingClientRect().top + window.scrollY));
-    // A screen that plays on its own clock has to be landed just INSIDE its trigger
-    // rather than exactly on it. On the boundary ScrollTrigger still counts the screen
-    // as not yet entered, so onEnter never fires and the every-tap run sits paused on
-    // its first frame — which is what it did here before the plan screens moved up,
-    // for as long as the snapping has existed. Eight pixels into a pin is the same
-    // picture, because the pin is holding the section still anyway.
-    // Only the question screen plays on its own clock now — the every-tap screen it
-    // used to sit beside is gone, its sentence having moved into the run itself.
-    const w = at('worth');
-    if(w != null) out.push(w + 8);
-    // The timeline gets one stop, at its start, and nothing below it. From there down
-    // the page is an ordinary document: the ages answer the scroll directly, a year at
-    // a time, because there the scroll IS the interaction and anything that takes it
-    // away — a stop per photograph, or one long glide across the whole life — gets
-    // between the reader and the control. One gesture still lands them on it, and one
-    // still takes them back up to the question.
-    const ag = st('ages');
-    if(ag) out.push(Math.round(ag.start));
-    return out.filter(v => v != null);
-  };
-  // Nothing here intercepts the wheel any more. The page scrolls natively, so the
-  // picture moves with the hand at 1:1 and a long push crosses as much of the page as
-  // it would in any document. What the stops do now is settle: once the scrolling has
-  // genuinely stopped — the gesture over AND its momentum spent — the nearest stop is
-  // eased into, so the reader comes to rest on a composed screen rather than halfway
-  // through a cut.
+  /* ---------- COMING TO REST ---------- */
+  // ScrollTrigger's own snap, not a hand-rolled one.
   //
-  // This replaced a system that swallowed each gesture and animated the page itself.
-  // It landed every screen exactly, but it also meant the page never moved while the
-  // reader was moving: you pushed, and then it went. Direct beats exact here — the
-  // settle still ends them on the screen, it just stops arguing with them on the way.
-  let gliding = false, glideGuard = null, glideRaf = 0, glideTo = null, lastStepAt = 0, glideWrote = 0;
-  let settleTimer = null, touching = false, inGesture = false, gestureFromY = null, anchor = null;
-  // How long the scroll has to be quiet before it counts as over. Trackpad momentum on
-  // macOS keeps firing wheel events the whole way down, so the timer is reset by wheel
-  // and scroll alike: it only reaches the end once the hand has stopped and the
-  // momentum has run out. 100ms: short enough that the settle reads as the end of your
-  // own gesture rather than a beat of hesitation after it, and still longer than the
-  // gap between events in even a slow drag.
-  const SETTLE_IDLE = 100;
-  // Stop a glide where it is. The reader has asked for something else.
-  const stopGlide = () => {
-    if(glideRaf) cancelAnimationFrame(glideRaf);
-    glideRaf = 0;
-    clearTimeout(glideGuard);
-    gliding = false;
-  };
-  const glide = (to, ms) => {
-    const from = window.scrollY;
-    if(Math.abs(to - from) < 2) return;
-    if(RM){ window.scrollTo(0, to); return; }
-    gliding = true;
-    glideTo = to;
-    if(glideRaf) cancelAnimationFrame(glideRaf);
-    // requestAnimationFrame is throttled to nothing in a hidden tab, so land the scroll
-    // and drop the flag on a timer regardless of whether a frame ever arrives.
-    clearTimeout(glideGuard);
-    glideGuard = setTimeout(() => { glideWrote = to; window.scrollTo(0, to); gliding = false; }, ms + 400);
-    // Each frame moves a fraction of what is LEFT, measured from where the page actually
-    // is. That last part is the point: the old glide interpolated from a remembered
-    // start over a fixed time, so while the browser was still applying a flick's
-    // momentum the two wrote different positions on alternating frames and the picture
-    // stuttered — measured deltas of 83, 76, 70, 64, 114, 50, 46, 42, 75 through one
-    // decay, a smooth curve with spikes torn through it, and one frame of outright
-    // reversal. Reading window.scrollY every frame absorbs whatever else has scrolled
-    // instead of arguing with it: momentum just means more of the distance is already
-    // behind you, and the approach carries on from there.
-    //
-    // K is set so the gap closes about 95% within ms, which keeps the old durations.
-    const K = 1 - Math.pow(0.05, 16.7 / Math.max(ms, 100));
-    const step = () => {
-      const y = window.scrollY, next = y + (to - y) * K;
-      if(Math.abs(to - next) < 1){
-        glideWrote = to; window.scrollTo(0, to);
-        glideRaf = 0; gliding = false; clearTimeout(glideGuard);
-        return;
-      }
-      glideWrote = Math.round(next);
-      window.scrollTo(0, glideWrote);
-      glideRaf = requestAnimationFrame(step);
-    };
-    glideRaf = requestAnimationFrame(step);
-  };
-;
-  // The last stop is the timeline's start; below it there is nothing to settle onto.
-  // From there down the page is an ordinary document — the ages answer the scroll
-  // directly, a year at a time, because there the scroll IS the interaction, and
-  // pulling it anywhere would get between the reader and the control.
-  // How far a gesture has to carry before it counts as meaning to move.
+  // What was here was 470 lines carrying fifteen pieces of mutable gesture state —
+  // anchor, gestureFromY, gestureMoved, inGesture, barrier, barrierDir, deferUntil,
+  // prevY, glideWrote, lastWheelAt, lastScrollAt, lastSnapAt, plus three timers and two
+  // rAF loops. Five separate bugs in it were the same shape: state surviving an early
+  // return, so the page stepped on its own, or stuck, or ran backwards. Every fix
+  // exposed the next one, because the state machine had more reachable combinations
+  // than could be reasoned about.
   //
-  // 90px was wrong in the other direction: one notch of a mouse wheel is about 100px,
-  // so the bar sat UNDER the smallest input a mouse can physically produce, and the
-  // lightest touch of the wheel moved a whole screen. 160 puts it between one notch and
-  // two — a single click of the wheel settles back, two carry you on, and a brush of a
-  // trackpad does nothing.
+  // GSAP snaps against ScrollTrigger's internals, on the same clock as the pin and the
+  // scrub, so it cannot fight momentum or the playhead the way an outside observer of
+  // window.scrollY has to. It waits for the scrolling to genuinely stop by itself.
   //
-  // Flat, with no fraction of the gap in it any more. That term existed because the
-  // threshold used to be measured from the nearest stop, where a wide gap made leaving
-  // expensive; measured against the gesture's own displacement it is the same question
-  // whatever the gap, and 255px hops and 2342px ones should not ask different things of
-  // the same wrist.
-  const COMMIT = 160;
-  // Going back costs more than going on. Forward, 160px is right: it is under one notch
-  // of a wheel so the page never moves on a touch, and over it so an ordinary scroll
-  // always lands. Backward at the same price is too cheap — a small upward nudge, or the
-  // tail of a trackpad gesture that overshoots and rebounds, would take a whole beat off
-  // the reader and put a photograph they had finished with back on screen. Deliberately
-  // going back still works; it just has to be deliberate.
-  const COMMIT_BACK = 420;
-  // A floor on how often the wide-gap step below may fire. The settle runs 100ms after
-  // scrolling stops and a drag pauses for longer than that, so one gesture can arrive
-  // as two settles — and with the run down to five beats that meant a single scroll
-  // stepping twice and crossing the tap without stopping on it.
-  //
-  // This gates ONLY the step, not the settle. The last cooldown returned the reader to
-  // their anchor while it was in force, which is what made the top section slide
-  // backwards; this one falls through to the nearest stop, so the worst it can do is
-  // correct by less than half a gap. It also only ever applies where the nearest stop
-  // IS the anchor, which is to say where the reader has barely left it.
-  const STEP_MIN = 800;
-  let lastSnapAt = 0;
-  const nearestStop = (stops, y) => {
-    let best = stops[0];
-    for(const v of stops) if(Math.abs(v - y) < Math.abs(best - y)) best = v;
-    return best;
-  };
-  const stopIndex = (stops, v) => {
-    let b = 0;
-    for(let k = 1; k < stops.length; k++) if(Math.abs(stops[k] - v) < Math.abs(stops[b] - v)) b = k;
-    return b;
-  };
-  const settleTarget = y => {
-    const stops = screenStops();
-    if(!stops.length) return null;
-    const last = stops.length - 1;
-    if(y > stops[last] + 4){ anchor = null; return null; }   // free region under the stops
-    // With no anchor yet, take it from where the gesture STARTED, not from where it
-    // ended, and then read the gesture normally. Anchoring on the end swallowed the
-    // very first scroll of the page: 500px down from the hero, the nearest stop to
-    // 500 is still the hero, so it settled straight back and nothing happened.
-    if(anchor == null) anchor = nearestStop(stops, gestureFromY == null ? y : gestureFromY);
-    const delta = gestureMoved;
-    // No real gesture: back to the screen they are anchored on. This is also the stray
-    // event mid-glide — it has no displacement, so the journey simply resumes.
-    if(Math.abs(delta) < (delta < 0 ? COMMIT_BACK : COMMIT)) return anchor;
-    // One beat per gesture, whatever the momentum does with the distance. The target is
-    // the stop next to the one the reader set out from — not the stop nearest wherever
-    // they happened to end up — so a gentle scroll and a hard flick from the hero both
-    // arrive at the tap. Nearest-stop could not promise that: a flick carrying 2000px
-    // simply landed nearer the beat after next.
-    const i = stopIndex(stops, anchor);
-    const j = i + Math.sign(delta);
-    if(j < 0 || j > last) return stops[i];
-    // Except across a gap wider than a screen and a half, which is left free — stepping
-    // one of those means the page travelling most of a screen after the hand has
-    // stopped, which reads as the page moving by itself. There the reader crosses at
-    // 1:1 and it snaps once they are nearer the far stop than the one they left.
-    if(Math.abs(stops[j] - stops[i]) > window.innerHeight * 1.5){
-      const near = nearestStop(stops, y);
-      return near === anchor ? null : (anchor = near);
-    }
-    const now = performance.now();
-    if(now - lastSnapAt < STEP_MIN) return anchor;   // same gesture arriving twice
-    lastSnapAt = now;
-    return (anchor = stops[j]);
-  };
-  // How long to take over a given distance. Both callers used to cap out — the settle
-  // at 620ms, the keys at 900 — which meant the longest travels were also the fastest:
-  // the cards to "how much is your data worth" is 2168px, and at 620ms that is 54px of
-  // picture per frame. Every frame arrives on time and each one moves a long way, and
-  // over a screen of large photographs that strobes. It reads as glitchy even though
-  // nothing is dropped.
-  //
-  // 0.55ms per pixel holds the step near 25px a frame, which is smooth at 60Hz. The
-  // long durations only ever apply to what is LEFT of a gap after the gesture: flick
-  // most of the way and the settle is short, because there is little left to cover.
-  const travelMs = dist => Math.max(260, Math.min(1400, 200 + dist * 0.55));
-  const settle = () => {
-    // Even when there is nothing to do, clear the gesture accounting. Returning early
-    // and leaving it behind is what has caused this every time: gestureMoved kept a
-    // whole fling's distance, the settle was armed again, read that stale distance as a
-    // fresh deliberate scroll and stepped — over and over, with no one touching
-    // anything. Measured 7320px of drift while idle.
-    if(gliding || touching){
-      inGesture = false; gestureFromY = null; gestureMoved = 0; deferUntil = 0;
-      return;
-    }
-    const y = window.scrollY, to = settleTarget(y);
-    // barrier and barrierDir deliberately survive: the settle fires while momentum is
-    // still running, and the barrier is what holds that momentum at the beat. They are
-    // replaced when a genuinely new gesture starts.
-    inGesture = false; gestureFromY = null; deferUntil = 0; gestureMoved = 0;
-    if(to == null) return;
-    const dist = Math.abs(to - y);
-    if(dist < 3) return;
-    glide(to, travelMs(dist));
-  };
-  // A ceiling on how long one gesture may keep putting the settle off.
-  //
-  // The settle fires SETTLE_IDLE after the last scroll of any size, and a flick's
-  // momentum keeps scrolling — by less and less — for the best part of a second. So the
-  // tail held the settle off while the page crawled to a near-stop on whatever frame it
-  // happened to die on, sat there visibly, and only then got taken away. Measured from
-  // the tap: a 725px flick came to rest on the headphones, a 1101px one on the charger.
-  // That is exactly "it keeps landing on the other images".
-  //
-  // Deferring is capped at 700ms from the first scroll of the gesture instead. Tried
-  // reading the tail off the wheel deltas first — momentum decays where a hand does not
-  // — but that needs a flag saying "we are in a tail", and a flag that suppresses the
-  // settle can get stuck holding it suppressed, which is a far worse failure than the
-  // one being fixed: the page then never settles at all. A deadline cannot stick.
-  const SETTLE_MAX = 700;
-  let deferUntil = 0;
-  const armSettle = () => {
-    clearTimeout(settleTimer);
-    const now = performance.now();
-    if(!deferUntil) deferUntil = now + SETTLE_MAX;
-    settleTimer = setTimeout(settle, Math.max(0, Math.min(SETTLE_IDLE, deferUntil - now)));
-  };
-  // Passive, all of it: none of these listeners may so much as think about blocking the
-  // scroll they are watching.
-  // The origin is read off the scroll positions themselves rather than off the wheel,
-  // because plenty of real scrolling carries no wheel event — dragging the scrollbar
-  // fires none at all — and all of it should still be able to commit to the next stop.
-  // prevY trails one scroll event behind, so at the start of a gesture it is still
-  // where the reader was before they pushed.
-  // The next beat is a boundary the gesture cannot cross.
-  //
-  // Fixing the target to the next beat gives "one scroll, one screen" whatever the
-  // momentum — but on its own it means a hard flick runs 3226px past the tap and is then
-  // dragged back, which measured as 65 consecutive backward frames. That reversal IS the
-  // choppiness. Letting momentum spend itself against a barrier instead costs nothing:
-  // the page moves 1:1 under the hand right up to the beat, stops dead there, and the
-  // rest of the flick is simply absorbed. Nothing to pull back, so nothing to see.
-  //
-  // Only where a step would apply. The wide gaps stay free and unbarriered, because
-  // there the reader is meant to cross under their own power.
-  // A gesture begins only after a genuine gap in the scrolling. Momentum arrives every
-  // 10-16ms and can run for the better part of two seconds, so without this its tail
-  // reads as gesture after gesture: the settle lands the reader on a beat, clears the
-  // gesture state, and the momentum still in flight immediately looks like a new push,
-  // sets a barrier one beat further on and carries them to it — over and over. Measured
-  // before this: 1728ms of momentum from the hero flew to 5262px, past the tap and past
-  // the family, and only then came back. That is the overflowing and the skipping.
-  const GESTURE_GAP = 150;
-  let lastScrollAt = 0, lastWheelAt = 0;
-  // How far the READER has scrolled this gesture. Not y - gestureFromY, which counts
-  // the glide's own travel too: a stray wheel event mid-glide cancels the glide and
-  // opens a gesture at that point, the glide then carries the page a few hundred px,
-  // and that shows up as a deliberate scroll and steps again. Measured it stepping
-  // twice off one gentle flick, ending on the shopping bag. Only scroll accumulated
-  // while NOT gliding counts, so the page can never talk itself into moving on.
-  let gestureMoved = 0;
-  let barrier = null, barrierDir = 0;
-  // A fling that has been released is handed to the compositor, and its wheel events
-  // stop being cancelable partway through — so preventDefault silently stops working
-  // during exactly the tail that overflows. A drag with the fingers still down stays on
-  // the main thread, which is why only the released fling ever got past the beat.
-  //
-  // So the position is held rather than the events refused. This runs in
-  // requestAnimationFrame, which fires BEFORE the frame is painted, so the compositor's
-  // overshoot is corrected in the same frame it happens and never reaches the screen.
-  // It keeps going until the scrolling has been still for a dozen frames, because the
-  // inertia it is holding back can run for the better part of two seconds.
-  let clampRaf = 0;
-  const stopClamp = () => { if(clampRaf) cancelAnimationFrame(clampRaf); clampRaf = 0; };
-  const startClamp = () => {
-    if(clampRaf) return;
-    let quiet = 0, was = window.scrollY;
-    const tick = () => {
-      if(barrier == null || barrierDir === 0){ clampRaf = 0; return; }
-      const y = window.scrollY;
-      if((barrierDir > 0 && y > barrier) || (barrierDir < 0 && y < barrier)){
-        glideWrote = barrier;
-        window.scrollTo(0, barrier);
-        quiet = 0;
-      } else {
-        quiet = (y === was) ? quiet + 1 : 0;
-      }
-      was = window.scrollY;
-      if(quiet > 12){ clampRaf = 0; return; }
-      clampRaf = requestAnimationFrame(tick);
-    };
-    clampRaf = requestAnimationFrame(tick);
-  };
-  const setBarrier = (from, dir) => {
-    barrier = null; barrierDir = dir;
-    const stops = screenStops();
-    if(!stops.length || !dir) return;
-    const i = stopIndex(stops, anchor != null ? anchor : nearestStop(stops, from));
-    const j = i + dir;
-    if(j < 0 || j > stops.length - 1) return;
-    if(Math.abs(stops[j] - stops[i]) <= window.innerHeight * 1.5) barrier = stops[j];
-    if(barrier != null) startClamp();
-  };
-  let prevY = window.scrollY;
-  const beginGesture = from => { if(!inGesture){ inGesture = true; gestureFromY = from; } };
-  window.addEventListener('scroll', () => {
-    const y = window.scrollY;
-    if(gliding){
-      // Our own glide — unless the page has moved somewhere the glide could not have
-      // put it, which means something else is scrolling. Only wheel and touch cancel a
-      // glide, so without this a scrollbar drag during one would be overwritten frame
-      // by frame and the page would appear to fight the reader.
-      //
-      // The tolerance has to be enormous, and 4px was catastrophic. Scroll events lag
-      // the writes that cause them by a frame or two, and a glide crossing 2187px in
-      // 1400ms moves 26px a frame — so the guard fired on the glide's OWN scrolling,
-      // cancelled it, and opened a new gesture from a stale origin whose direction
-      // could come out either way. The page then scrolled itself, forever: measured
-      // wandering over 6088px while completely idle. Half a screen cannot be frame
-      // lag, and a real drag clears it easily.
-      if(Math.abs(y - glideWrote) > Math.max(240, window.innerHeight * .5)){
-        stopGlide(); beginGesture(prevY); prevY = y; armSettle(); return;
-      }
-      prevY = y;
-      lastScrollAt = performance.now();
-      return;
-    }
-    // A single scroll event crossing more than a screen and a half is not a hand. It is
-    // scroll restoration on reload, or an anchor jump, or a script — and reading it as
-    // one enormous gesture would anchor the settle at wherever the reader came FROM and
-    // then walk them one stop on from there, which on a reload at the picker means
-    // being thrown back to the top of the page. Re-anchor and let the settle fall back
-    // to the nearest stop, which is the right answer when there is no gesture to read.
-    if(Math.abs(y - prevY) > 1.5 * window.innerHeight){
-      inGesture = false; gestureFromY = null; anchor = null; prevY = y; armSettle(); return;
-    }
-    // Recomputed at the start of every gesture rather than when it happens to be unset.
-    // Leaving it to a null check meant a barrier could outlive the gesture that made it
-    // — settle() clears it, but settle() returns early while a glide is running — and a
-    // stale one clamps the next gesture against the wrong stop. It did: a hard flick
-    // from the hero went nowhere at all.
-    lastScrollAt = performance.now();
-    // The rAF clamp is what holds a released fling, but it cannot act until the next
-    // frame, so the first burst of one lands before it. Snapping back here as well
-    // takes the residual overshoot from a few hundred px to a few.
-    if(barrier != null && barrierDir !== 0 &&
-       ((barrierDir > 0 && y > barrier) || (barrierDir < 0 && y < barrier))){
-      glideWrote = barrier;
-      window.scrollTo(0, barrier);
-      prevY = barrier;
-      armSettle();
-      return;
-    }
-    beginGesture(prevY);
-    gestureMoved += y - prevY;
-    prevY = y;
-    armSettle();
-  }, {passive:true});
-  // A wheel event arrives before its own scrolling lands, so it knows the origin exactly
-  // rather than trailing it — and it is also what cancels a glide in progress.
-  // The one non-passive listener on the page, and it earns it: preventDefault is the
-  // only thing that can actually refuse momentum. window.scrollTo cannot — the browser
-  // re-applies its own inertia on the next frame and overrides it, which is why
-  // clamping from the scroll listener let a 1728ms flick fly 5267px past the beat and
-  // come back. Everything up to the beat is let through untouched, so the page still
-  // moves 1:1 under the hand; only the excess is absorbed.
-  //
-  // The direction comes from deltaY, so the barrier is known before any scrolling has
-  // happened rather than after the first scroll event.
-  window.addEventListener('wheel', e => {
-    if(Math.abs(e.deltaY) < 1) return;
-    const y = window.scrollY, now = performance.now();
-    // A gap in the wheel events is the ONLY test for a new gesture. It used to also
-    // require !inGesture, and inGesture is cleared in settle() — which returns early
-    // while a glide is running, so it could stay raised indefinitely. A gesture then
-    // never counted as new, setBarrier was never called, and the previous gesture's
-    // barrier stayed in force and pinned the reader where they were: stuck on "Own and
-    // save your data", one scroll doing nothing. A time gap cannot get stuck.
-    if(now - lastWheelAt > GESTURE_GAP){
-      setBarrier(y, Math.sign(e.deltaY));
-      gestureMoved = 0; inGesture = false; gestureFromY = null; deferUntil = 0;
-    }
-    lastWheelAt = now;
-    // Refuse the event that WOULD cross the beat, and land exactly on it — rather than
-    // waiting until the page is already past. Checking after the fact left one event's
-    // worth of overshoot, 75px, for the settle to tidy up afterwards; predicting it
-    // means the gesture ends on the beat itself and the settle has nothing left to do,
-    // which is the whole point: the page stops where the reader stopped pushing.
-    if(barrier != null && barrierDir !== 0){
-      const willBe = y + e.deltaY;
-      if(barrierDir > 0 ? willBe > barrier : willBe < barrier){
-        e.preventDefault();
-        if(y !== barrier){ glideWrote = barrier; window.scrollTo(0, barrier); }
-        beginGesture(barrier);
-        armSettle();
-        return;
-      }
-    }
-    beginGesture(y);
-    stopGlide();
-    armSettle();
-  }, {passive:false});
-  window.addEventListener('touchstart', () => { touching = true; beginGesture(window.scrollY); stopGlide(); }, {passive:true});
-  window.addEventListener('touchend', () => { touching = false; armSettle(); }, {passive:true});
-
-  // Keys are the one place a step still earns its keep. An arrow press has no momentum
-  // and no distance of its own, and the browser's own forty-odd pixels would just be
-  // settled straight back where they came from — so the keys move a whole screen.
-  const stepTo = (dir, origin) => {
-    const stops = screenStops();
-    if(!stops.length) return null;
-    const y = origin == null ? window.scrollY : origin;
-    if(y < stops[0] - 4 || y > stops[stops.length - 1] + 4) return null;
-    let i = 0;
-    for(let k = 0; k < stops.length; k++) if(y >= stops[k] - 4) i = k;
-    const n = i + dir;
-    return (n < 0 || n >= stops.length) ? null : stops[n];
-  };
-  const SNAP_KEYS = {ArrowDown:1, PageDown:1, ' ':1, Spacebar:1, ArrowUp:-1, PageUp:-1};
-  window.addEventListener('keydown', e => {
-    const t = e.target;
-    if(t && t !== document.body && t !== document.documentElement) return;
-    const dir = SNAP_KEYS[e.key];
-    if(!dir) return;
-    // Held down, the key repeats about every 30ms; take one screen at a time.
-    const now = performance.now();
-    if(now - lastStepAt < 220){ e.preventDefault(); return; }
-    const to = stepTo(dir, anchor != null ? anchor : window.scrollY);
-    if(to == null) return;
-    lastStepAt = now;
-    anchor = to;
-    stopGlide();
-    const dist = Math.abs(to - window.scrollY);
-    glide(to, travelMs(dist));
-    e.preventDefault();
-  });
+  // The snap points are the run's own settled moments, mapped from timeline time onto
+  // the pin's progress, with 1 appended so the reader can leave the section rather than
+  // being held at the last beat.
 
   window.addEventListener('load', () => {
     ScrollTrigger.refresh();
