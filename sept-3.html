@@ -1414,16 +1414,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // is not snapped through here: from the timeline down the page scrolls normally,
   // because there the scroll IS the interaction, so this simply scrubs as they go.
   const closeTl = gsap.timeline({paused:true, defaults:{ease:'none'}});
-  closeTl.to({}, {duration:.22}, 0);                    // $31,800 holds a beat first
+  // Everything here is brought forward, to leave the last third of the tail as a hold.
+  // This screen carries the page's closing line and its only real call to action, and
+  // it used to be the least readable thing on the page: the button did not arrive until
+  // progress .92, which is 173px before the pin lets go — so it was whole for 173px of
+  // an 8532px section, against 346px for the shortest of the plan framings and 3404px
+  // for the run's copy. Finishing at .62 instead leaves .62-1.0 held, which is 821px.
+  // No stop is involved; this stretch is deliberately free-scrubbed, because the years
+  // are the reader's to move through. This just gives the ending room inside it.
+  closeTl.to({}, {duration:.12}, 0);                    // $31,800 holds a beat first
   closeTl.to('#ages > .frames, #ages > .num-wrap, #ages > .stage-tag, #ageCtl',
-             {opacity:0, duration:.34, ease:'power1.inOut'}, .22);
+             {opacity:0, duration:.26, ease:'power1.inOut'}, .12);
   // an opacity-0 slider still takes the pointer, so take it out of reach as it goes
-  closeTl.set('#ageCtl', {pointerEvents:'none'}, .56);
-  closeTl.fromTo('#closing', {opacity:0}, {opacity:1, duration:.34, ease:'power1.inOut'}, .34);
-  closeTl.fromTo('#closing .closing-h', {y:26, opacity:0}, {y:0, opacity:1, duration:.26, ease:'power2.out'}, .52);
-  closeTl.fromTo('#closing .closing-sub', {y:18, opacity:0}, {y:0, opacity:.7, duration:.24, ease:'power2.out'}, .60);
-  closeTl.fromTo('#closing .closing-cta', {y:14, opacity:0}, {y:0, opacity:1, duration:.24, ease:'power2.out'}, .68);
-  closeTl.to({}, {duration:.08}, .92);
+  closeTl.set('#ageCtl', {pointerEvents:'none'}, .40);
+  closeTl.fromTo('#closing', {opacity:0}, {opacity:1, duration:.26, ease:'power1.inOut'}, .20);
+  closeTl.fromTo('#closing .closing-h', {y:26, opacity:0}, {y:0, opacity:1, duration:.22, ease:'power2.out'}, .30);
+  closeTl.fromTo('#closing .closing-sub', {y:18, opacity:0}, {y:0, opacity:.7, duration:.20, ease:'power2.out'}, .36);
+  closeTl.fromTo('#closing .closing-cta', {y:14, opacity:0}, {y:0, opacity:1, duration:.20, ease:'power2.out'}, .42);
+  closeTl.to({}, {duration:.38}, .62);
 
   const ageBaseTotal = AGES.length*59;
   // Two viewports of tail: a hold on the number, the dissolve, then the closing screen
