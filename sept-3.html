@@ -1765,11 +1765,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // you just left is still the nearest one and nearest alone would refuse to move.
     // Take the next one along. This is the getting-stuck, and the only case that needs
     // the anchor rather than the position.
-    const now = performance.now();
-    if(now - lastSnapAt < STEP_MIN) return anchor;   // same gesture arriving twice
     const i = stopIndex(stops, anchor);
     const j = i + Math.sign(delta);
     if(j < 0 || j > last) return stops[i];
+    // How far this step would carry the reader on its own. A step is the page moving
+    // AFTER the hand has stopped, so it has to stay short enough to read as settling
+    // rather than as travelling. Past a screen and a half it stops being a settle: from
+    // the tap the next stop is 1858px away, and stepping it meant a small scroll was
+    // answered by the page crossing the delivery frame and arriving at the headphones
+    // by itself, which is indistinguishable from the page scrolling on its own.
+    //
+    // So the wide gaps are simply left free. Nothing is pulled and nothing is pushed:
+    // the reader scrolls across at 1:1, and once they are nearer the far stop than the
+    // one they left, `near !== anchor` above lands them on it. No long unasked-for
+    // travel, and no getting stuck either, which is what the step was for.
+    if(Math.abs(stops[j] - stops[i]) > window.innerHeight * 1.5) return null;
+    const now = performance.now();
+    if(now - lastSnapAt < STEP_MIN) return anchor;   // same gesture arriving twice
     lastSnapAt = now;
     return (anchor = stops[j]);
   };
