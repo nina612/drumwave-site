@@ -155,6 +155,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    Only one is ever visible: A clears out over .25 before B starts, so stacking the two
    on one origin costs no overlap. */
 #act1 .run-say .say{position:absolute;left:0;top:0;width:100%}
+/* Hidden until the timeline has pushed these lines behind their masks.
+   The masked start state (SAY_OUT) only exists in JS, so between first paint and GSAP
+   running the browser drew both statements where they rest. That never showed while the
+   three statements sat in three different places; now that they share one origin they
+   landed exactly on top of each other and on the hero — the pile of type at the top of
+   the page.
+   visibility, NOT a transform. Setting translateY(150%) here looked like the tidier
+   fix and silently broke both entrances: GSAP folds an existing CSS transform into its
+   own baseline, so yPercent stacked on top of it and the statements arrived at 257.6px
+   instead of 0 — that is, never arrived at all. Measured before it went anywhere.
+   The reveal is one line of JS beside the set that establishes the state, so the two
+   cannot drift apart. */
+#act1 .run-say{visibility:hidden}
 /* 400, not the 300 .display carries: the node draws this copy at the same weight as
    the headline. Everything else here was already on the node's numbers — 121/1920
    left, 558/1080 top, 140px on 126, -4.2px of tracking. The width is the one figure
@@ -1169,6 +1182,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // Every span in both statements starts behind its mask.
   const saySpans = $$('#act1 .run-say .ln > span');
   tl1.set(saySpans, {yPercent:SAY_OUT}, 0);
+  // The same state applied now rather than on the timeline's first render, so the block
+  // can be shown immediately: the stylesheet hides .run-say precisely so that nothing
+  // is painted between load and this line. Every path reaches it — RM only changes
+  // timeScale, and the matchMedia below rebuilds the plan screen, not this.
+  gsap.set(saySpans, {yPercent:SAY_OUT});
+  gsap.set('#act1 .run-say', {visibility:'visible'});
   // "Every tap. Every step. Every choice creates value, instantly." arrives whole, on
   // the tap frame — no stagger, so the three lines rise together and read as one
   // statement rather than as a sentence being assembled a piece to a photograph.
