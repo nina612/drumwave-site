@@ -252,8 +252,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    colour casts over it, and the branding set on top — not one flat export, which
    is why the old artwork could not carry the balance, the name or the number.
    .sol-card is the positioning wrapper so the light spill can sit outside the
-   card's own clip and still travel with it when act 6 lifts the card. */
-.solution-preview .sol-card{position:absolute;left:58.59vw;top:34.44vh;width:32.14vw;aspect-ratio:617/386.076;opacity:0;container-type:inline-size}
+   card's own clip and still travel with it.
+   31.11vh, not the 34.44vh of the node: the card used to ease up 3.33vh between the
+   introducing framing and the open-an-account framing, so the same card sat at two
+   different heights depending on which one you were looking at. Asked for: one x and
+   one y on both. 34.44 - 3.33 is 31.11, which keeps open-an-account exactly where it
+   already was and brings introducing up onto it, rather than moving the framing that
+   was right. The rise tween is gone with it — see the note where it used to be. */
+.solution-preview .sol-card{position:absolute;left:58.59vw;top:31.11vh;width:32.14vw;aspect-ratio:617/386.076;opacity:0;container-type:inline-size}
 /* the spill of light the card throws onto the page beneath it */
 .solution-preview .sol-card-glow{position:absolute;left:-10.7%;top:102.31%;width:118.48%;height:34.71%;pointer-events:none}
 /* the spill image overruns its own box top and bottom — 214px of artwork in a
@@ -475,7 +481,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .solution-preview #solStateA{transform:none;width:auto;max-width:84vw}
   .solution-preview .sol-body{max-width:84vw;margin-top:1.4em}
   .solution-preview .sol-cta{left:8vw;top:auto;bottom:22vh}
-  .solution-preview .sol-card{right:auto;left:8vw;top:auto;bottom:30vh;width:84vw}
+  .solution-preview .sol-card{right:auto;left:8vw;top:auto;bottom:33.33vh;width:84vw}
   /* the vw paddings and gaps are a few pixels at this width, so set them in their own terms */
   .closing{padding-top:0}
   .closing-copy{width:84vw}
@@ -1360,13 +1366,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // is four viewports and the timeline four units, one per viewport, so each screen
   // stop sits on a plateau —
   //   0 -> 1   the reveal, ending held on "Introducing the Data Savings Plan"
-  //   1 -> 2   the dissolve to "Open an account", the card lifting between them
+  //   1 -> 2   the dissolve to "Open an account"; the card holds its place
   //   2 -> 3   the card and its copy leave, the four cards come up in their place
   //   3 -> 4   held, so the cards stay put while the section scrolls away instead
   //            of unwinding on the way out
   // Every fromTo takes immediateRender:false so the timeline does not paint its
   // start values over the page the moment it is built.
-  const cardRise = () => -window.innerHeight * 0.0333;
   const solA = lines('#solStateA .sol-headline'), solB = lines('#solStateB .sol-headline');
   // header.nav is the bar; the bare <nav> inside it is only the Personal/Business links
   const solHowEl = $('#solHow'), solHowFit = $('#solHowFit'),
@@ -1434,7 +1439,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     tl.fromTo('#solStateA .sol-body', {opacity:.7}, {opacity:0, duration:.2}, 1.15);
     tl.fromTo('#solutionPreview .sol-glow-l', {opacity:.4}, {opacity:0, duration:.3, ease:'power1.inOut'}, 1.15);
     tl.fromTo('#solutionPreview .sol-glow-r', {opacity:.2}, {opacity:0, duration:.3, ease:'power1.inOut'}, 1.15);
-    tl.fromTo('#solutionPreview .sol-card', {y:0}, {y:cardRise, duration:.5, ease:'power2.inOut'}, 1.17);
+    // The card used to ease up 3.33vh here, which is what gave it two different y
+    // values across the two framings. It rests at the risen height now (see
+    // .sol-card's top) and does not move between them at all.
     tl.fromTo(solB, {yPercent:112}, {yPercent:0, duration:.3, stagger:.08, ease:'power3.out'}, 1.25);
     tl.fromTo('#solutionPreview .sol-cta', {opacity:0, y:12}, {opacity:1, y:0, duration:.24, ease:'power2.out'}, 1.47);
 
