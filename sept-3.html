@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DrumWave: Your life creates data</title>
+<title>dWallet: Your life creates data</title>
 <meta name="description" content="Your life creates data. What if its value grew with you?">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -117,7 +117,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    vertical overflow in a 16:9 box; the node's y of -105 is 52.5% of that, not the 50%
    cover would centre on. Five pixels, but it is the difference the node asks for. */
 #act2 .frame-baby img{object-position:50% 52.5%}
-#act1 .hero-h{position:absolute;left:5vw;bottom:4vh;max-width:92vw;color:#fff}
+/* Type and placement come straight off the design: Titillium 400 at 140/112px with
+   -4.2px of tracking, in a box that hugs its own text 121px in from the left and
+   138px up from the bottom of a 1920x1080 frame. As fractions that is 6.3vw — the
+   same left margin the run's copy already sits on — and 12.78vh. The 718px above it
+   and 1061px to its right are what is left over, not measurements to hold. */
+#act1 .hero-h{
+  position:absolute;left:6.3vw;bottom:12.78vh;max-width:92vw;color:#fff;
+  /* 7.29vw is 140/1920, so the cap is reached at exactly the frame it was drawn on.
+     The floor stays at the 3rem it has always been: the spec is for the wide screen,
+     and letting it set the phone's size too would have shrunk the headline there
+     from 48px to 35px, which is not what was asked for. */
+  font-size:clamp(3rem,7.29vw,8.75rem);
+  font-weight:400;line-height:.8;letter-spacing:-.03em;
+}
 /* SEPT-3 ONLY. Figma 3406-5930 and 3406-5968 give the run a second block of copy:
    the tap frame carries "Every tap. Every step." and the delivery frame finishes the
    sentence. Top-anchored at 558/1080, on the 6.3vw left and 1310/1920 measure the
@@ -455,7 +468,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <a class="logo" href="#">
     <img class="mark" src="assets/img/logo.png" alt="" width="36" height="36">
     <span class="rule" aria-hidden="true"></span>
-    <b class="wordmark">DrumWave</b>
+    <b class="wordmark">dWallet</b>
   </a>
   <nav class="links"><a class="cur" href="#">Personal</a><a href="#">Business</a></nav>
   <span class="sep" aria-hidden="true"></span>
@@ -799,7 +812,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   <footer class="site-footer">
     <div>
-      <div class="foot-logo"><img src="assets/img/logo.png" alt="" width="42" height="42"><b>DrumWave</b></div>
+      <div class="foot-logo"><img src="assets/img/logo.png" alt="" width="42" height="42"><b>dWallet</b></div>
       <p class="foot-tag">Your Life. Your Story. Your Data.</p>
       <p class="foot-copy">Copyright &copy; 2026 DrumWave Inc. All rights reserved.</p>
       <div class="foot-social">
