@@ -985,12 +985,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // eases out of a slight push, the delivery cuts straight on with no zoom and nothing
   // held after its copy lands. So they pull in opposite directions — 2.2 against 1.0 —
   // which is the pacing contrast the note is asking for.
-  // The running and coffee frames are beats again, one scroll apart, so they need
-  // enough length for their stops to be distinct: at .3 they were 148px wide and one
-  // ordinary gesture crossed both. .7 gives them about 330px each — still the quickest
-  // frames in the run by a distance, with the tap at 1570px, but far enough apart to
-  // be landed on separately.
-  const HERO = 1.5, QUICK = .7, TAP = 3.0, PKG = 1.0;
+  // QUICK is the runner and the coffee shop, the two transit frames under "Your life
+  // creates data". 1.0 rather than .7 so they hold exactly as long as the delivery and
+  // the headphones do under "Every tap. Every step." — at .7 the first group's
+  // photographs switched noticeably quicker than the second's, which is half of why the
+  // two sections did not look alike.
+  const HERO = 1.5, QUICK = 1.0, TAP = 3.0, PKG = 1.0;
   const T_RUN = HERO, T_COFFEE = T_RUN + QUICK, T_TAP = T_COFFEE + QUICK, T_PKG = T_TAP + TAP;
   const ACT1_END = T_PKG + PKG;   // act 2 begins here, whatever the tag tails do
 
@@ -1000,7 +1000,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // which left every tag painted on screen until the first one fired.
 
   // the opening image eases out of its push across the whole second it holds
-  arrive(tl1, f1(0), 0, true, HERO);
+  // 1.02 over the hero's 1.5 units is 0.0133 of scale per unit, which is exactly the
+  // rate the tap drifts at over its 3.0. It was 1.08, four times that, and it is why
+  // the "Your life creates data" photographs moved visibly differently from the "Every
+  // tap. Every step." ones — same crossfade, quite different drift. power1.out to match
+  // the tap's ease as well.
+  arrive(tl1, f1(0), 0, true, HERO, 1.02, 'power1.out');
 
   // running, coffee, tap, delivery — each an instant cut, and the tap frame the only
   // one that moves once it lands
@@ -1110,13 +1115,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // where nothing moves — a third of the whole run. The reader decides when to leave a
   // held frame, so it only needs enough to register as a hold at all.
   const BABY_HOLD = 2.6, DISSOLVE = 2.2, FINAL_HOLD = SCROLL_RUN ? 1.0 : 5.0;
-  // The shopping and charging frames are transit, crossed inside the scroll that leaves
-  // the headphones for the baby — but at .3 they were half the length of the other two
-  // transit frames, and measurably too short to see. Counted on a hard flick, where the
-  // reader's own scroll crosses the gap rather than the settle: the runner got 3 frames
-  // and the delivery 4, while these two got ONE each, 17ms, which is not a glimpse but
-  // an absence. .7 puts them on the runner's footing.
-  const SHOP = .7, CHARGE = .7;
+  // 1.0, the same as every other transit frame in the run — the runner, the coffee shop,
+  // the delivery and the headphones all hold exactly this long, so no photograph goes
+  // by faster than any other. These two were .3 first, which measured at ONE frame on a
+  // hard flick, 17ms, not a glimpse but an absence; then .7, which was still shorter
+  // than the rest and left the two sections looking unalike.
+  const SHOP = 1.0, CHARGE = 1.0;
   const BABY = HOLD0 + SHOP + CHARGE, FAMILY = BABY + BABY_HOLD;
   const END = FAMILY + DISSOLVE + FINAL_HOLD;
   const ESD2 = [[0, 0], [4, HOLD0], [5, HOLD0 + SHOP]];
