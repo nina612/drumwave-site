@@ -1094,9 +1094,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   tl2.set(f2(7), {opacity:0.001}, BABY + .4);
   // The veil used to step 0 -> .5 -> .25 -> .12 right ON the Every/Single/Day
   // handovers, so the screen darkened and lifted while the photos swapped and the
-  // beat read as a fade through black. It now reaches its level during a hold and
+  // beat read as a fade through black. It reaches its level during a hold instead and
   // sits still across every dissolve.
-  tl2.to('#act2 .line-veil', {opacity:.18, duration:.6}, .9);
+  //
+  // .05 rather than .9, because the headphones frame's own stop is at .6 — settled(0,
+  // HOLD0) — and a veil running .9 to 1.5 finished AFTER it. So the reader came to rest
+  // on the untinted photo, and the tint then arrived on their next scroll, which reads
+  // as the same photograph costing two. Done by .45 it is on screen when the frame
+  // settles, and it is still inside that frame's hold rather than on a handover.
+  tl2.to('#act2 .line-veil', {opacity:.18, duration:.4}, .05);
   // The photo swap here is the same cut as the others; what sets the beat apart is
   // the text riding on it — an eased lead-out and a brighten. Both are kept short so
   // they land with the cut rather than running long past it.
@@ -1243,7 +1249,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     }
 
     // the hold that carries the last framing out of view unchanged
-    tl.to({}, {duration:1.0}, withCards ? 3.0 : 2.0);
+    // .4 on the wide layout, where this used to be a full unit. At 500% that unit was
+    // 1350px of pinned scroll after the cards' stop in which nothing changes at all,
+    // and it sat directly between the cards and "How much is your data worth?" — the
+    // single biggest reason that screen arrived late enough to scroll straight past.
+    // The phone keeps its 1.0: its pin is 300% and its tail is proportionally smaller.
+    tl.to({}, {duration: withCards ? .4 : 1.0}, withCards ? 3.0 : 2.0);
     return tl;
   };
 
@@ -1571,18 +1582,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       const dur = a1.animation.duration(), pinSpan = a1.end - a1.start;
       for(const t of runStops) out.push(Math.round(a1.start + (t / dur) * pinSpan));
     }
-    // The plan screen carries three framings on one pin, so it contributes three
-    // stops rather than one — a quarter of the way in, where the reveal has landed on
-    // "Introducing the Data Savings Plan", a half, where it has become "Open an
-    // account", and three quarters, where the four cards have come up. The final
-    // quarter is the hold that carries the cards out of view unchanged, so it is not
-    // a stop of its own.
+    // The plan screen carries three framings on one pin, so it contributes three stops
+    // rather than one: "Introducing the Data Savings Plan", then "Open an account",
+    // then the four cards. Each is built at a whole unit of the timeline, so the stops
+    // are those times mapped onto the pin — NOT an even division of it.
+    //
+    // They used to be span*k/n for n = round(duration), which is the same thing only
+    // while the timeline's last unit is a full-length hold. Shortening that hold to
+    // pull "How much is your data worth?" closer made the two disagree, and an even
+    // division would have put the third stop 635px before the cards had arrived. The
+    // filter drops any framing the current build does not have — the phone has two.
     const sol = st('solution');
     if(sol && sol.animation){
-      // one plateau per framing, read off the timeline so the phone's shorter pin and
-      // the wider layout's longer one both come out right
-      const span = sol.end - sol.start, n = Math.max(2, Math.round(sol.animation.duration()));
-      for(let k = 1; k < n; k++) out.push(Math.round(sol.start + span*k/n));
+      const span = sol.end - sol.start, dur = sol.animation.duration();
+      for(const t of [1, 2, 3]) if(t < dur - .05) out.push(Math.round(sol.start + span*t/dur));
     }
     // On a phone the cards are a section of their own again, so they are a stop again.
     const host = document.getElementById('howHost');
