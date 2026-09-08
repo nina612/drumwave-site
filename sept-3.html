@@ -878,6 +878,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // where the run plays itself unless ?scroll asks otherwise. ?play gets the clock back
   // on this file if it is ever wanted for comparison.
   const SCROLL_RUN = !/(?:^|[?&#])play(?:=|&|$)/.test(location.search + location.hash);
+  // NOT normalizeScroll. It is GSAP's supported way to take momentum off the compositor
+  // and onto the main thread, which is the one thing that would let this page guarantee
+  // the reader is stopped on a beat however hard they flick — but it replaces the scroll
+  // position as the source of truth, and on this page that broke the pinning outright:
+  // the scroll stopped responding and all three statements rendered at once. Left out
+  // rather than left in.
   // Locked to the scroll, not eased toward it. The reference file this was taken from
   // scrubs with 0.9s of smoothing, and that is right there: it free-scrolls, so the
   // smoothing is the only thing giving the run any weight. Here the page snaps, and the
@@ -1078,7 +1084,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // power1.out rather than the power2.out the other pushes take: over a frame this
     // long power2 spent 90 per cent of the drift in the first third and then sat still,
     // which reads as a bump and then nothing rather than a slow zoom out.
-    if(fi === 10) arrive(tl1, f1(fi), at, false, TAP, 1.04, 'power1.out');
+    // 1.06 and power2.out: the baby's numbers, so the two screens the reader is meant
+    // to dwell on zoom out the same way. It was 1.04 on power1.out.
+    if(fi === 10) arrive(tl1, f1(fi), at, false, TAP, 1.06, 'power2.out');
   });
 
   // "Your life creates data." stands over the hero, the run and the coffee, and leaves
@@ -1098,8 +1106,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // the tap frame — no stagger, so the three lines rise together and read as one
   // statement rather than as a sentence being assembled a piece to a photograph.
   const sayA = $$('#sayA .ln > span'), sayB = $$('#sayB .ln > span');
+  // The same entrance "Own and save your data." gets, to the number: .7 long, .12 of
+  // stagger between the lines, power1.out, and starting .5 after its own photograph
+  // arrives rather than .12. It was .55 and power3.out with no stagger, which on a
+  // scrubbed timeline is a quite different thing — power3.out spends most of the travel
+  // in the first fraction of the scroll, so it snapped in where the other one drifts.
+  // Landing on the tap now finds the sentence whole, the way landing on the baby does.
   tl1.fromTo(sayA, {yPercent:SAY_OUT},
-    {yPercent:0, duration:.55, ease:'power3.out', immediateRender:false}, T_TAP + .12);
+    {yPercent:0, duration:.7, stagger:.12, ease:'power1.out', immediateRender:false}, T_TAP + .5);
 
   /* ---------- ACT 2 ---------- */
   // No trigger of its own: it is appended to act 1 below so the hero runs
