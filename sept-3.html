@@ -705,7 +705,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <div class="ages mono" id="ageLabels"></div>
   </div>
 
-  <!-- Figma 3381-35616. Crossfades in over the $31,800 hold, on the tail of this
+  <!-- Figma 3381-35616. Crossfades in over the the picker's final figure hold, on the tail of this
        section's own pin, so it arrives with no scroll motion of its own: the age
        screen dissolves and the closing screen is simply there. The frame's two big
        ellipse glows sit at opacity 0 in the file, so its render is flat — they are
@@ -990,7 +990,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // the headphones do under "Every tap. Every step." — at .7 the first group's
   // photographs switched noticeably quicker than the second's, which is half of why the
   // two sections did not look alike.
-  const HERO = 1.5, QUICK = 1.0, TAP = 3.0, PKG = 1.0;
+  // HERO, TAP and BABY_HOLD are the three the reader is meant to dwell on, so they are
+  // deliberately several times a transit frame's length: 2.6, 3.6 and 3.4 units against
+  // the flat 1.0 every passing photograph gets. The hero was only 1.5 — half again a
+  // frame the reader is not supposed to stop on, which is not a beat.
+  //
+  // They cannot grow without limit: the pin is fixed, so longer beats mean fewer pixels
+  // per unit AND wider gaps between the stops. These three are the largest that keep
+  // every gap under the step cap, so each sentence stays one gesture from the next
+  // instead of turning back into a free crossing.
+  const HERO = 2.6, QUICK = 1.0, TAP = 3.6, PKG = 1.0;
   const T_RUN = HERO, T_COFFEE = T_RUN + QUICK, T_TAP = T_COFFEE + QUICK, T_PKG = T_TAP + TAP;
   const ACT1_END = T_PKG + PKG;   // act 2 begins here, whatever the tag tails do
 
@@ -1114,7 +1123,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // there is no starting over, so five seconds of it becomes five seconds of scrolling
   // where nothing moves — a third of the whole run. The reader decides when to leave a
   // held frame, so it only needs enough to register as a hold at all.
-  const BABY_HOLD = 2.6, DISSOLVE = 2.2, FINAL_HOLD = SCROLL_RUN ? 1.0 : 5.0;
+  const BABY_HOLD = 3.4, DISSOLVE = 2.2, FINAL_HOLD = SCROLL_RUN ? 1.0 : 5.0;
   // 1.0, the same as every other transit frame in the run — the runner, the coffee shop,
   // the delivery and the headphones all hold exactly this long, so no photograph goes
   // by faster than any other. These two were .3 first, which measured at ONE frame on a
@@ -1240,7 +1249,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   tl1.add(tl2, ACT1_END);
 
   /* ---------- THE DATA SAVINGS PLAN : TWO FRAMINGS ON ONE PIN ---------- */
-  // This used to play on the tail of the age timeline, dissolving the $31,800 screen
+  // This used to play on the tail of the age timeline, dissolving the the picker's final figure screen
   // to black first. It now stands on its own, straight off the opening run, and it is
   // scrubbed rather than autoplayed: the reader's gesture IS the transition. The pin
   // is four viewports and the timeline four units, one per viewport, so each screen
@@ -1449,16 +1458,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   /* ---------- ACT 4 : AGE TRACK ---------- */
   const AGE_DATA = [
-    {age:0,  val:0,     label:'Newborn'},
-    {age:2,  val:98,    label:'Toddler'},
-    {age:13, val:320,   label:'Teenage years'},
-    {age:18, val:584,   label:'College'},
-    {age:25, val:878,   label:'First apartment'},
-    {age:32, val:4816,  label:'Building a life'},
-    {age:36, val:10499, label:'Family'},
-    {age:45, val:17858, label:'Career'},
-    {age:58, val:31800, label:'Enjoying life'},
-    {age:70, val:31800, label:'Retirement'}
+    {age:0,  val:0,      label:'Newborn'},
+    {age:2,  val:675,    label:'Toddler'},
+    {age:13, val:3497,   label:'Teenage years'},
+    {age:18, val:5805,   label:'College'},
+    {age:23, val:8999,   label:'First apartment'},
+    {age:32, val:18033,  label:'Building a life'},
+    {age:36, val:23982,  label:'Family'},
+    {age:45, val:44085,  label:'Career'},
+    {age:52, val:69300,  label:'Enjoying life'},
+    {age:70, val:209763, label:'Retirement'}
   ];
   const AGES = AGE_DATA.map(d => d.age);
   const ageFrames = $$('#ageFrames .frame');
@@ -1515,7 +1524,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   renderAge(AGE_MIN);
 
 
-  // The tail of #ages' pin dissolves the $31,800 screen and brings the closing screen
+  // The tail of #ages' pin dissolves the the picker's final figure screen and brings the closing screen
   // up in its place, on the same pin — so it arrives with no scroll motion of its own,
   // the way the plan reveal used to before it moved to the top of the page. The reader
   // is not snapped through here: from the timeline down the page scrolls normally,
@@ -1529,7 +1538,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // for the run's copy. Finishing at .62 instead leaves .62-1.0 held, which is 821px.
   // No stop is involved; this stretch is deliberately free-scrubbed, because the years
   // are the reader's to move through. This just gives the ending room inside it.
-  closeTl.to({}, {duration:.12}, 0);                    // $31,800 holds a beat first
+  closeTl.to({}, {duration:.12}, 0);                    // the picker's final figure holds a beat first
   closeTl.to('#ages > .frames, #ages > .num-wrap, #ages > .stage-tag, #ageCtl',
              {opacity:0, duration:.26, ease:'power1.inOut'}, .12);
   // an opacity-0 slider still takes the pointer, so take it out of reach as it goes
