@@ -1793,6 +1793,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // at the head of these stretches. The rest of the stretch is crossed in the
   // other half; nothing changes across it, so it reads as the image holding.
   const FIRST_ON = 1.0, NEXT_ON = .2, LEAD = 1.2;
+  // "Own and save your data" is the one statement of the three with only two
+  // photographs, and the only one that crosses between them on a dissolve
+  // rather than a cut. A fifth of a second spent that whole dissolve in a
+  // blink; this gives it the room to actually read as one image becoming the
+  // other — asked for.
+  const NEXT_ON_BY_SEG = [NEXT_ON, NEXT_ON, 1.8];
 
   const buildRunPin = phone => {
     if(!phone){
@@ -1833,7 +1839,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
           if(lead < marks[k])
             chain.to(tl1, {time:marks[k], duration:FIRST_ON / 2, ease:'none'});
         } else {
-          chain.to(tl1, {time:marks[k], duration:NEXT_ON, ease:'none'});
+          chain.to(tl1, {time:marks[k], duration:NEXT_ON_BY_SEG[i], ease:'none'});
         }
       }
       segTween = chain;
