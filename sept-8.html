@@ -83,6 +83,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .nav .sep{width:1px;height:40.5px;background:rgba(255,255,255,.3);flex:none}
 .nav .ctas{display:flex;align-items:center;gap:14px}
 .nav .nav-menu{display:none}
+/* device chrome from the phone artboard; hidden until the phone breakpoint */
+.status-bar{display:none}
 .nav .pill{
   display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;
   padding:12px 24px;border-radius:500px;border:.911px solid #fff;
@@ -503,15 +505,34 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    a 1920 container is restated in phone terms, since 1.6667cqw of 390 is 6px.
    ============================================================ */
 @media (max-width:760px){
-  /* --- nav: the mark and a menu button --- */
-  .nav{width:calc(100vw - 48px);height:68px;padding:0 20px;gap:0}
+  /* --- status bar, Figma 3783:27397 — 54 tall with a 21 top inset --- */
+  .status-bar{display:flex;align-items:center;position:fixed;left:0;right:0;top:0;z-index:60;
+    height:54px;padding:21px 16px 0;
+    font-family:-apple-system,'SF Pro Text','Helvetica Neue',system-ui,sans-serif}
+  /* Three fixed tracks rather than flex:1 either side of the island. Grown boxes
+     split unevenly here — the time took 172 and the levels only their content's 80,
+     which put the icons 16px past the right padding. 117 + 124 + 117 is exactly the
+     358 of content the bar has at 390, so the icons land where the artboard has
+     them and cannot overflow. */
+  .sb-time{flex:none;width:117px;text-align:center;font-size:17px;font-weight:590;line-height:22px;color:#fff}
+  .sb-island{flex:none;width:124px;height:10px}
+  .sb-levels{flex:none;width:117px;display:flex;gap:7px;align-items:center;justify-content:center}
+  .sb-levels img{display:block}
+  .sb-levels img:nth-child(1){width:19.2px;height:12.226px}
+  .sb-levels img:nth-child(2){width:17.142px;height:12.328px}
+  .sb-levels img:nth-child(3){width:27.328px;height:13px}
+
+  /* --- nav, Figma 3783:23119: 342 x 68 at 24,78 under the status bar --- */
+  .nav{top:78px;width:calc(100vw - 48px);height:68px;padding:17px 25px;gap:30px;
+    background:rgba(7,7,7,.6);border-color:rgba(255,255,255,.1)}
   .nav .links,.nav .sep,.nav .ctas{display:none}
-  .nav .logo{gap:14px}
-  .nav .logo .mark{width:30px;height:30px}
-  .nav .logo .wordmark{width:92px;height:auto}
-  .nav .nav-menu{display:flex;flex-direction:column;justify-content:center;gap:5px;
-    width:32px;height:32px;margin-left:auto;padding:0;border:0;background:none;cursor:pointer}
-  .nav .nav-menu span{display:block;width:20px;height:1.5px;margin:0 auto;background:#fff;border-radius:2px}
+  .nav .logo{gap:16px}
+  .nav .logo .mark{width:30.033px;height:30.002px}
+  .nav .logo .rule{height:34px}
+  .nav .logo .wordmark{width:86.371px;height:auto}
+  .nav .nav-menu{display:flex;align-items:center;justify-content:center;flex:none;
+    width:24px;height:24px;margin-left:auto;padding:0;border:0;background:none;cursor:pointer}
+  .nav .nav-menu img{display:block;width:24px;height:24px}
 
   /* --- hero: one photo, the headline low and left --- */
   #act1 .hero-h{left:7.7vw;bottom:5.6vh;top:auto;max-width:87vw;
@@ -605,12 +626,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <a class="pill" href="#">Log in</a>
     <a class="pill p" href="#">Open a Business dWallet</a>
   </div>
-  <!-- sept-8 mobile, Figma 3783:22552: the phone nav is the mark and a menu button;
+  <!-- sept-8 mobile, Figma 3783:23119: the phone nav is the mark and a menu button;
        the links and both buttons fold into it. -->
   <button class="nav-menu" type="button" aria-label="Open menu" aria-expanded="false">
-    <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    <img src="assets/img/sept8-icon-menu.svg" alt="" width="24" height="24">
   </button>
 </header>
+
+<!-- sept-8 mobile, Figma 3783:27397 — the iPhone status bar the artboard is drawn
+     over. It is device chrome, not part of the site, so it is decorative: phones
+     only, aria-hidden, and it renders above the real one on an actual handset. -->
+<div class="status-bar" aria-hidden="true">
+  <span class="sb-time">9:41</span>
+  <span class="sb-island"></span>
+  <span class="sb-levels">
+    <img src="assets/img/sept8-sb-cellular.svg" alt="" width="19" height="12">
+    <img src="assets/img/sept8-sb-wifi.svg" alt="" width="17" height="12">
+    <img src="assets/img/sept8-sb-battery.svg" alt="" width="27" height="13">
+  </span>
+</div>
 
 <!-- ACT 1 : YOUR LIFE CREATES DATA -->
 <section class="act" id="act1" aria-label="Your life creates data">
