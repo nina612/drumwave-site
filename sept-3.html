@@ -631,8 +631,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .faq-row .faq-q{white-space:normal}
 }
 @media (max-width:760px){
-  /* the phone frame's 128 up from the bottom of its 844 */
-  #act1{--hero-bottom:15.17vh}
+  /* Asked for: the run's copy sits exactly where sept-8's does on a phone —
+     7.7vw in, 5.6vh up, on its 10.3vw type. All three statements share this
+     one resting place, so the bottom is said once here and .hero-h and
+     .run-say both hang from it. It replaces the 128-up-from-844 this took off
+     3898:98620, which put the copy a good deal higher than the other page. */
+  #act1{--hero-bottom:5.6vh}
+  #act1 .hero-h,
+  #act1 .run-say{left:7.7vw;width:auto;max-width:87vw;
+    font-size:clamp(2.1rem,10.3vw,2.7rem);line-height:1.02;letter-spacing:-.02em}
   /* Asked for: on a phone the statements travel the screen as one another
      arrives — the outgoing one rides up and away while the next comes up from
      below — rather than each line clearing its own mask in place. So the masks
@@ -644,11 +651,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   #act1 .run-say .ln{overflow:visible}
   #act1 .hero-h .ln > span,
   #act1 .run-say .ln > span{transform:none !important}
-  /* 45 of leading on 48, not the wide artboard's 112/140. At .8 the two lines
-     all but touched; this is the 90 the frame gives the two of them. The
-     nudge in the base rule goes with it — it corrects .8 against .run-say's
-     .9, and at .9375 what is left is under a pixel. */
-  #act1 .hero-h{line-height:.9375;bottom:var(--hero-bottom)}
+  /* the nudge in the base rule goes: it corrects this block's leading against
+     .run-say's, and the two now share one */
+  #act1 .hero-h{bottom:var(--hero-bottom)}
   /* --- status bar, ported from sept-8's phone artboard: 54 tall with a 21
      top inset, device chrome rather than part of the site. --- */
   .status-bar{display:flex;align-items:center;position:fixed;left:0;right:0;top:0;z-index:60;
@@ -1873,18 +1878,21 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       const from = seg;
       seg = i;
       if(segTween) segTween.kill();
-      // Asked for: the statements move through the screen rather than clearing
-      // their masks in place. The one being left rides out the way the reader is
-      // going and the one arriving comes from the other side, so for a moment
-      // both are up and the screen reads as one turning into the next.
+      // The statements move through the screen rather than clearing their masks
+      // in place: the one being left rides out the way the reader is going and
+      // the one arriving comes from the other side. One after the other, never
+      // together — asked for. A timeline rather than two loose tweens is what
+      // sequences them, so the outgoing has reached nothing before the incoming
+      // starts from nothing and there is no moment with two statements up.
       if(from < 0){
         phraseEl.forEach((el, k) => gsap.set(el, {y:0, opacity: k === i ? 1 : 0}));
       } else {
         const d = travel(), fwd = i > from;
-        gsap.to(phraseEl[from], {y: fwd ? -d : d, opacity:0,
-          duration:.5, ease:'power2.in', overwrite:true});
-        gsap.fromTo(phraseEl[i], {y: fwd ? d : -d, opacity:0},
-          {y:0, opacity:1, duration:.5, ease:'power2.out', overwrite:true});
+        gsap.timeline()
+          .to(phraseEl[from], {y: fwd ? -d : d, opacity:0,
+            duration:.28, ease:'power2.in', overwrite:true})
+          .fromTo(phraseEl[i], {y: fwd ? d : -d, opacity:0},
+            {y:0, opacity:1, duration:.34, ease:'power2.out', overwrite:true});
       }
       // A chain that walks tl1's playhead photograph by photograph, each leg
       // given the time that photograph is meant to be on screen rather than the
