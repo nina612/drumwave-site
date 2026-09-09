@@ -732,6 +732,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .age-scene .ctl .hint{display:flex;position:absolute;left:0;right:0;bottom:100%;margin:0 0 14px}
   .age-scene .ctl-cap br{display:block}
   .age-scene .ctl .ages span:not(:first-child):not(:last-child){display:none}
+  /* asked for: no blue cast behind these three on the phone — 3870:45302 sets
+     all of them on flat black. The introducing screen's pair is tweened open
+     by the timeline, so this has to be display rather than an opacity the
+     tween would write straight over; the cards framing's pair are
+     pseudo-elements, and the closing's are their own nodes. */
+  .solution-preview .sol-glow,
+  .closing .frame-glow{display:none}
+  .sol-how::before,.sol-how::after{content:none}
   .solution-preview .sol-state{left:6.4vw;max-width:87.2vw}
   /* the desktop rule above is an id selector, so it outranks .sol-state's 8vw/20vh
      here unless said again at the same specificity */
@@ -739,7 +747,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .solution-preview #solStateB{top:20vh;left:6.4vw}
   .solution-preview .sol-body{max-width:87.2vw;margin-top:1.4em}
   .solution-preview .sol-cta{left:8vw;top:auto;bottom:22vh}
-  .solution-preview .sol-card{right:auto;left:8vw;top:auto;bottom:33.33vh;width:84vw}
+  /* asked for: 32 between the copy and the card. Anchored from the top of the
+     screen rather than the bottom so the gap doesn't move with viewport
+     height — 20vh is where the state starts and 181.5 is the height of the
+     headline and body stacked, both of which are set in px. On the frame's
+     390 that lands the card exactly 32 under the last line. */
+  .solution-preview .sol-card{right:auto;left:6.4vw;top:calc(20vh + 213.5px);bottom:auto;width:87.2vw}
   /* the vw paddings and gaps are a few pixels at this width, so set them in their own terms */
   .closing{padding-top:0}
   /* 88 rather than 84: the frame sets the line under the heading in two, and at
