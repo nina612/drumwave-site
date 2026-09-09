@@ -459,8 +459,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    which the padding-top buys against a straight centre. The headline is the same type
    treatment as .how-title at 64px and .93 leading, but keeps -.04em: that came from
    this node, and .how-title's tracking has since been measured to zero off its own.
-   Unverified against 3381-35616 — check it before assuming the two still agree. */
-.closing{position:absolute;inset:0;z-index:10;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:7.4vh;background:#070707;opacity:0;pointer-events:none}
+   Unverified against 3381-35616 — check it before assuming the two still agree.
+   position:absolute;inset:0 still fills its section — .act is position:relative —
+   now that this is its own normal-scrolling section rather than a crossfade held at
+   opacity 0 over the age track until that pin's tail revealed it. */
+.closing{position:absolute;inset:0;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:7.4vh;background:#070707}
 .closing-copy{width:94.59%;text-align:center}
 /* 120px: 6.25vw is 120/1920, so the cap is reached on the frame it was drawn on. */
 .closing-h{margin:0;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,6.25vw,7.5rem);line-height:.93;letter-spacing:-.04em;color:#fff}
@@ -741,6 +744,59 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   </div>
 </section>
 
+<!-- HOW MUCH IS YOUR DATA WORTH? — its own screen. It used to arrive on the tail of
+     the every-tap timeline, on a clock: the sentence left and the question took its
+     place whether or not anyone was still looking, and a reader who scrolled on early
+     never saw it. It is a question addressed to the reader, so it waits for them —
+     one gesture from the sentence, and it plays on arrival. -->
+<section class="act" id="worth" aria-label="How much is your data worth">
+  <div class="time-glow-q" aria-hidden="true"></div>
+  <div class="worth display">
+    <span class="ln"><span>How much is your</span></span>
+    <span class="ln"><span>data worth?</span></span>
+  </div>
+</section>
+
+<!-- ACT 2 : SOMETHING INVISIBLE -->
+<!-- ACT 3 : WHAT IF YOUR DATA COULD GROW WITH YOU -->
+<!-- ACT 4 : AGE TRACK -->
+<section class="act age-scene" id="ages" aria-label="How your value grows as you age">
+  <div class="frames" id="ageFrames">
+    <div class="frame" data-age="0"><img src="assets/img/age-0-newborn.jpg" alt="A mother's hand gently touching her newborn baby lying in a crib"></div>
+    <div class="frame" data-age="2"><img src="assets/img/age-2-toddler.jpg" alt="A toddler smiling while riding a pink tricycle on a sidewalk"></div>
+    <div class="frame" data-age="13"><img src="assets/img/age-13-teenageyears.jpg" alt="A teenage girl browsing lip gloss at a beauty store"></div>
+    <div class="frame" data-age="18"><img src="assets/img/age-18-college.jpg" alt="A college student writing on a tablet with a stylus at her desk"></div>
+    <div class="frame" data-age="25"><img src="assets/img/age-25-firstapartment.jpg" alt="A woman smiling while carrying a moving box up a staircase"></div>
+    <div class="frame" data-age="32"><img src="assets/img/age-32-buildingalife.jpg" alt="A woman running on a beach while holding someone's hand" loading="lazy"></div>
+    <div class="frame" data-age="36"><img src="assets/img/age-36-family.jpg" alt="A mother laughing with her young son on the living room floor" loading="lazy"></div>
+    <div class="frame" data-age="45"><img src="assets/img/age-45-career.jpg" alt="A woman with a shoulder bag walking past a glass office building" loading="lazy"></div>
+    <div class="frame" data-age="58"><img src="assets/img/age-58-enjoyinglife.jpg" alt="A couple relaxing in a pool at a tropical resort" loading="lazy"></div>
+    <div class="frame" data-age="70"><img src="assets/img/age-70-retirement.jpg" alt="A group of friends laughing together at an outdoor dinner table" loading="lazy"></div>
+  </div>
+
+  <div class="num-wrap">
+    <div class="lab mono"><i></i><span>Potential value accumulated</span></div>
+    <div class="bignum display" id="ageBigVal">$0</div>
+  </div>
+
+  <div class="stage-tag">
+    <div class="age display" id="ageNumVal">0</div>
+    <div class="cap mono" id="ageCapVal">Newborn</div>
+  </div>
+
+  <div class="ctl" id="ageCtl">
+    <div class="hint mono"><span>One life, 0 to 70</span><b id="ageDragHint">Drag to move through time</b></div>
+    <div class="track" id="ageTrack" role="slider" aria-label="Age" aria-valuemin="0" aria-valuemax="70" aria-valuenow="0" tabindex="0">
+      <div class="rail"></div>
+      <div class="fill" id="ageFill"></div>
+      <div class="ticks" id="ageTicks"></div>
+      <div class="handle" id="ageHandle"></div>
+    </div>
+    <div class="ages mono" id="ageLabels"></div>
+  </div>
+
+</section>
+
 <!-- THE DATA SAVINGS PLAN — one screen that changes its mind three times, straight
      off the opening run. Nothing here is reached by scrolling into it: the reveal
      scrubs in over the gesture that brings the reader to the screen, and each further
@@ -848,62 +904,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      anything wider. -->
 <section class="how-scene" id="howHost" aria-label="How a Data Savings Plan works"></section>
 
-<!-- HOW MUCH IS YOUR DATA WORTH? — its own screen. It used to arrive on the tail of
-     the every-tap timeline, on a clock: the sentence left and the question took its
-     place whether or not anyone was still looking, and a reader who scrolled on early
-     never saw it. It is a question addressed to the reader, so it waits for them —
-     one gesture from the sentence, and it plays on arrival. -->
-<section class="act" id="worth" aria-label="How much is your data worth">
-  <div class="time-glow-q" aria-hidden="true"></div>
-  <div class="worth display">
-    <span class="ln"><span>How much is your</span></span>
-    <span class="ln"><span>data worth?</span></span>
-  </div>
-</section>
-
-<!-- ACT 2 : SOMETHING INVISIBLE -->
-<!-- ACT 3 : WHAT IF YOUR DATA COULD GROW WITH YOU -->
-<!-- ACT 4 : AGE TRACK -->
-<section class="act age-scene" id="ages" aria-label="How your value grows as you age">
-  <div class="frames" id="ageFrames">
-    <div class="frame" data-age="0"><img src="assets/img/age-0-newborn.jpg" alt="A mother's hand gently touching her newborn baby lying in a crib"></div>
-    <div class="frame" data-age="2"><img src="assets/img/age-2-toddler.jpg" alt="A toddler smiling while riding a pink tricycle on a sidewalk"></div>
-    <div class="frame" data-age="13"><img src="assets/img/age-13-teenageyears.jpg" alt="A teenage girl browsing lip gloss at a beauty store"></div>
-    <div class="frame" data-age="18"><img src="assets/img/age-18-college.jpg" alt="A college student writing on a tablet with a stylus at her desk"></div>
-    <div class="frame" data-age="25"><img src="assets/img/age-25-firstapartment.jpg" alt="A woman smiling while carrying a moving box up a staircase"></div>
-    <div class="frame" data-age="32"><img src="assets/img/age-32-buildingalife.jpg" alt="A woman running on a beach while holding someone's hand" loading="lazy"></div>
-    <div class="frame" data-age="36"><img src="assets/img/age-36-family.jpg" alt="A mother laughing with her young son on the living room floor" loading="lazy"></div>
-    <div class="frame" data-age="45"><img src="assets/img/age-45-career.jpg" alt="A woman with a shoulder bag walking past a glass office building" loading="lazy"></div>
-    <div class="frame" data-age="58"><img src="assets/img/age-58-enjoyinglife.jpg" alt="A couple relaxing in a pool at a tropical resort" loading="lazy"></div>
-    <div class="frame" data-age="70"><img src="assets/img/age-70-retirement.jpg" alt="A group of friends laughing together at an outdoor dinner table" loading="lazy"></div>
-  </div>
-
-  <div class="num-wrap">
-    <div class="lab mono"><i></i><span>Potential value accumulated</span></div>
-    <div class="bignum display" id="ageBigVal">$0</div>
-  </div>
-
-  <div class="stage-tag">
-    <div class="age display" id="ageNumVal">0</div>
-    <div class="cap mono" id="ageCapVal">Newborn</div>
-  </div>
-
-  <div class="ctl" id="ageCtl">
-    <div class="hint mono"><span>One life, 0 to 70</span><b id="ageDragHint">Drag to move through time</b></div>
-    <div class="track" id="ageTrack" role="slider" aria-label="Age" aria-valuemin="0" aria-valuemax="70" aria-valuenow="0" tabindex="0">
-      <div class="rail"></div>
-      <div class="fill" id="ageFill"></div>
-      <div class="ticks" id="ageTicks"></div>
-      <div class="handle" id="ageHandle"></div>
-    </div>
-    <div class="ages mono" id="ageLabels"></div>
-  </div>
-
-  <!-- Figma 3381-35616. Crossfades in over the the picker's final figure hold, on the tail of this
-       section's own pin, so it arrives with no scroll motion of its own: the age
-       screen dissolves and the closing screen is simply there. The frame's two big
-       ellipse glows sit at opacity 0 in the file, so its render is flat — they are
-       switched on here deliberately, at the level .frame-glow sets. -->
+<!-- SAVE YOUR DATA. GROW ITS VALUE. — its own normal-scrolling screen now, not a
+     crossfade tied to the age track's pin: the two no longer sit next to each
+     other in the page's order, so it rises into view the way the FAQ and footer
+     below do instead. The frame's two big ellipse glows sit at opacity 0 in the
+     Figma file, so its render is flat — .frame-glow switches them on at .32. -->
+<section class="act" aria-label="Save your data. Grow its value.">
   <div class="closing" id="closing">
     <div class="frame-glow frame-glow-l" aria-hidden="true"></div>
     <div class="frame-glow frame-glow-r" aria-hidden="true"></div>
@@ -1580,7 +1586,200 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       pin:true, animation:tl1, ...autoPlay});
   }
 
+  /* ---------- HOW MUCH IS YOUR DATA WORTH? ---------- */
+  // The reason this is a screen and not the tail of the one above: it asks the reader
+  // something, so it should be on screen because they arrived at it, not because a
+  // timeline reached it. One gesture down from the sentence, and it plays on arrival.
+  // Its own disc comes up with it — lower and smaller than the opening one, the same
+  // #2731B6 over the same near-black, so the ground stays purple either side of the
+  // gesture and only where the light sits changes.
+  const worthLn = lines('#worth .worth');
+  const resetWorth = () => {
+    gsap.set('#worth .time-glow-q', {opacity:0});
+    gsap.set(worthLn, {yPercent:112});
+  };
+  const tl5 = gsap.timeline({
+    defaults:{ease:'none'},
+    paused:true,
+    scrollTrigger:{
+      trigger:'#worth', start:'top top', end:'+=100%', pin:true,
+      onEnter:      self => self.animation.play(),
+      onEnterBack:  () => restartWorth(),
+      onLeave:      self => self.animation.pause(),
+      onLeaveBack:  self => { self.animation.invalidate().pause(0); resetWorth(); }
+    }
+  });
+  function restartWorth(){
+    tl5.invalidate().pause(0);
+    resetWorth();
+    tl5.play();
+  }
+  tl5.fromTo('#worth .time-glow-q', {opacity:0},
+    {opacity:.32, duration:.75, ease:'power1.inOut', immediateRender:false}, 0);
+  tl5.fromTo(worthLn, {yPercent:-118},
+    {yPercent:0, duration:.55, stagger:.1, ease:'back.out(1.5)', immediateRender:false}, 0.15);
+
+  // These three were paced as scrub distances, so at 1x they would each run for
+  // nine or ten seconds on their own. Speed them up to land around five, and
+  // under reduced motion run them out instantly to their end state.
+  if(RM){ tl1.timeScale(100); tl5.timeScale(100); }
+  else tl1.timeScale(1.0);    // 24.2 units -> ~24s, close to the authored pace
+
+  // The opening runs on its own clock, so when it ends the reader is still parked at
+  // the top with a pinned section under them. Carry them to the timeline; everything
+  // from there down is an ordinary scroll. Only ever done once.
+  // Nothing is handed off, and nothing scrolls the reader anywhere. Both of the
+  // screens that play on their own clock — the opening and the every-tap screen — are
+  // reached by scrolling to them, and neither is started on the reader's behalf. If
+  // the reader stays put, the screen they are on simply runs again.
+  // a function declaration, not a const: the every-tap screen wires itself up
+  // earlier in this file than this line runs
+  function loopWhileHere(tl, restart){
+    tl.eventCallback('onComplete', () => {
+      const st = tl.scrollTrigger;
+      if(st && !st.isActive) return; // they have scrolled on; leave it as it ended
+      restart();
+    });
+  }
+
+  // Give the run back from the top: rewind, re-state the baseline the rewind cannot
+  // be trusted to restore on its own, then play. Same three steps the load handler
+  // takes, for the same reason — a timeline rewound past a to() re-renders that
+  // tween's recorded start, which would leave later frames stacked over the hero.
+  function restartRun(){
+    tl1.invalidate().pause(0);
+    resetRun();
+    tl1.play();
+  }
+  if(!SCROLL_RUN) loopWhileHere(tl1, restartRun);
+
+  /* ---------- ACT 4 : AGE TRACK ---------- */
+  const AGE_DATA = [
+    {age:0,  val:0,      label:'Newborn'},
+    {age:2,  val:675,    label:'Toddler'},
+    {age:13, val:3497,   label:'Teenage years'},
+    {age:18, val:5805,   label:'College'},
+    {age:23, val:8999,   label:'First apartment'},
+    {age:32, val:18033,  label:'Building a life'},
+    {age:36, val:23982,  label:'Family'},
+    {age:45, val:44085,  label:'Career'},
+    {age:52, val:69300,  label:'Enjoying life'},
+    {age:70, val:209763, label:'Retirement'}
+  ];
+  const AGES = AGE_DATA.map(d => d.age);
+  const ageFrames = $$('#ageFrames .frame');
+  const ageBigVal = $('#ageBigVal'), ageNumVal = $('#ageNumVal'), ageCapVal = $('#ageCapVal');
+  const AGE_MIN = AGES[0], AGE_MAX = AGES[AGES.length-1];
+
+  const ageTrack = $('#ageTrack'), ageFill = $('#ageFill'), ageHandle = $('#ageHandle');
+  const ageTicksEl = $('#ageTicks'), ageLabelsEl = $('#ageLabels');
+  for(let a=AGE_MIN; a<=AGE_MAX; a++){ const i=document.createElement('i'); ageTicksEl.appendChild(i); }
+  const ageTicks = $$('#ageTicks i');
+  AGES.forEach(a => { const s=document.createElement('span'); s.textContent=a; s.style.left=((a-AGE_MIN)/(AGE_MAX-AGE_MIN)*100)+'%'; ageLabelsEl.appendChild(s); });
+  const ageLabelSpans = $$('#ageLabels span');
+  let ageCurrent = AGE_MIN;
+
+  function ageValueAt(age){
+    for(let i=0;i<AGE_DATA.length-1;i++){
+      if(age <= AGE_DATA[i+1].age){
+        const u = (age-AGE_DATA[i].age)/(AGE_DATA[i+1].age-AGE_DATA[i].age);
+        return AGE_DATA[i].val + (AGE_DATA[i+1].val-AGE_DATA[i].val)*u;
+      }
+    }
+    return AGE_DATA[AGE_DATA.length-1].val;
+  }
+  const smooth = u => u*u*u*(u*(u*6-15)+10);
+  function renderAge(age){
+    age = clamp(age, AGE_MIN, AGE_MAX);
+    let si = 0;
+    for(let i=0;i<AGES.length-1;i++){ if(age >= AGES[i]) si = i; }
+    const next = AGES[si+1];
+    const segLen = next ? next - AGES[si] : 1;
+    const u = next ? clamp((age-AGES[si])/segLen, 0, 1) : 0;
+    const x = next ? smooth(clamp((u-0.4)/0.6, 0, 1)) : 0;
+    ageFrames.forEach((f,i)=>{
+      let o = 0;
+      if(i===si) o = 1;
+      else if(i===si+1) o = x;
+      f.style.opacity = o;
+      const img = f.firstElementChild;
+      const local = i===si ? u : (i===si+1 ? 0 : 1);
+      img.style.transform = `scale(${1.06 - 0.06*local}) translateX(${(-1.5 + 3*local)}%)`;
+    });
+    ageBigVal.textContent = '$' + Math.round(ageValueAt(age)).toLocaleString('en-US');
+    ageNumVal.textContent = Math.round(age);
+    ageCapVal.textContent = (next && x > .5) ? AGE_DATA[si+1].label : AGE_DATA[si].label;
+
+    ageCurrent = age;
+    const t = (age - AGE_MIN) / (AGE_MAX - AGE_MIN);
+    ageFill.style.width = (t*100)+'%';
+    ageHandle.style.left = (t*100)+'%';
+    ageTrack.setAttribute('aria-valuenow', Math.round(age));
+    ageTicks.forEach((tk,i)=> tk.classList.toggle('hit', (AGE_MIN+i) <= Math.round(age) && t > 0));
+    ageLabelSpans.forEach((l,i)=> l.classList.toggle('cur', age >= AGES[i]));
+  }
+  renderAge(AGE_MIN);
+
+
+  // The age track's pin used to run 200% past the last figure purely to hold a tail
+  // for the closing screen to crossfade in on, arriving with no scroll motion of its
+  // own. That coupling is gone now that "Save your data. Grow its value." is its own
+  // section, sitting after the plan screen rather than right against the age track —
+  // it rises into view on ordinary scroll instead, the way the FAQ and footer below
+  // do (see rise(), under ACT 7). The pin is just the age-scrub itself now.
+  const ageBaseTotal = AGES.length*59;
+  let ageDragging = false;
+  const ageST = ScrollTrigger.create({
+    trigger:'#ages', start:'top top', end:'+=' + ageBaseTotal + '%', pin:true, scrub:true,
+    onUpdate(self){
+      if(!ageDragging) renderAge(AGE_MIN + self.progress*(AGE_MAX-AGE_MIN));
+    }
+  });
+
+  // Drag: the handle scrolls the page, so scroll and drag share one source of truth
+  function ageTFromEvent(e){
+    const r = ageTrack.getBoundingClientRect();
+    return clamp((e.clientX - r.left)/r.width, 0, 1);
+  }
+  function ageScrollToT(t){
+    window.scrollTo(0, ageST.start + t*(ageST.end - ageST.start));
+  }
+  let ageHinted = false;
+  ageTrack.addEventListener('pointerdown', e => {
+    ageDragging = true; ageTrack.setPointerCapture(e.pointerId);
+    const t = ageTFromEvent(e); renderAge(AGE_MIN + t*(AGE_MAX-AGE_MIN)); ageScrollToT(t);
+    if(!ageHinted){ ageHinted = true; gsap.to('#ageDragHint', {opacity:.5, duration:.6}); }
+  });
+  ageTrack.addEventListener('pointermove', e => {
+    if(!ageDragging) return;
+    const t = ageTFromEvent(e); renderAge(AGE_MIN + t*(AGE_MAX-AGE_MIN)); ageScrollToT(t);
+  });
+  const ageEndDrag = () => { ageDragging = false; };
+  ageTrack.addEventListener('pointerup', ageEndDrag);
+  ageTrack.addEventListener('pointercancel', ageEndDrag);
+  ageTrack.addEventListener('keydown', e => {
+    const step = e.shiftKey ? 5 : 1;
+    let na = ageCurrent;
+    if(e.key === 'ArrowRight' || e.key === 'ArrowUp') na = ageCurrent + step;
+    else if(e.key === 'ArrowLeft' || e.key === 'ArrowDown') na = ageCurrent - step;
+    else return;
+    e.preventDefault();
+    na = clamp(na, AGE_MIN, AGE_MAX);
+    renderAge(na);
+    ageScrollToT((na - AGE_MIN)/(AGE_MAX - AGE_MIN));
+  });
+
+
   /* ---------- THE DATA SAVINGS PLAN : TWO FRAMINGS ON ONE PIN ---------- */
+  // This block has to be created after the age track's own ScrollTrigger below it in
+  // the page, not just below it in the markup: when a pinned trigger is created before
+  // an earlier sibling that will also pin, GSAP measures its start against that
+  // sibling's un-pinned height rather than its eventual pin-spacer, and no later
+  // ScrollTrigger.refresh() call — soft or hard — fixes it back up. Moving this whole
+  // matchMedia block to run after ages' own ScrollTrigger.create() (a few hundred
+  // lines up) is what actually fixed it, confirmed by killing and recreating this
+  // trigger live after ages already existed and watching its start jump from ages'
+  // own start (wrong) to its real spacer position (right).
   // This used to play on the tail of the age timeline, dissolving the the picker's final figure screen
   // to black first. It now stands on its own, straight off the opening run, and it is
   // scrubbed rather than autoplayed: the reader's gesture IS the transition. The pin
@@ -1728,219 +1927,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 
 
-  /* ---------- HOW MUCH IS YOUR DATA WORTH? ---------- */
-  // The reason this is a screen and not the tail of the one above: it asks the reader
-  // something, so it should be on screen because they arrived at it, not because a
-  // timeline reached it. One gesture down from the sentence, and it plays on arrival.
-  // Its own disc comes up with it — lower and smaller than the opening one, the same
-  // #2731B6 over the same near-black, so the ground stays purple either side of the
-  // gesture and only where the light sits changes.
-  const worthLn = lines('#worth .worth');
-  const resetWorth = () => {
-    gsap.set('#worth .time-glow-q', {opacity:0});
-    gsap.set(worthLn, {yPercent:112});
-  };
-  const tl5 = gsap.timeline({
-    defaults:{ease:'none'},
-    paused:true,
-    scrollTrigger:{
-      trigger:'#worth', start:'top top', end:'+=100%', pin:true,
-      onEnter:      self => self.animation.play(),
-      onEnterBack:  () => restartWorth(),
-      onLeave:      self => self.animation.pause(),
-      onLeaveBack:  self => { self.animation.invalidate().pause(0); resetWorth(); }
-    }
-  });
-  function restartWorth(){
-    tl5.invalidate().pause(0);
-    resetWorth();
-    tl5.play();
-  }
-  tl5.fromTo('#worth .time-glow-q', {opacity:0},
-    {opacity:.32, duration:.75, ease:'power1.inOut', immediateRender:false}, 0);
-  tl5.fromTo(worthLn, {yPercent:-118},
-    {yPercent:0, duration:.55, stagger:.1, ease:'back.out(1.5)', immediateRender:false}, 0.15);
-
-  // These three were paced as scrub distances, so at 1x they would each run for
-  // nine or ten seconds on their own. Speed them up to land around five, and
-  // under reduced motion run them out instantly to their end state.
-  if(RM){ tl1.timeScale(100); tl5.timeScale(100); }
-  else tl1.timeScale(1.0);    // 24.2 units -> ~24s, close to the authored pace
-
-  // The opening runs on its own clock, so when it ends the reader is still parked at
-  // the top with a pinned section under them. Carry them to the timeline; everything
-  // from there down is an ordinary scroll. Only ever done once.
-  // Nothing is handed off, and nothing scrolls the reader anywhere. Both of the
-  // screens that play on their own clock — the opening and the every-tap screen — are
-  // reached by scrolling to them, and neither is started on the reader's behalf. If
-  // the reader stays put, the screen they are on simply runs again.
-  // a function declaration, not a const: the every-tap screen wires itself up
-  // earlier in this file than this line runs
-  function loopWhileHere(tl, restart){
-    tl.eventCallback('onComplete', () => {
-      const st = tl.scrollTrigger;
-      if(st && !st.isActive) return; // they have scrolled on; leave it as it ended
-      restart();
-    });
-  }
-
-  // Give the run back from the top: rewind, re-state the baseline the rewind cannot
-  // be trusted to restore on its own, then play. Same three steps the load handler
-  // takes, for the same reason — a timeline rewound past a to() re-renders that
-  // tween's recorded start, which would leave later frames stacked over the hero.
-  function restartRun(){
-    tl1.invalidate().pause(0);
-    resetRun();
-    tl1.play();
-  }
-  if(!SCROLL_RUN) loopWhileHere(tl1, restartRun);
-
-  /* ---------- ACT 4 : AGE TRACK ---------- */
-  const AGE_DATA = [
-    {age:0,  val:0,      label:'Newborn'},
-    {age:2,  val:675,    label:'Toddler'},
-    {age:13, val:3497,   label:'Teenage years'},
-    {age:18, val:5805,   label:'College'},
-    {age:23, val:8999,   label:'First apartment'},
-    {age:32, val:18033,  label:'Building a life'},
-    {age:36, val:23982,  label:'Family'},
-    {age:45, val:44085,  label:'Career'},
-    {age:52, val:69300,  label:'Enjoying life'},
-    {age:70, val:209763, label:'Retirement'}
-  ];
-  const AGES = AGE_DATA.map(d => d.age);
-  const ageFrames = $$('#ageFrames .frame');
-  const ageBigVal = $('#ageBigVal'), ageNumVal = $('#ageNumVal'), ageCapVal = $('#ageCapVal');
-  const AGE_MIN = AGES[0], AGE_MAX = AGES[AGES.length-1];
-
-  const ageTrack = $('#ageTrack'), ageFill = $('#ageFill'), ageHandle = $('#ageHandle');
-  const ageTicksEl = $('#ageTicks'), ageLabelsEl = $('#ageLabels');
-  for(let a=AGE_MIN; a<=AGE_MAX; a++){ const i=document.createElement('i'); ageTicksEl.appendChild(i); }
-  const ageTicks = $$('#ageTicks i');
-  AGES.forEach(a => { const s=document.createElement('span'); s.textContent=a; s.style.left=((a-AGE_MIN)/(AGE_MAX-AGE_MIN)*100)+'%'; ageLabelsEl.appendChild(s); });
-  const ageLabelSpans = $$('#ageLabels span');
-  let ageCurrent = AGE_MIN;
-
-  function ageValueAt(age){
-    for(let i=0;i<AGE_DATA.length-1;i++){
-      if(age <= AGE_DATA[i+1].age){
-        const u = (age-AGE_DATA[i].age)/(AGE_DATA[i+1].age-AGE_DATA[i].age);
-        return AGE_DATA[i].val + (AGE_DATA[i+1].val-AGE_DATA[i].val)*u;
-      }
-    }
-    return AGE_DATA[AGE_DATA.length-1].val;
-  }
-  const smooth = u => u*u*u*(u*(u*6-15)+10);
-  function renderAge(age){
-    age = clamp(age, AGE_MIN, AGE_MAX);
-    let si = 0;
-    for(let i=0;i<AGES.length-1;i++){ if(age >= AGES[i]) si = i; }
-    const next = AGES[si+1];
-    const segLen = next ? next - AGES[si] : 1;
-    const u = next ? clamp((age-AGES[si])/segLen, 0, 1) : 0;
-    const x = next ? smooth(clamp((u-0.4)/0.6, 0, 1)) : 0;
-    ageFrames.forEach((f,i)=>{
-      let o = 0;
-      if(i===si) o = 1;
-      else if(i===si+1) o = x;
-      f.style.opacity = o;
-      const img = f.firstElementChild;
-      const local = i===si ? u : (i===si+1 ? 0 : 1);
-      img.style.transform = `scale(${1.06 - 0.06*local}) translateX(${(-1.5 + 3*local)}%)`;
-    });
-    ageBigVal.textContent = '$' + Math.round(ageValueAt(age)).toLocaleString('en-US');
-    ageNumVal.textContent = Math.round(age);
-    ageCapVal.textContent = (next && x > .5) ? AGE_DATA[si+1].label : AGE_DATA[si].label;
-
-    ageCurrent = age;
-    const t = (age - AGE_MIN) / (AGE_MAX - AGE_MIN);
-    ageFill.style.width = (t*100)+'%';
-    ageHandle.style.left = (t*100)+'%';
-    ageTrack.setAttribute('aria-valuenow', Math.round(age));
-    ageTicks.forEach((tk,i)=> tk.classList.toggle('hit', (AGE_MIN+i) <= Math.round(age) && t > 0));
-    ageLabelSpans.forEach((l,i)=> l.classList.toggle('cur', age >= AGES[i]));
-  }
-  renderAge(AGE_MIN);
-
-
-  // The tail of #ages' pin dissolves the the picker's final figure screen and brings the closing screen
-  // up in its place, on the same pin — so it arrives with no scroll motion of its own,
-  // the way the plan reveal used to before it moved to the top of the page. The reader
-  // is not snapped through here: from the timeline down the page scrolls normally,
-  // because there the scroll IS the interaction, so this simply scrubs as they go.
-  const closeTl = gsap.timeline({paused:true, defaults:{ease:'none'}});
-  // Everything here is brought forward, to leave the last third of the tail as a hold.
-  // This screen carries the page's closing line and its only real call to action, and
-  // it used to be the least readable thing on the page: the button did not arrive until
-  // progress .92, which is 173px before the pin lets go — so it was whole for 173px of
-  // an 8532px section, against 346px for the shortest of the plan framings and 3404px
-  // for the run's copy. Finishing at .62 instead leaves .62-1.0 held, which is 821px.
-  // No stop is involved; this stretch is deliberately free-scrubbed, because the years
-  // are the reader's to move through. This just gives the ending room inside it.
-  closeTl.to({}, {duration:.12}, 0);                    // the picker's final figure holds a beat first
-  closeTl.to('#ages > .frames, #ages > .num-wrap, #ages > .stage-tag, #ageCtl',
-             {opacity:0, duration:.26, ease:'power1.inOut'}, .12);
-  // an opacity-0 slider still takes the pointer, so take it out of reach as it goes
-  closeTl.set('#ageCtl', {pointerEvents:'none'}, .40);
-  closeTl.fromTo('#closing', {opacity:0}, {opacity:1, duration:.26, ease:'power1.inOut'}, .20);
-  closeTl.fromTo('#closing .closing-h', {y:26, opacity:0}, {y:0, opacity:1, duration:.22, ease:'power2.out'}, .30);
-  closeTl.fromTo('#closing .closing-sub', {y:18, opacity:0}, {y:0, opacity:.7, duration:.20, ease:'power2.out'}, .36);
-  closeTl.fromTo('#closing .closing-cta', {y:14, opacity:0}, {y:0, opacity:1, duration:.20, ease:'power2.out'}, .42);
-  closeTl.to({}, {duration:.38}, .62);
-
-  const ageBaseTotal = AGES.length*59;
-  // Two viewports of tail: a hold on the number, the dissolve, then the closing screen
-  // held while the section scrolls away.
-  const ageBufferPct = 200;
-  const ageGrandTotal = ageBaseTotal + ageBufferPct;
-  let ageDragging = false;
-  const ageST = ScrollTrigger.create({
-    trigger:'#ages', start:'top top', end:'+=' + ageGrandTotal + '%', pin:true, scrub:true,
-    onUpdate(self){
-      const ap = clamp(self.progress * ageGrandTotal / ageBaseTotal, 0, 1);
-      if(!ageDragging) renderAge(AGE_MIN + ap*(AGE_MAX-AGE_MIN));
-
-      const bp = clamp((self.progress*ageGrandTotal - ageBaseTotal) / ageBufferPct, 0, 1);
-      closeTl.progress(bp);
-    }
-  });
-
-  // Drag: the handle scrolls the page, so scroll and drag share one source of truth
-  function ageTFromEvent(e){
-    const r = ageTrack.getBoundingClientRect();
-    return clamp((e.clientX - r.left)/r.width, 0, 1);
-  }
-  function ageScrollToT(t){
-    // t spans the age-scrub only, so dragging to 70 lands at the start of the
-    // buffer rather than scrubbing through the fade to the solution screen.
-    const scrubSpan = (ageST.end - ageST.start) * ageBaseTotal / ageGrandTotal;
-    window.scrollTo(0, ageST.start + t*scrubSpan);
-  }
-  let ageHinted = false;
-  ageTrack.addEventListener('pointerdown', e => {
-    ageDragging = true; ageTrack.setPointerCapture(e.pointerId);
-    const t = ageTFromEvent(e); renderAge(AGE_MIN + t*(AGE_MAX-AGE_MIN)); ageScrollToT(t);
-    if(!ageHinted){ ageHinted = true; gsap.to('#ageDragHint', {opacity:.5, duration:.6}); }
-  });
-  ageTrack.addEventListener('pointermove', e => {
-    if(!ageDragging) return;
-    const t = ageTFromEvent(e); renderAge(AGE_MIN + t*(AGE_MAX-AGE_MIN)); ageScrollToT(t);
-  });
-  const ageEndDrag = () => { ageDragging = false; };
-  ageTrack.addEventListener('pointerup', ageEndDrag);
-  ageTrack.addEventListener('pointercancel', ageEndDrag);
-  ageTrack.addEventListener('keydown', e => {
-    const step = e.shiftKey ? 5 : 1;
-    let na = ageCurrent;
-    if(e.key === 'ArrowRight' || e.key === 'ArrowUp') na = ageCurrent + step;
-    else if(e.key === 'ArrowLeft' || e.key === 'ArrowDown') na = ageCurrent - step;
-    else return;
-    e.preventDefault();
-    na = clamp(na, AGE_MIN, AGE_MAX);
-    renderAge(na);
-    ageScrollToT((na - AGE_MIN)/(AGE_MAX - AGE_MIN));
-  });
-
   /* ---------- ACT 7 : HOW IT WORKS + FAQ + FOOTER ---------- */
   // A normal scrolling screen — no pin. Each block just lifts into place as it
   // comes up, so it settles rather than animating on scrub like the acts above.
@@ -1948,6 +1934,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     {opacity:0, y:28},
     Object.assign({opacity:1, y:0, duration:.7, ease:'power2.out',
       scrollTrigger:{ trigger:at, start:'top 82%' }}, extra));
+
+  /* ---------- SAVE YOUR DATA. GROW ITS VALUE. ---------- */
+  // Its own normal-scrolling screen now (see the note by ageST above, where this
+  // used to crossfade in on the age track's own pin) — the copy and CTA rise into
+  // view the same way the FAQ and footer below do. The two background glows are
+  // plain static opacity (see .frame-glow), not part of this reveal.
+  rise('.closing-copy, .closing-cta', '.closing', {stagger:.1});
 
   // The title and the four cards are not risen into view any more — they are the
   // plan screen's third framing, and its timeline brings them in.
