@@ -1767,12 +1767,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // "Your life creates data" over the hero, the runner and the coffee;
   // "Every tap" from the tap frame through to the baby, which is where it
   // leaves; "Own and save your data" over the baby and the family.
-  const phraseSegs = [[0, T_TAP],
-                      [T_TAP, ACT1_END + BABY],
-                      [ACT1_END + BABY, tl1.duration()]];
+  // Each statement's photographs, as the times this timeline already changes
+  // them at. The phone does not play the stretch between two of these at the
+  // authored pace — it gives every photograph a fixed time on screen instead
+  // (see FIRST_ON/NEXT_ON), so what these mark is where one ends and the next
+  // begins, not how long either lasts.
+  const phraseFrames = [
+    [0, T_RUN, T_COFFEE, T_TAP],                                    // hero, runner, coffee
+    [T_TAP, T_PKG, ACT1_END, ACT1_END + HOLD0,                      // tap, delivery, headphones,
+     ACT1_END + HOLD0 + SHOP, ACT1_END + BABY],                     //   bag, charger
+    [ACT1_END + BABY, ACT1_END + FAMILY, tl1.duration()]            // baby, family
+  ];
+  const phraseSegs = phraseFrames.map(m => [m[0], m[m.length - 1]]);
   const segOf = p => Math.min(phraseSegs.length - 1, Math.floor(p * phraseSegs.length));
-  // how much quicker the phone plays a statement than the run's authored pace
-  const PHONE_RATE = 1.45;
+  // Asked for: a second on the photograph a statement opens on, a fifth on each
+  // one after it. LEAD is how much of an opening photograph's stretch is taken
+  // at half that second — enough to carry the copy's own entrance, which lives
+  // at the head of these stretches. The rest of the stretch is crossed in the
+  // other half; nothing changes across it, so it reads as the image holding.
+  const FIRST_ON = 1.0, NEXT_ON = .2, LEAD = 1.2;
 
   const buildRunPin = phone => {
     if(!phone){
@@ -1791,13 +1804,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       if(i === seg) return;
       seg = i;
       if(segTween) segTween.kill();
-      const [a, b] = phraseSegs[i];
-      // The run was authored as scroll distance, and read slow once it was
-      // playing to a clock instead — asked for. Said as the tween's own
-      // duration rather than a timeScale on tl1, which the wide branch shares
-      // and which is set again below this. Everything inside a statement is
-      // carried by it, the cuts between photographs included.
-      segTween = tl1.tweenFromTo(a, b, {duration:(b - a) / PHONE_RATE, ease:'none'});
+      // A chain that walks tl1's playhead photograph by photograph, each leg
+      // given the time that photograph is meant to be on screen rather than the
+      // span it was authored at — those run from 1 unit to 7.5 and would read
+      // as a different pace on every frame. Said as tweens on the playhead, not
+      // a timeScale: the wide branch shares this timeline and sets its own.
+      const marks = phraseFrames[i];
+      tl1.pause(marks[0]);
+      const chain = gsap.timeline();
+      for(let k = 1; k < marks.length; k++){
+        if(k === 1){
+          const lead = Math.min(marks[0] + LEAD, marks[k]);
+          chain.to(tl1, {time:lead, duration:FIRST_ON / 2, ease:'none'});
+          if(lead < marks[k])
+            chain.to(tl1, {time:marks[k], duration:FIRST_ON / 2, ease:'none'});
+        } else {
+          chain.to(tl1, {time:marks[k], duration:NEXT_ON, ease:'none'});
+        }
+      }
+      segTween = chain;
     };
     const trig = ScrollTrigger.create({
       trigger:'#act1', start:'top top', end:'+=' + (phraseSegs.length * 100) + '%',
@@ -1805,7 +1830,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       snap:{snapTo:[0, 1/3, 2/3, 1], directional:true,
             duration:{min:.2, max:.5}, delay:.05, ease:'power2.inOut'},
       onUpdate: self => play(segOf(self.progress)),
-      onLeaveBack: () => {
+      // start > 1 for the same reason the run's other triggers test it: this
+      // section starts at the very top of the page, so leaving backwards fires
+      // once during setup, at scroll 0 — which killed the first statement's
+      // chain the moment it was made and left the hero sitting there for good.
+      onLeaveBack: self => {
+        if(self.start <= 1) return;
         if(segTween) segTween.kill();
         segTween = null; seg = -1;
         tl1.pause(0);
