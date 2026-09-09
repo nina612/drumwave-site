@@ -604,6 +604,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      scene below; the wide build keeps it fixed */
   .nav{position:absolute;top:78px}
 
+  /* The run's photographs are wide, and a phone crops each to a strip a
+     quarter to a third of that width — so where the strip sits decides
+     whether the frame is of the person working or of the room around them.
+     Centred, several were of the room. These put the strip on the subject.
+     Only the horizontal figure does anything: cover fits the height of a wide
+     photograph on a portrait screen and spills the width, so the whole height
+     of each already shows.
+     The ones not named here already land on their subject at 50%: the chef,
+     the packer, the grocer, the film crew, and the lorry, which has nobody in
+     it to centre. */
+  #act1 .frame[data-i="0"]  img{object-position:78% 50%}  /* the barista */
+  #act1 .frame[data-i="1"]  img{object-position:35% 50%}  /* the ground crew */
+  #act1 .frame[data-i="4"]  img{object-position:55% 50%}  /* the installer */
+  #act1 .frame[data-i="5"]  img{object-position:78% 50%}  /* the container in the air */
+  #act1 .frame[data-i="7"]  img{object-position:25% 50%}  /* the loader, over his crates */
+  #act1 .frame[data-i="8"]  img{object-position:70% 50%}  /* the shop worker */
+  #act1 .frame[data-i="11"] img{object-position:75% 50%}  /* the developer */
+  #act1 .frame[data-i="12"] img{object-position:30% 50%}  /* the trader on the phone */
+
   /* --- hero: one photo, the headline low and left --- */
   #act1 .hero-h{left:7.7vw;bottom:5.6vh;top:auto;max-width:87vw;
     font-size:clamp(2.1rem,10.3vw,2.7rem);line-height:1.02;letter-spacing:-.02em}
