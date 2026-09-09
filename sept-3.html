@@ -280,6 +280,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    given, so the three big statements on the page match. */
 #worth .worth{position:absolute;left:6.3vw;bottom:12.31vh;text-align:left;width:57.92vw;z-index:6;
   font-size:clamp(2.2rem,7.29vw,8.75rem);font-weight:400;line-height:.9;letter-spacing:-.03em;color:#fff}
+/* the phone break is the default-hidden one; see the max-width:760px block
+   for the swap and for why two markups exist at all */
+#worth .worth-phone{display:none}
 
 /* AGE SCENES (Age 0, Age 2, ...) */
 .age-scene .frames{position:absolute;inset:0}
@@ -604,6 +607,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      Bottom-anchored like the desktop rule, not top:38vh — that top value left
      most of the 100vh pinned screen empty underneath the line. */
   #worth .worth{left:5vw;bottom:12.31vh;width:90vw}
+  /* Figma 3898:98612 — the phone break, three short lines instead of the
+     desktop's two */
+  #worth .worth-wide{display:none}
+  #worth .worth-phone{display:block}
   /* the glow followed the text down: it was still centred at 31.30vh, well
      above the line now that the line sits near the bottom. */
   #worth .time-glow-q{top:auto;bottom:2vh}
@@ -753,9 +760,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      one gesture from the sentence, and it plays on arrival. -->
 <section class="act" id="worth" aria-label="How much is your data worth">
   <div class="time-glow-q" aria-hidden="true"></div>
+  <!-- Figma 3898:98612 — the phone version breaks this over three short lines
+       ("How much" / "is your data" / "worth?") rather than wrapping the desktop
+       two-line break onto a narrower column, so it needs its own set of .ln
+       masks: each mask is sized for one line, and "How much is your" wrapping
+       internally on a phone would spill a second line out of a mask built for
+       one. worth-wide/-phone toggle by breakpoint below, same pattern as the
+       FAQ's two list markups. -->
   <div class="worth display">
-    <span class="ln"><span>How much is your</span></span>
-    <span class="ln"><span>data worth?</span></span>
+    <span class="ln worth-wide"><span>How much is your</span></span>
+    <span class="ln worth-wide"><span>data worth?</span></span>
+    <span class="ln worth-phone"><span>How much</span></span>
+    <span class="ln worth-phone"><span>is your data</span></span>
+    <span class="ln worth-phone"><span>worth?</span></span>
   </div>
 </section>
 
