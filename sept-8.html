@@ -598,14 +598,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .sol-how .ent-title{margin-bottom:1.2rem;font-size:clamp(2rem,8.7vw,2.4rem)}
   .sol-how .ent-body{width:auto;margin-bottom:1.6rem;font-size:clamp(.9rem,4vw,1rem)}
   .sol-how .ent-cta{padding:1rem 1.4rem;min-height:0;font-size:1rem}
-  /* Figma 3783:22580 sits at x 28.769, 338.534 wide on the 402 artboard, so the
-     card is 84.212vw inset 7.157vw — it was bleeding the full width. Height
-     stays auto: the phone export's 1016x1257 gives 104.19vw against the
-     artboard's 104.23, so the box lands where the design has it. */
-  .sol-how .ent-dash{position:static;width:84.212vw;height:auto;margin:10vw 0 0 7.157vw}
+  /* Figma 3783:22580, the Your DSP card. The board is 390 wide, not the 402 a
+     screenshot of it reports — that figure is two sibling frames overflowing
+     the right edge, and the nav's 24 + 342 + 24 settles it. So the card is
+     338.534/390 = 86.804vw, inset 7.377vw, 75/390 under the button.
+
+     It is also cut off, on purpose. The card runs 3651..4070 down the board but
+     the FAQ frame starts at 3966 and paints over it, so only 315 of its 419
+     ever shows. Here the two are ordinary siblings rather than stacked, so the
+     crop is a clip: the box keeps 315/390 = 80.769vw and the image keeps its
+     own aspect inside it. Squashing the image to that height instead would
+     letterbox the dashboard rather than cut it. */
+  .sol-how .ent-dash-clip{display:block;overflow:hidden;
+    width:86.804vw;height:80.769vw;margin:19.231vw 0 0 7.377vw}
+  .sol-how .ent-dash{position:static;display:block;width:100%;height:auto;margin:0}
 
   /* --- FAQ and footer --- */
-  .faq{flex-direction:column;gap:36px;width:auto;padding:16vw 6.2vw 14vw}
+  /* 83/390 below the cut, the inset frame 3783:23103 gives its content */
+  .faq{flex-direction:column;gap:36px;width:auto;padding:21.282vw 6.2vw 14vw}
   .faq-title{max-width:none;font-size:clamp(2rem,8.7vw,2.4rem)}
   .faq-list{width:100%}
   .faq-row{padding:20px}
@@ -818,7 +828,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
            narrower and taller, so the dashboard's own type stays readable at
            phone width. <picture> rather than CSS because only markup can pick
            the file; the classes stay on the <img> the timeline animates. -->
-      <picture>
+      <picture class="ent-dash-clip">
         <source media="(max-width:760px)" srcset="assets/img/sept8-ent-dsp-phone.png" width="1016" height="1257">
         <img class="ent-dash ent-rise" src="assets/img/sept8-ent-dsp.jpg" alt="The Your Data Savings Plans dashboard, showing balance and data-under-custody charts and a plan called Traveler" loading="lazy">
       </picture>
