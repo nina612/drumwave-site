@@ -289,40 +289,65 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* AGE SCENES (Age 0, Age 2, ...) */
 .age-scene .frames{position:absolute;inset:0}
 .age-scene .frame::after{background:linear-gradient(180deg,rgba(7,7,7,0) 60%,rgba(7,7,7,.55) 85%,rgba(7,7,7,.7) 100%)}
-.age-scene .num-wrap{position:absolute;left:5vw;bottom:24vh;z-index:5;pointer-events:none}
-.age-scene .num-wrap .lab{display:flex;align-items:center;gap:12px;margin-bottom:1.2em;margin-left:.3em;color:var(--bone)}
-.age-scene .num-wrap .lab i{width:6px;height:6px;background:var(--cobalt);display:block}
-.age-scene .bignum{color:var(--bone);font-weight:200;font-size:clamp(3rem,15.625vw,300px);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.age-scene .stage-tag{position:absolute;right:5vw;top:11vh;text-align:right;z-index:6}
-.age-scene .stage-tag .age{font-size:clamp(2rem,7vw,7rem);color:var(--bone);font-variant-numeric:tabular-nums;font-weight:200}
-.age-scene .stage-tag .cap{margin-top:.6em;color:var(--bone);opacity:.7;letter-spacing:.1em}
+/* Figma 3361:82763 — the figure keeps the same 5.16vw margin as the picker
+   below it, and the "potential value accumulated" tag it used to carry is now
+   the caption at the head of that picker instead. */
+.age-scene .num-wrap{position:absolute;left:5.156vw;bottom:23.24vh;z-index:5;pointer-events:none}
+.age-scene .num-wrap .lab{display:none}
+.age-scene .bignum{color:#fff;font-size:min(15.625vw,300px);letter-spacing:-.03em;line-height:.99;font-variant-numeric:tabular-nums}
+.age-scene .stage-tag{position:absolute;right:5.2vw;top:6.2vh;text-align:right;z-index:6}
+.age-scene .stage-tag .age{font-size:min(6.997vw,134.343px);letter-spacing:-.05em;line-height:.99;color:#fff;font-variant-numeric:tabular-nums}
+/* the two stack flush: at line-height .99 the age's box ends exactly where the
+   design starts the caption */
+.age-scene .stage-tag .cap{margin-top:0;font-weight:600;font-size:16px;line-height:.99;letter-spacing:.1em;color:#fff;opacity:1}
 
-/* AGE PICKER (cobalt scrub track) */
-.age-scene .ctl{position:absolute;left:5vw;right:5vw;bottom:8vh;z-index:7;touch-action:none;user-select:none}
-.age-scene .ctl .hint{display:flex;justify-content:space-between;margin-bottom:14px}
+/* AGE PICKER — Figma 3361:82763 (desktop) and 3898:98620 (phone) draw the same
+   instrument at two sizes: a caption, a 5px tick ruler over a hairline, then
+   the milestone row. Only the sizes and the phone's extras differ, so the
+   design lives here and the 760px block below only says what changes. */
+.age-scene .ctl{position:absolute;left:5.156vw;right:5.156vw;bottom:8vh;z-index:7;touch-action:none;user-select:none}
+/* the drag pair is the phone's alone — the desktop frame doesn't carry it */
+.age-scene .ctl .hint{display:none;justify-content:space-between;margin-bottom:14px}
 .age-scene .ctl .hint b{font-weight:500;color:var(--bone)}
-.age-scene .track{position:relative;height:44px;cursor:grab}
+.age-scene .ctl-cap{margin:0 0 32px;font-family:'Open Sans',sans-serif;font-weight:600;font-size:16px;
+  line-height:.99;letter-spacing:.1em;text-transform:uppercase;color:#bababa}
+/* one line on the desktop frame, two in the phone's narrower column */
+.age-scene .ctl-cap br{display:none}
+/* The ruler is 18px of the track (5px ticks, 12px gap, hairline) but the track
+   stays 44 so it is still a real touch target. The spare 26 hangs below the
+   hairline, where it would otherwise push the labels a full row further down
+   than the design has them, so it is taken back off the bottom. */
+.age-scene .track{position:relative;height:44px;margin-bottom:-26px;cursor:grab}
 .age-scene .track:active{cursor:grabbing}
-.age-scene .track .rail{position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line);transform:translateY(-50%)}
-.age-scene .track .fill{position:absolute;left:0;top:50%;height:1px;background:var(--cobalt);transform:translateY(-50%);width:0}
-.age-scene .track .ticks{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);display:flex;justify-content:space-between;pointer-events:none}
-.age-scene .track .ticks i{display:block;width:2px;height:2px;background:var(--mute);opacity:.35;transform:translateY(-8px)}
-.age-scene .track .ticks i.hit{background:var(--cobalt);opacity:1;height:6px;transform:translateY(-10px)}
-.age-scene .track .handle{position:absolute;top:50%;left:0;width:18px;height:18px;border-radius:50%;background:var(--cobalt);transform:translate(-50%,-50%);box-shadow:0 0 0 6px rgba(31,59,255,.18)}
-.age-scene .ctl .ages{position:relative;display:flex;justify-content:space-between;margin-top:10px}
-.age-scene .ctl .ages span{position:absolute;transform:translateX(-50%);color:var(--mute);transition:color .3s;font-size:11px}
-.age-scene .ctl .ages span.cur{color:var(--bone)}
-/* the phone caption that stands in for .hint below 760px — see the note by
-   the markup for why this is a second element rather than a relabel */
-.age-scene .hint-phone{display:none}
+.age-scene .track .rail{position:absolute;left:0;right:0;top:17px;bottom:auto;height:1px;background:#999;transform:none}
+/* the cobalt progress bar and its glowing dot aren't in this design. The handle
+   stays in the DOM rather than going away with the fill: pointerdown listens on
+   the track, but the drag still reads the handle's offset. */
+.age-scene .track .fill{display:none}
+.age-scene .track .handle{position:absolute;top:50%;left:0;width:18px;height:18px;border-radius:50%;
+  background:var(--cobalt);transform:translate(-50%,-50%);opacity:0}
+.age-scene .track .ticks{position:absolute;left:0;right:0;top:0;bottom:auto;transform:none;
+  display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
+.age-scene .track .ticks i{display:block;width:1px;height:5px;background:#999;opacity:1;transform:none}
+/* the export is a flat ruler — one static frame can't show a position — so the
+   scrubbed-past ticks keep the design's 5px and only go white */
+.age-scene .track .ticks i.hit{background:#fff}
+.age-scene .ctl .ages{position:relative;display:flex;justify-content:space-between;margin-top:16px}
+.age-scene .ctl .ages span{position:absolute;transform:translateX(-50%);
+  font-family:'Titillium Web',sans-serif;font-weight:600;font-size:16px;line-height:.99;
+  letter-spacing:.01em;text-transform:none;color:#999;transition:color .3s}
+.age-scene .ctl .ages span.cur{color:#fff}
+/* the end labels sit flush with the track instead of centred on its ends, so
+   neither hangs off its edge */
+.age-scene .ctl .ages span:first-child{transform:none;letter-spacing:-.03em}
+.age-scene .ctl .ages span:last-child{transform:translateX(-100%)}
 
-/* Figma 3898:98620/3361:82763 — skip past the age-scrub pin without dragging
-   through all 70 years. #ageCtl sits at bottom:8vh (desktop) / 10vh (phone)
-   with its age labels as its last, bottom-most row, so this needs a smaller
-   bottom offset than either to actually clear them rather than overlap. */
-.age-scene .age-skip{position:absolute;right:5vw;bottom:3vh;z-index:8;
+/* Figma 3361:82763 — skip past the age-scrub pin without dragging through all
+   70 years. It sits below #ageCtl, whose age labels are its last, bottom-most
+   row, so this clears them rather than overlapping. */
+.age-scene .age-skip{position:absolute;right:4.53vw;bottom:1.94vh;z-index:8;
   display:flex;align-items:center;gap:8px;background:none;border:0;padding:0;cursor:pointer;
-  color:#E3E3E3;font-family:'Open Sans',sans-serif;font-weight:600;font-size:.8rem;
+  color:#E3E3E3;font-family:'Open Sans',sans-serif;font-weight:600;font-size:16px;
   letter-spacing:.1em;text-transform:uppercase;opacity:.5;transition:opacity .25s}
 .age-scene .age-skip:hover{opacity:.85}
 /* the source glyph is two stacked up-chevrons; turned 90° it reads as
@@ -632,50 +657,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   /* the glow followed the text down: it was still centred at 31.30vh, well
      above the line now that the line sits near the bottom. */
   #worth .time-glow-q{top:auto;bottom:2vh}
-  .age-scene .ctl{bottom:10vh}
-  /* Figma 3898:98620 — text and picker restyled for the phone; position,
-     the scroll-jacked pin, and the drag/frame logic behind all of it are
-     untouched. The dollar figure loses its "potential value accumulated"
-     tag (the new caption below stands in for it), the hint pair is swapped
-     for that caption, and the track drops the rail/fill/glowing handle for
-     a plain even tick row over a hairline, with only the two end labels
-     shown. */
-  .age-scene .num-wrap .lab{display:none}
-  .age-scene .bignum{font-size:min(20vw,5.5rem)}
-  .age-scene .ctl .hint{display:none}
-  .age-scene .hint-phone{display:block;margin-bottom:14px;color:#bababa;
-    font-family:'Open Sans',sans-serif;font-weight:600;font-size:1rem;
-    letter-spacing:.1em;text-transform:uppercase;line-height:1.3}
-  /* the rail moves down to sit as the hairline under the ticks instead of
-     running through their middle; the fill and the handle's glowing dot
-     aren't part of this design, so both go transparent — the handle stays
-     in the DOM (and draggable: pointerdown listens on the track, not it)
-     purely to keep the drag math it's read from intact.
-     Figma 3898:98938 sizes the assembly off the rail: 5px ticks, a 12px
-     gap, then the hairline. The track keeps its full 44px height as the
-     touch target, so both sit at the bottom of it and the gap down to the
-     labels is set here rather than left to the 44px box. */
-  .age-scene .track .rail{top:auto;bottom:0;background:#999}
-  .age-scene .track .fill{display:none}
-  /* 13px clears the 1px rail sitting on the track's bottom edge, leaving the
-     12px the design puts between the ticks and the hairline */
-  .age-scene .track .ticks{top:auto;bottom:13px;transform:none;align-items:flex-end}
-  .age-scene .track .ticks i{width:1px;height:5px;background:#999;opacity:1;transform:none}
-  /* the export is a flat ruler — one static frame can't show a position, so
-     the scrubbed-past ticks stay the design's 5px and only go white. The
-     transform has to be said again: desktop lifts .hit ticks 10px and that
-     rule outranks the one above it on class count alone. */
-  .age-scene .track .ticks i.hit{background:#fff;height:5px;opacity:1;transform:none}
-  .age-scene .track .handle{opacity:0}
-  .age-scene .ctl .ages{margin-top:16px}
+  /* Figma 3898:98620 — the same instrument as the desktop frame (see the base
+     rules), at the phone's margins and with two things the wide frame has no
+     room for: the drag copy, and the caption broken over two lines. The pin,
+     the drag and the frame crossfade behind all of it are untouched. */
+  .age-scene .num-wrap{left:3.85vw;bottom:19.8vh}
+  /* the frame's 100px is drawn against "$150"; 23vw is the most that still
+     fits "$209,763", the figure this actually reaches at 70, inside the
+     margins. It reaches the design's 100 as soon as the screen is wide
+     enough to hold that figure at it. */
+  .age-scene .bignum{font-size:min(23vw,100px)}
+  /* the age readout and the skip control are off-canvas in the phone frame —
+     and the readout, at the top right, ran into the nav pill */
+  .age-scene .stage-tag{display:none}
+  .age-scene .age-skip{display:none}
+  .age-scene .ctl{left:4.23vw;right:4.23vw;bottom:4.03vh}
+  .age-scene .ctl .hint{display:flex}
+  .age-scene .ctl-cap br{display:block}
   .age-scene .ctl .ages span:not(:first-child):not(:last-child){display:none}
-  /* Titillium 16 white, not the .mono caption treatment the desktop row uses */
-  .age-scene .ctl .ages span{font-family:'Titillium Web',sans-serif;font-weight:600;
-    font-size:16px;letter-spacing:-.03em;text-transform:none;color:#fff}
-  /* the ends sit flush with the track rather than centred on it, so neither
-     hangs off the edge the way translateX(-50%) leaves them */
-  .age-scene .ctl .ages span:first-child{transform:none}
-  .age-scene .ctl .ages span:last-child{transform:translateX(-100%)}
   .solution-preview .sol-state{left:8vw;max-width:84vw}
   /* the desktop rule above is an id selector, so it outranks .sol-state's 8vw/20vh
      here unless said again at the same specificity */
@@ -866,12 +865,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   <div class="ctl" id="ageCtl">
     <div class="hint mono"><span>One life, 0 to 70</span><b id="ageDragHint">Drag to move through time</b></div>
-    <!-- Figma 3898:98620 — the phone caption, replacing the hint pair above
-       rather than sharing its markup: it isn't announcing that the track
-       drags, it's captioning the dollar figure, so it needs its own text
-       and its own on/off switch at the breakpoint instead of relabelling
-       #ageDragHint (which the first-drag reveal below still targets). -->
-    <p class="hint-phone mono">Data value generated<br>from birth to retirement*</p>
+    <!-- Figma 3361:82763 / 3898:98620 — the caption heading the picker at both
+       sizes. It is its own element rather than a relabelled .hint: it isn't
+       announcing that the track drags, it's captioning the dollar figure, and
+       #ageDragHint above is still what the first-drag reveal targets. The
+       break is switched on at the phone breakpoint, where it wraps. -->
+    <p class="ctl-cap">Data value generated <br>from birth to retirement*</p>
     <div class="track" id="ageTrack" role="slider" aria-label="Age" aria-valuemin="0" aria-valuemax="70" aria-valuenow="0" tabindex="0">
       <div class="rail"></div>
       <div class="fill" id="ageFill"></div>
@@ -1768,11 +1767,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     {age:2,  val:675,    label:'Toddler'},
     {age:13, val:3497,   label:'Teenage years'},
     {age:18, val:5805,   label:'College'},
-    {age:23, val:8999,   label:'First apartment'},
+    {age:25, val:8999,   label:'First apartment'},
     {age:32, val:18033,  label:'Building a life'},
     {age:36, val:23982,  label:'Family'},
     {age:45, val:44085,  label:'Career'},
-    {age:52, val:69300,  label:'Enjoying life'},
+    {age:58, val:69300,  label:'Enjoying life'},
     {age:70, val:209763, label:'Retirement'}
   ];
   const AGES = AGE_DATA.map(d => d.age);
@@ -1782,9 +1781,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   const ageTrack = $('#ageTrack'), ageFill = $('#ageFill'), ageHandle = $('#ageHandle');
   const ageTicksEl = $('#ageTicks'), ageLabelsEl = $('#ageLabels');
-  for(let a=AGE_MIN; a<=AGE_MAX; a++){ const i=document.createElement('i'); ageTicksEl.appendChild(i); }
-  const ageTicks = $$('#ageTicks i');
-  AGES.forEach(a => { const s=document.createElement('span'); s.textContent=a; s.style.left=((a-AGE_MIN)/(AGE_MAX-AGE_MIN)*100)+'%'; ageLabelsEl.appendChild(s); });
+  // Figma rules the track at two densities: a tick a year on the phone frame
+  // (71 across its 352px) and twice that on the desktop one (133 across 1716).
+  // The count changes with the breakpoint, not just the spacing, so the row is
+  // rebuilt rather than restyled.
+  const agePhoneMQ = window.matchMedia('(max-width:760px)');
+  let ageTicks = [];
+  function buildAgeTicks(){
+    const n = (AGE_MAX - AGE_MIN) * (agePhoneMQ.matches ? 1 : 2) + 1;
+    if(ageTicks.length === n) return;
+    ageTicksEl.replaceChildren(...Array.from({length:n}, () => document.createElement('i')));
+    ageTicks = $$('#ageTicks i');
+  }
+  buildAgeTicks();
+  // Evenly spaced, not placed at each age's own fraction of the track: the
+  // design spaces them evenly, and at their real fractions 0 and 2 land 3% apart
+  // and collide.
+  AGES.forEach((a,i) => { const s=document.createElement('span'); s.textContent=a; s.style.left=(i/(AGES.length-1)*100)+'%'; ageLabelsEl.appendChild(s); });
   const ageLabelSpans = $$('#ageLabels span');
   let ageCurrent = AGE_MIN;
 
@@ -1824,10 +1837,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     ageFill.style.width = (t*100)+'%';
     ageHandle.style.left = (t*100)+'%';
     ageTrack.setAttribute('aria-valuenow', Math.round(age));
-    ageTicks.forEach((tk,i)=> tk.classList.toggle('hit', (AGE_MIN+i) <= Math.round(age) && t > 0));
+    ageTicks.forEach((tk,i)=> tk.classList.toggle('hit', AGE_MIN + i/(ageTicks.length-1)*(AGE_MAX-AGE_MIN) <= Math.round(age) && t > 0));
     ageLabelSpans.forEach((l,i)=> l.classList.toggle('cur', age >= AGES[i]));
   }
   renderAge(AGE_MIN);
+  agePhoneMQ.addEventListener('change', () => { buildAgeTicks(); renderAge(ageCurrent); });
 
 
   // The age track's pin used to run 200% past the last figure purely to hold a tail
