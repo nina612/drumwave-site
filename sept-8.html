@@ -1312,8 +1312,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // stop per photograph.
   const HERO = 2.6, SPAN = 1.6;
   const RUN_FRAMES = 13;
+  // Asked for on phones: the run goes in fours rather than a span a frame — one
+  // image easing out of a slight push and holding 1.5s, then three going by at
+  // half a second each, the four repeated to the end of the set. Thirteen
+  // frames makes three whole cycles and leaves the last as a held one.
+  // Its own cut, too: the flat .25 is half the life of a half-second frame, so
+  // those three would have spent most of their time mid-crossfade.
+  const M_HOLD = 1.5, M_QUICK = .5, M_CYCLE = 4, M_CUT = .15;
+  const spanOf = i => MOBILE ? (i % M_CYCLE === 0 ? M_HOLD : M_QUICK)
+                             : (i === 0 ? HERO : SPAN);
+  const cutOf   = i => MOBILE && i % M_CYCLE !== 0 ? M_CUT : CUT;
+  const isHeld  = i => MOBILE && i % M_CYCLE === 0;
   // the opening image eases out of its push across the whole time it holds
-  arrive(tl1, f1(0), 0, true, HERO, 1.02, 'power1.out');
+  if(MOBILE) arrive(tl1, f1(0), 0, true, M_HOLD, 1.06, 'power2.out');
+  else       arrive(tl1, f1(0), 0, true, HERO, 1.02, 'power1.out');
 
   // A photograph's settled moment: far enough in that its cut has landed, and well
   // before it leaves. The snapping maps these onto scroll, so a gesture always comes
@@ -1323,13 +1335,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // arrives with it already on screen.
   const runStops = [0];
 
-  let at = HERO;
+  let at = spanOf(0);
   for(let i = 1; i < RUN_FRAMES; i++){
+    const cut = cutOf(i);
     tl1.fromTo(f1(i), {opacity:0.001},
-      {opacity:1, duration:CUT, ease:'none', immediateRender:false}, at);
-    tl1.set(f1(i - 1), {opacity:0}, at + CUT);
-    runStops.push(settled(at, SPAN));
-    at += SPAN;
+      {opacity:1, duration:cut, ease:'none', immediateRender:false}, at);
+    tl1.set(f1(i - 1), {opacity:0}, at + cut);
+    // every fourth frame is a held one, and takes the same push the opener does
+    if(isHeld(i)) arrive(tl1, f1(i), at, false, M_HOLD, 1.06, 'power2.out');
+    runStops.push(settled(at, spanOf(i)));
+    at += spanOf(i);
   }
   // the last frame holds before the run starts over
   const END = at;
