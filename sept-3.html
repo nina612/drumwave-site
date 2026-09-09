@@ -332,7 +332,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* the export is a flat ruler — one static frame can't show a position — so the
    scrubbed-past ticks keep the design's 5px and only go white */
 .age-scene .track .ticks i.hit{background:#fff}
-.age-scene .ctl .ages{position:relative;display:flex;justify-content:space-between;margin-top:16px}
+/* the labels are absolutely placed, so the row needs its own height or it
+   measures zero and the block's box stops above them — which drops them below
+   wherever the block is anchored from the bottom */
+.age-scene .ctl .ages{position:relative;display:flex;justify-content:space-between;margin-top:16px;height:16px}
 .age-scene .ctl .ages span{position:absolute;transform:translateX(-50%);
   font-family:'Titillium Web',sans-serif;font-weight:600;font-size:16px;line-height:.99;
   letter-spacing:.01em;text-transform:none;color:#999;transition:color .3s}
@@ -661,7 +664,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      rules), at the phone's margins and with two things the wide frame has no
      room for: the drag copy, and the caption broken over two lines. The pin,
      the drag and the frame crossfade behind all of it are untouched. */
-  .age-scene .num-wrap{left:3.85vw;bottom:19.8vh}
+  /* 3898:98620 is a 387x1080 frame, and its vertical stack closes on itself in
+     px: 42 under the picker block, the block's own 114, then 58 up to the
+     figure makes the 214 the frame puts under it. Held in px rather than
+     scaled to vh so it stays the drawn spacing on a real phone, which is
+     shorter than the frame. The extra over 214 is room for the drag line,
+     which the frame doesn't carry. */
+  .age-scene .num-wrap{left:15px;bottom:232px}
   /* the frame's 100px is drawn against "$150"; 23vw is the most that still
      fits "$209,763", the figure this actually reaches at 70, inside the
      margins. It reaches the design's 100 as soon as the screen is wide
@@ -671,8 +680,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      and the readout, at the top right, ran into the nav pill */
   .age-scene .stage-tag{display:none}
   .age-scene .age-skip{display:none}
-  .age-scene .ctl{left:4.23vw;right:4.23vw;bottom:4.03vh}
-  .age-scene .ctl .hint{display:flex}
+  /* the same 15px margin the figure above it uses, and 42 off the bottom */
+  .age-scene .ctl{left:15px;right:15px;bottom:42px}
+  /* out of the block's flow, in the gap the frame leaves between the figure and
+     the caption. In flow it added its own row to a bottom-anchored block, which
+     pushed the caption up until it all but touched the figure. */
+  .age-scene .ctl .hint{display:flex;position:absolute;left:0;right:0;bottom:100%;margin:0 0 14px}
   .age-scene .ctl-cap br{display:block}
   .age-scene .ctl .ages span:not(:first-child):not(:last-child){display:none}
   .solution-preview .sol-state{left:8vw;max-width:84vw}
@@ -864,7 +877,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   </div>
 
   <div class="ctl" id="ageCtl">
-    <div class="hint mono"><span>One life, 0 to 70</span><b id="ageDragHint">Drag to move through time</b></div>
+    <div class="hint mono"><b id="ageDragHint">Drag to move through time</b></div>
     <!-- Figma 3361:82763 / 3898:98620 — the caption heading the picker at both
        sizes. It is its own element rather than a relabelled .hint: it isn't
        announcing that the track drags, it's captioning the dollar figure, and
