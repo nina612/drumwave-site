@@ -434,6 +434,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .faq-row .faq-a p:last-child{margin-bottom:0}
 /* not click-to-open while the artboard writes no answers */
 .faq-row{cursor:default}
+/* the phone question set, swapped in at the breakpoint (Figma 3783:23109) */
+.faq-list-phone{display:none}
 .faq-row:focus-visible{outline:2px solid #278EFF;outline-offset:3px}
 
 /* Figma 3157-69704: the disclosures block — text at x164 on a 1464 measure, 18px
@@ -615,11 +617,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   /* --- FAQ and footer --- */
   /* 83/390 below the cut, the inset frame 3783:23103 gives its content */
-  .faq{flex-direction:column;gap:36px;width:auto;padding:21.282vw 6.2vw 14vw}
+  .faq{flex-direction:column;gap:40px;width:auto;padding:21.282vw 6.2vw 14vw}
   .faq-title{max-width:none;font-size:clamp(2rem,8.7vw,2.4rem)}
   .faq-list{width:100%}
-  .faq-row{padding:20px}
-  .faq-row .faq-q{white-space:normal;font-size:.92rem;line-height:1.25}
+  .faq-list-wide{display:none}
+  .faq-list-phone{display:flex}
+  /* Figma 3783:23110..15 — 342-wide rows, 24/16 padding, 16px SemiBold at -0.48
+     tracking, a 24 toggle hard against the right padding and no gap before it.
+     Padding is 23/15, not the board's 24/16: Figma strokes inside the frame
+     while a CSS border adds to the box, so 24 plus a 1px border measured 74
+     where the board says 72. 23 + 1 restores both the height and the 286 the
+     text has to wrap in. Line height is 1.375 for the same reason — the board's
+     two-line rows are 92, so its line box is 22, and 1.4 overshot by 0.8.
+     Height then falls out of the content box, max(text, toggle): one line gives
+     24 and two 44, i.e. the 72/72/72/92/92/72 the board draws. */
+  .faq-row{gap:0;padding:23px 15px}
+  .faq-row .faq-q{white-space:normal;font-size:16px;line-height:1.375;letter-spacing:-.48px}
+  .faq-row i{width:24px;height:24px;line-height:24px}
   .site-footer{grid-template-columns:1fr;gap:32px;padding-bottom:9vw}
   /* the phone nav's dWallet is 86.371 wide, so the match lands lower here */
   .site-footer .foot-wordmark{width:127.48px}
@@ -849,7 +863,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       <p class="faq-label">FAQS</p>
       <h2 class="faq-title">Questions? We&rsquo;ve got answers.</h2>
     </div>
-    <div class="faq-list">
+    <div class="faq-list faq-list-wide">
       <div class="faq-row">
         <div class="faq-text"><p class="faq-q">What is a Business dWallet?</p></div><i>+</i>
       </div>
@@ -873,6 +887,32 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       </div>
       <div class="faq-row">
         <div class="faq-text"><p class="faq-q">Is my data safe?</p></div><i>+</i>
+      </div>
+    </div>
+
+    <!-- sept-8 phone, Figma 3783:23109: the phone board asks six different
+         questions from the desktop eight, so both sets ship and the breakpoint
+         shows one. display:none takes the other out of the accessibility tree
+         too, so only the visible set is ever announced. Nothing opens here
+         either — 3783:23110..15 are drawn collapsed with no answers written. -->
+    <div class="faq-list faq-list-phone">
+      <div class="faq-row">
+        <div class="faq-text"><p class="faq-q">Is a Data Savings Account a bank account?</p></div><i>+</i>
+      </div>
+      <div class="faq-row">
+        <div class="faq-text"><p class="faq-q">What data exactly?</p></div><i>+</i>
+      </div>
+      <div class="faq-row">
+        <div class="faq-text"><p class="faq-q">How much is my data worth?</p></div><i>+</i>
+      </div>
+      <div class="faq-row">
+        <div class="faq-text"><p class="faq-q">Why would a company pay for something it currently gets free?</p></div><i>+</i>
+      </div>
+      <div class="faq-row">
+        <div class="faq-text"><p class="faq-q">What does an enterprise need to launch a Data Savings Plan?</p></div><i>+</i>
+      </div>
+      <div class="faq-row">
+        <div class="faq-text"><p class="faq-q">Is my data safe with dWallet?</p></div><i>+</i>
       </div>
     </div>
   </div>
@@ -1363,7 +1403,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // control that would do nothing — wire the toggle back up when the copy exists.
 
   rise('#how .faq-head', '#how .faq');
-  rise($$('#how .faq-row'), '#how .faq', {duration:.5, stagger:.07});
+  // both question sets are in the DOM; offsetParent is null for the one the
+  // breakpoint hid, and staggering those too would delay the visible rows.
+  rise($$('#how .faq-row').filter(el => el.offsetParent), '#how .faq', {duration:.5, stagger:.07});
   rise('#how .site-footer > *', '#how .site-footer', {duration:.5, stagger:.08});
   rise('#how .disclosures > *', '#how .disclosures', {duration:.5, stagger:.03});
 
