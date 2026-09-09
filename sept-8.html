@@ -65,16 +65,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:50;
   /* Figma 3157-67646: 1200 x 84, padded 16 all round but 24 on the left where the
      logo sits, and a solid #8b8b8b hairline rather than a faded one */
-  width:min(1200px,94vw);height:84px;padding:16px 16px 16px 24px;
+  width:min(1200px,94vw);height:84px;padding:16px 24px;
   display:flex;align-items:center;gap:40px;
-  border:1px solid #8B8B8B;border-radius:100px;
+  border:1px solid rgba(139,139,139,.3);border-radius:100px;
   background:rgba(7,7,7,.7);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   font-family:'Titillium Web',system-ui,sans-serif;font-size:18px;line-height:1;
 }
 .nav .logo{display:flex;align-items:center;gap:24px;margin-right:auto}
 .nav .logo .mark{width:36px;height:36px;display:block;object-fit:contain;flex:none}
 .nav .logo .rule{width:1px;height:35px;background:rgba(153,153,153,.4);flex:none}
-.nav .logo .wordmark{font-weight:600;font-size:32px;letter-spacing:-.01em;color:#fff;flex:none}
+.nav .logo .wordmark{width:111.966px;height:25.547px;display:block;flex:none}
 .nav .links{display:flex;align-items:center;gap:40px}
 .nav .links a{font-weight:400;color:#fff}
 .nav .links a.cur{font-weight:600}
@@ -86,9 +86,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   font-weight:400;line-height:24px;color:#fff;transition:background .25s,filter .25s;
 }
 .nav .pill:hover{background:rgba(243,242,238,.12)}
-/* the CTA carries the brand gradient rather than a flat fill */
-.nav .pill.p{border:1px solid transparent;border-radius:56px;font-weight:600;background:linear-gradient(138.73deg,#4B27FF 1.94%,#0091FF 100.59%)}
-.nav .pill.p:hover{background:linear-gradient(138.73deg,#4B27FF 1.94%,#0091FF 100.59%);filter:brightness(1.12)}
+/* the CTA is the split-button: 258 wide on a 56 radius, and the green ramp */
+.nav .pill.p{width:258px;border:1px solid transparent;border-radius:56px;font-weight:600;background-image:linear-gradient(142.86deg,#108B22 1.43%,#11CA51 106.43%)}
+.nav .pill.p:hover{filter:brightness(1.12)}
 @media (max-width:900px){
   .nav{gap:20px;height:64px;padding:8px 12px 8px 16px}
   .nav .links,.nav .sep{display:none}
@@ -104,9 +104,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .act-layer{position:absolute;inset:0;overflow:hidden}
 .frame{position:absolute;inset:0;opacity:0;will-change:opacity,transform}
 .frame img{width:100%;height:100%;object-fit:cover}
-#act1 > .frame::after,#act2 .frame::after{content:none}
-.photo-veil{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(7,7,7,.06) 0%,rgba(7,7,7,.17) 55%,rgba(7,7,7,.40) 100%)}
-#act2 .photo-veil{background:linear-gradient(180deg,rgba(7,7,7,.03),rgba(7,7,7,.26))}
+#act1 > .frame::after{content:none}
+/* sept-8: the run now holds one headline over eleven photographs, and several of
+   them are bright where the old set was uniformly dark — the copy measured 124
+   luma behind it on the solar and crate frames against 66 on the opener. The
+   lower half of the scrim is deepened so the one piece of copy reads on all of
+   them; the top is untouched, so the frames' own light is unchanged. */
+.photo-veil{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(7,7,7,.06) 0%,rgba(7,7,7,.18) 45%,rgba(7,7,7,.52) 76%,rgba(7,7,7,.70) 100%)}
 .frame::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,7,7,.12) 0%,rgba(7,7,7,.28) 55%,rgba(7,7,7,.62) 100%)}
 .frame.on{opacity:1}
 .pad{position:absolute;left:5vw;right:5vw}
@@ -116,7 +120,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    node crops it. The source is 3:2, so cover fits it by width and leaves 200px of
    vertical overflow in a 16:9 box; the node's y of -105 is 52.5% of that, not the 50%
    cover would centre on. Five pixels, but it is the difference the node asks for. */
-#act2 .frame-baby img{object-position:50% 52.5%}
 /* Type comes straight off the design: Titillium 400 at 140/112px with -4.2px of
    tracking. Placement does not — asked for: sit exactly where "Every tap. Every step."
    sits, so the two statements read as one voice in one place rather than as two blocks
@@ -127,10 +130,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    a line box shorter than its own text overflows symmetrically — so at equal box tops
    this headline's glyphs would ride 0.05em, about 7px at 140, above the other's. The
    .025em pushes them back down onto it. */
-/* z-index 6, the same as .run-say. Without it this headline paints below #act2, which
-   comes after it in the DOM with an automatic z-index — and #act2's own scrim is at full
-   opacity from the start, so "Your life creates data" was reading through an extra layer
-   of it that none of the other copy had over it. */
+/* z-index 6 so the headline paints over the frames, which follow it in the DOM. */
 #act1 .hero-h{z-index:6;
   position:absolute;left:6.3vw;top:calc(51.67vh + .05em);bottom:auto;max-width:92vw;color:#fff;
   /* 7.29vw is 140/1920, so the cap is reached at exactly the frame it was drawn on.
@@ -144,68 +144,21 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    the tap frame carries "Every tap. Every step." and the delivery frame finishes the
    sentence. Top-anchored at 558/1080, on the 6.3vw left and 1310/1920 measure the
    every-tap screen already uses, so the two read as the same voice. */
-/* One origin for all three statements.
-   Node 3406-5908 stacks "Own and save your data. Grow its value." in slots two and
-   three of a three-line box, the first slot holding the previous statement at zero
-   alpha — which made the two statements END level rather than start level, and this
-   rule reproduced that with a one-line offset. Asked for instead: the same placement
-   as "Every tap. Every step." and "Your life creates data", so all three begin on the
-   same line. The hero is matched onto this origin too (see #act1 .hero-h), so the
-   three sentences occupy one place on screen and the eye never travels between them.
-   Only one is ever visible: A clears out over .25 before B starts, so stacking the two
-   on one origin costs no overlap. */
-#act1 .run-say .say{position:absolute;left:0;top:0;width:100%}
-/* Hidden until the timeline has pushed these lines behind their masks.
-   The masked start state (SAY_OUT) only exists in JS, so between first paint and GSAP
-   running the browser drew both statements where they rest. That never showed while the
-   three statements sat in three different places; now that they share one origin they
-   landed exactly on top of each other and on the hero — the pile of type at the top of
-   the page.
-   visibility, NOT a transform. Setting translateY(150%) here looked like the tidier
-   fix and silently broke both entrances: GSAP folds an existing CSS transform into its
-   own baseline, so yPercent stacked on top of it and the statements arrived at 257.6px
-   instead of 0 — that is, never arrived at all. Measured before it went anywhere.
-   The reveal is one line of JS beside the set that establishes the state, so the two
-   cannot drift apart. */
-#act1 .run-say{visibility:hidden}
-/* 400, not the 300 .display carries: the node draws this copy at the same weight as
-   the headline. Everything else here was already on the node's numbers — 121/1920
-   left, 558/1080 top, 140px on 126, -4.2px of tracking. The width is the one figure
-   that is not this node's: 1407/1920 is the family tail's measure, the widest of the
-   set, and it only has to be wide enough that no line wraps — the box hugs its text,
-   so this node's 1310 is the width of the line itself, not a constraint on it. */
-#act1 .run-say{position:absolute;left:6.3vw;top:51.67vh;width:73.28vw;z-index:6;
-  font-size:clamp(2.2rem,7.29vw,8.75rem);font-weight:400;
-  line-height:.9;letter-spacing:-.03em;color:#fff}
 
 
 /* ACT 2 */
-#act2 .frame::after{background:linear-gradient(180deg,rgba(7,7,7,.05),rgba(7,7,7,.4))}
 /* Figma 3157-67721 gives the charging frame a flat scrim; the shared layer already
    carries the bottom, so this only lifts the top back to that level */
-#act2 .frame[data-i="5"]::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,7,7,.26) 0%,rgba(7,7,7,0) 62%)}
 /* Figma 3157-67710: right edge 1801/1920, top 521/1080, 140px, -4.2 tracking */
 /* Figma 3157-67631: 1148px circle centred at 1362,1125 on a 1920x1080 frame */
 /* placements measured off the three reference frames: Every high-left, Single
    right and lower, Day indented near the bottom — and set smaller than the hero */
-#act2 .line-veil{position:absolute;inset:0;background:var(--ink);opacity:0}
 
 /* ACT 3 */
 /* Figma 3198-49275: flat #101010, copy at left 121/1920, baseline 936/1080,
    140px on a 1214px measure, -4.2 tracking */
 /* its own section rather than a layer inside act 1, so it is opaque: the reader
    scrolls onto a finished screen and the copy arrives on it */
-/* Figma 3350-13850 is where this screen starts: flat #101010 with one soft glow off
-   the top-right corner. A #2731B6 disc of r571 at .32 under a 200 blur — drawn rather
-   than shipped as SVG, since the source is a plain blurred circle. Its frame says
-   left -457, but the node carries a rotate-180 + scale-y-100 pair, which is a
-   horizontal mirror: the disc actually sits at 1235, centred at 94%/10.5% of the
-   frame, which is where measuring the render's blueness puts it. */
-/* Figma 3361-82758: the question screen falls back to that same #101010, but the
-   glow moves — smaller, and down to the lower left. Same mirror to undo: its frame
-   says left 1254, which puts the disc at -173 once flipped, centred at 12.8%/70% of
-   the frame, and that is where the render's blue actually sits. */
-#worth .time-glow-q{position:absolute;left:-9.01vw;top:31.30vh;width:43.70vw;aspect-ratio:1;border-radius:50%;background:#2731B6;opacity:0;filter:blur(10.42vw);pointer-events:none}
 /* Figma 3347-82746: the photograph then fades up over that — 1945x1459 from the
    frame's origin, under a 35% black wash. It starts at nothing; see PHOTO_IN. */
 /* Figma 3214-2823: same panel and same measure, copy top-anchored at 569/1080 */
@@ -270,76 +223,127 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* 28px. Node 3260:117251 gives this paragraph 84px across two lines, which is 42 a
    line — 28px on 1.5 leading, where it had been 20. */
 .solution-preview .sol-body{margin-top:1.93vw;max-width:none;font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(1rem,1.458vw,1.75rem);line-height:1.5;color:#fff;opacity:0}
-.solution-preview .sol-cta{position:absolute;left:5.75vw;top:75.5vh;z-index:2;pointer-events:auto;display:inline-flex;align-items:center;padding:12px 24px;border-radius:100px;background:#fff;color:#090908;font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(.85rem,.94vw,1.125rem);line-height:1;opacity:0;transition:background .25s}
-.solution-preview .sol-cta:hover{background:#E3E3E3}
-/* THE DSP CARD — Figma 3260-117245, measured off the 1920x1080 frame.
-   Built the way the design builds it: a photo bled past the clip, two blurred
-   colour casts over it, and the branding set on top — not one flat export, which
-   is why the old artwork could not carry the balance, the name or the number.
-   .sol-card is the positioning wrapper so the light spill can sit outside the
-   card's own clip and still travel with it.
-   31.11vh, not the 34.44vh of the node: the card used to ease up 3.33vh between the
-   introducing framing and the open-an-account framing, so the same card sat at two
-   different heights depending on which one you were looking at. Asked for: one x and
-   one y on both. 34.44 - 3.33 is 31.11, which keeps open-an-account exactly where it
-   already was and brings introducing up onto it, rather than moving the framing that
-   was right. The rise tween is gone with it — see the note where it used to be. */
-.solution-preview .sol-card{position:absolute;left:58.59vw;top:31.11vh;width:32.14vw;aspect-ratio:617/386.076;opacity:0;container-type:inline-size}
-/* the spill of light the card throws onto the page beneath it */
-.solution-preview .sol-card-glow{position:absolute;left:-10.7%;top:102.31%;width:118.48%;height:34.71%;pointer-events:none}
-/* the spill image overruns its own box top and bottom — 214px of artwork in a
-   134px slot. Squashing it to fit compresses the blur into a hard-edged band. */
-.solution-preview .sol-card-glow img{position:absolute;display:block;left:1.76%;top:-29.85%;width:98.74%;height:159.7%}
-.solution-preview .sol-card-face{position:absolute;inset:0;overflow:hidden;border:.29cqw solid rgba(255,255,255,.4);border-radius:4.68%/7.48%}
-/* the photo runs past every edge of the clip — left -43.8, top -15.8 at 844x474
-   inside a 617x386 face */
-.solution-preview .sol-card-photo{position:absolute;left:-7.1%;top:-4.09%;width:136.79%;height:122.77%}
-.solution-preview .sol-card-photo img{width:100%;height:100%;object-fit:cover}
-/* two casts thrown across the photo, both the same rotated blurred slab */
-.solution-preview .sol-cast{position:absolute;width:60.6%;height:61.68%;transform:rotate(-30.1deg);filter:blur(12.17cqw);pointer-events:none}
-.solution-preview .sol-cast-warm{left:-11.99%;top:-24.24%;background:#400202;opacity:.7}
-.solution-preview .sol-cast-cool{left:63.97%;top:-21.27%;background:rgba(19,56,158,.8);opacity:.6}
-/* branding, inset 36px on a 617 face = 5.83% */
-.solution-preview .sol-card-brand{position:absolute;left:5.83%;top:9.32%;right:5.83%;display:flex;align-items:center;gap:1.94cqw}
-.solution-preview .sol-card-brand .dsp-logo{flex:none;width:10.7%;aspect-ratio:1}
-.solution-preview .sol-card-brand .dsp-logo img{display:block;width:100%;height:100%}
-/* the wordmark is measured against "horizon" rather than the card, so the pair
-   stays locked together: 77.345 wide on a 50.515 type size */
-.solution-preview .sol-card-mark{display:flex;flex-direction:column;gap:.1em;font-size:8.19cqw}
-.solution-preview .sol-card-mark .dsp-word{display:block;width:1.531em;aspect-ratio:77.345/21.065}
-.solution-preview .sol-card-mark .dsp-word img{display:block;width:100%;height:100%}
-.solution-preview .sol-card-mark b{display:block;font-family:'Titillium Web',sans-serif;font-weight:600;font-size:1em;line-height:1.1;color:#fff}
-.solution-preview .sol-card-bal{position:absolute;right:5.83%;top:9.32%;font-family:'Open Sans',sans-serif;font-weight:600;font-size:5.85cqw;line-height:1.32;letter-spacing:-.02em;color:#fff}
-.solution-preview .sol-card-holder{position:absolute;left:5.83%;top:75.89%;display:flex;flex-direction:column;gap:2.27cqw;font-family:'Open Sans',sans-serif;font-weight:600;line-height:.99}
-.solution-preview .sol-card-holder span{font-size:3.89cqw;letter-spacing:.1em;color:#fff}
-.solution-preview .sol-card-holder em{font-style:normal;font-size:2.92cqw;letter-spacing:.1em;color:rgba(255,255,255,.5)}
-/* THE GLOWS BEHIND EVERYTHING — two #2731B6 discs of r419.5 under a 200 blur,
-   at .4 and .2. Drawn rather than shipped as SVG: the source is a plain blurred
-   circle, so CSS reproduces it exactly and scales with the viewport. */
-.solution-preview .sol-glow{position:absolute;width:43.7vw;aspect-ratio:1;border-radius:50%;background:#2731B6;filter:blur(10.42vw);pointer-events:none;opacity:0;z-index:0}
-.solution-preview .sol-glow-l{left:-11.77vw;top:-7.5vh}
-.solution-preview .sol-glow-r{left:71.35vw;top:1.48vh}
+
+/* ── sept-8 framing 1 — Figma 3678:125541 ───────────────────────────────────
+   The copy column is its own frame at 143,182 on the 1920x1080 artboard with
+   40px of top padding, so the headline's cap sits at 222 — 20.56vh. It is not
+   centred the way the old state A was, hence the transform:none. Inside, the
+   stack is left in flow at the artboard's own gaps (28 / 48 / 16). */
+.solution-preview #solStateA{left:7.45vw;top:20.56vh;transform:none;width:50.74vw;max-width:none}
+.solution-preview #solStateA .sol-headline{font-size:clamp(2rem,5.208vw,6.25rem);color:#fff}
+/* 40px on 1.05 with -1.6px of tracking — Titillium here, not the Open Sans the
+   Data Savings Plan body used, because this line is display copy on its frame. */
+.solution-preview #solStateA .sol-body{margin-top:1.458vw;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(1.1rem,2.083vw,2.5rem);line-height:1.05;letter-spacing:-.04em;color:#E3E3E3}
+.solution-preview .biz-cta{margin-top:2.5vw;display:inline-flex;align-items:center;justify-content:center;width:14.11vw;min-width:10.5rem;height:3.02vw;min-height:2.5rem;border-radius:500px;background:#fff;color:#090908;font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(.85rem,1.042vw,1.25rem);line-height:1;text-decoration:none;pointer-events:auto;opacity:0;transition:background .25s}
+.solution-preview .biz-cta:hover{background:#E3E3E3}
+/* 12px with 2px of tracking, which is .1667em of its own size */
+.solution-preview .biz-note{margin-top:.833vw;max-width:23.65vw;font-family:'Open Sans',sans-serif;font-weight:400;font-size:clamp(.6rem,.625vw,.75rem);line-height:1.35;letter-spacing:.1667em;text-transform:uppercase;color:#E3E3E3;opacity:0}
+/* The two card stacks, 330x337 at 1007,479 and 390x393 at 1362,425. Flat
+   exports — they are product UI, the same call the how-cards make. */
+.solution-preview .biz-stats{position:absolute;inset:0;z-index:1;opacity:0;pointer-events:none}
+.solution-preview .biz-stats img{position:absolute;display:block;height:auto}
+.solution-preview .biz-stats-a{left:52.45vw;top:44.35vh;width:17.19vw}
+.solution-preview .biz-stats-b{left:70.94vw;top:39.35vh;width:20.31vw}
+
+/* ── sept-8 framing 2 — Figma 3783:21746, Benefits of a Business dWallet ────
+   One box of the artboard's 1920x1391 aspect, sized to whichever of width or
+   height runs out first and centred, so it always fits the pinned screen with
+   nothing to measure. Children are percentages of it; container-type gives
+   them cqw, so the type scales exactly as it does on the artboard. */
+.solution-preview #solStateB{left:0;top:0;width:100vw;max-width:none;height:100%}
+.solution-preview .biz-ben{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:min(100vw, 138.03vh);aspect-ratio:1920/1391;container-type:inline-size;
+}
+.solution-preview .biz-ben-title{
+  position:absolute;left:6.302%;top:14.81%;width:39.58%;margin:0;
+  font-family:'Titillium Web',sans-serif;font-weight:400;font-size:4.1667cqw;
+  line-height:.99;letter-spacing:-.03em;color:#fff;
+}
+.solution-preview .biz-ben-cols{position:absolute;left:0;top:31.70%;right:0;height:68.30%}
+/* opacity:0 is the resting state, as it is for every other piece of this
+   section: the timeline's fromTo's are immediateRender:false, so nothing
+   applies a start value until the pin plays. Without it the whole screen
+   sits visible on top of the framings either side of it. */
+.solution-preview .biz-ben-col{position:absolute;top:0;height:100%;overflow:hidden;opacity:0}
+.solution-preview .biz-ben-col1{left:0;width:33.229%}
+.solution-preview .biz-ben-col2{left:33.229%;width:33.542%}
+.solution-preview .biz-ben-col3{left:66.771%;width:33.281%}
+.solution-preview .biz-ben-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* the sharp window over the blurred column, 360 of 638 wide starting at 278 */
+.solution-preview .biz-ben-window{position:absolute;left:43.57%;top:0;width:56.43%;height:100%;object-fit:cover}
+/* Ellipse 22172 — a soft blue lift behind the tags. Screened rather than
+   painted, so it adds light to the photo instead of greying it. */
+.solution-preview .biz-ben-glow{
+  position:absolute;left:49.2%;top:28.2%;width:110%;aspect-ratio:1;
+  transform:translate(-50%,-50%);pointer-events:none;mix-blend-mode:screen;
+  background:radial-gradient(circle closest-side, rgba(42,55,94,.62), rgba(42,55,94,0) 68%);
+}
+.solution-preview .biz-ben-copy{position:absolute;left:0;right:0;top:75.6%;bottom:0;padding:2.0833cqw 2.0833cqw 1cqw;background:rgba(0,0,0,.8);color:#f3f2ee}
+.solution-preview .biz-ben-copy h3{margin:0 0 .625cqw;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:1.6667cqw;line-height:1.2075;letter-spacing:-.021em}
+.solution-preview .biz-ben-copy p{margin:0;font-family:'Open Sans',sans-serif;font-weight:300;font-size:.8333cqw;line-height:1.547;letter-spacing:-.0146em}
+/* the tags grew on this revision: 45px tall on 23px type, where they were 33 on 14 */
+.solution-preview .biz-chip{
+  position:absolute;display:inline-flex;align-items:center;padding:.5767cqw;
+  border-radius:.5cqw;font-family:'Titillium Web',sans-serif;font-weight:400;
+  font-size:1.198cqw;line-height:1.2;letter-spacing:-.02em;color:#e3e3e3;white-space:nowrap;
+  backdrop-filter:blur(.13cqw);-webkit-backdrop-filter:blur(.13cqw);
+}
+.solution-preview .biz-chip-blue{background:rgba(1,106,221,.6)}
+.solution-preview .biz-chip-blue2{background:rgba(10,72,138,.6)}
+.solution-preview .biz-chip-dark{background:rgba(17,17,17,.6)}
+.solution-preview .biz-ben-chart{
+  position:absolute;left:15.06%;top:39.58%;width:69.88%;height:28.42%;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:.9365cqw;border-radius:.9365cqw;background:rgba(17,17,17,.6);
+  backdrop-filter:blur(3.35cqw);-webkit-backdrop-filter:blur(3.35cqw);
+}
+.solution-preview .biz-ben-chart-head{display:flex;align-items:flex-start;justify-content:space-between}
+.solution-preview .biz-ben-value{display:inline-flex;align-items:center;gap:.585cqw;padding-top:.41cqw;font-family:'Open Sans',sans-serif;font-weight:400;font-size:.8833cqw;line-height:1.2;color:#e3e3e3}
+.solution-preview .biz-ben-value svg{width:.645cqw;height:1.288cqw;flex:none}
+.solution-preview .biz-ben-select{display:inline-flex;align-items:center;gap:.3cqw;padding:.585cqw;border-radius:.117cqw;background:#181818;font-family:'Titillium Web',sans-serif;font-size:.9365cqw;line-height:1.2;color:#fff}
+.solution-preview .biz-ben-select svg{width:1.4cqw;height:1.4cqw;flex:none}
+.solution-preview .biz-ben-chart-body{position:relative;flex:1}
+.solution-preview .biz-ben-y{position:absolute;left:0;top:23.4%;height:59.8%;display:flex;flex-direction:column;justify-content:space-between;font-family:'Open Sans',sans-serif;font-size:.4167cqw;color:#777}
+.solution-preview .biz-ben-line{position:absolute;left:3.47%;top:0;width:95.9%;height:88.9%}
+.solution-preview .biz-ben-x{position:absolute;left:3.55%;top:97%;width:96.7%;display:flex;justify-content:space-between;font-family:'Open Sans',sans-serif;font-size:.4167cqw;line-height:1;color:#777;white-space:nowrap}
+.solution-preview .biz-ben-x .is-now{color:#e3e3e3;font-weight:700}
+.solution-preview .biz-ben-earn{
+  position:absolute;left:15.65%;top:41.47%;width:68.58%;
+  display:flex;flex-direction:column;gap:1.546cqw;padding:1.3255cqw 0;
+  border-radius:.8835cqw;background:rgba(0,0,0,.4);
+  backdrop-filter:blur(1.63cqw);-webkit-backdrop-filter:blur(1.63cqw);
+}
+.solution-preview .biz-ben-earn-title{margin:0;padding:0 1.3255cqw;font-family:'Titillium Web',sans-serif;font-weight:600;font-size:1.3255cqw;line-height:1.2;color:#e3e3e3}
+.solution-preview .biz-ben-earn-body{display:flex;flex-direction:column;gap:.4418cqw;padding:.4418cqw 1.3255cqw}
+.solution-preview .biz-ben-earn-status{font-family:'Open Sans',sans-serif;font-size:.6627cqw;color:#e3e3e3}
+.solution-preview .biz-ben-earn-row{display:flex;align-items:flex-start;justify-content:space-between;padding:.11cqw 0}
+.solution-preview .biz-ben-earn-h{margin:0 0 .221cqw;font-family:'Open Sans',sans-serif;font-weight:700;font-size:.8835cqw;line-height:1.5;color:#fff}
+.solution-preview .biz-ben-earn-sub{margin:0;font-family:'Open Sans',sans-serif;font-size:.6627cqw;color:#e3e3e3}
+.solution-preview .biz-ben-earn-amt{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:.8835cqw;line-height:1.2;color:#fff;white-space:nowrap}
 
 /* ACT 7 : HOW IT WORKS + FAQ + FOOTER — one long scrolling screen */
 .how-scene{position:relative;background:var(--ink);overflow:hidden}
-/* The cards framing takes the same two blue casts as the introducing framing, at the
-   same size, position and levels — .4 and .2 of #2731B6 under a 10.42vw blur — so all
-   three beats of the plan sit on one lit ground. It used to carry a pair of radial
-   gradients that peaked at alpha .09, which is invisible.
-   These are pseudo-elements rather than the .sol-glow nodes themselves: those live
-   inside .solution-preview at z-index 9, which paints over the cards layer, whereas
-   .how-title and .how-steps already hold z-index 2 above these. They need no tween of
-   their own — they arrive and leave with .sol-how's own opacity. */
-.sol-how::before,.sol-how::after{content:"";position:absolute;width:43.7vw;aspect-ratio:1;border-radius:50%;background:#2731B6;filter:blur(10.42vw);pointer-events:none;z-index:0}
-.sol-how::before{left:-11.77vw;top:-7.5vh;opacity:.4}
-.sol-how::after{left:71.35vw;top:1.48vh;opacity:.2}
 /* The cards framing of the plan screen. It sits over the other two, centred rather
    than padded from the top, because it has a screen's height to live in and not a
    section that can grow. .sol-how-fit takes the shrink-to-fit scale: everything
    inside is vw-scaled, so on a wide, short window the block is taller than the
    screen and would otherwise be clipped by the pin. */
-.sol-how{position:absolute;inset:0;z-index:3;display:flex;align-items:center;opacity:0;pointer-events:none}
-.sol-how-fit{width:100%;transform-origin:50% 50%}
+/* sept-8: the Enterprise artboard carries its own dark green ground, so the
+   framing paints it edge to edge and the box below can letterbox invisibly.
+   opacity:0 stays the resting state — every tween here is immediateRender:false. */
+.sol-how{position:absolute;inset:0;z-index:3;display:flex;align-items:center;opacity:0;pointer-events:none;background:#081611}
+/* one box of the artboard's 1920x1092, sized to whichever axis runs out first */
+.sol-how-fit{position:relative;width:min(100%, 175.82vh);aspect-ratio:1920/1092;margin:0 auto;container-type:inline-size;transform-origin:50% 50%}
+
+.sol-how .ent-copy{position:absolute;left:6.302%;top:21.52%;width:37.55%;display:flex;flex-direction:column;align-items:flex-start}
+.sol-how .ent-title{padding:0;margin:0 0 2.1875cqw;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:5.2083cqw;line-height:.99;letter-spacing:-.03em;color:#fff}
+/* 18px of 1920 on 1.38, measured 503 wide */
+.sol-how .ent-body{margin:0 0 1.927cqw;width:69.76%;font-family:'Open Sans',sans-serif;font-weight:500;font-size:.9375cqw;line-height:1.38;color:#fff}
+.sol-how .ent-cta{display:inline-flex;align-items:center;justify-content:center;padding:.625cqw 1.25cqw;min-height:2.5cqw;border-radius:500px;background:#fff;color:#090908;font-family:'Titillium Web',sans-serif;font-weight:600;font-size:.9375cqw;line-height:1;text-decoration:none;pointer-events:auto;transition:background .25s}
+.sol-how .ent-cta:hover{background:#E3E3E3}
+/* the dashboard is bled off the right edge of the artboard */
+.sol-how .ent-dash{position:absolute;left:45.9375%;top:10.53%;width:54.0625%;height:89.47%;object-fit:cover;object-position:left top}
 .sol-how .how-title{padding-top:0}
 .sol-how .how-steps{padding-bottom:0}
 /* the phone placement: an ordinary block in an ordinary section, no fit, no fade */
@@ -347,7 +351,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #howHost{padding-bottom:9vw}
 #howHost .sol-how{position:static;display:block;opacity:1;padding-top:0}
 #howHost .sol-how-fit{transform:none}
-#howHost .sol-how .how-title{padding-top:8vw}
+/* sept-8: on the flowing phone host the artboard box would be a letterbox strip,
+   so it drops its aspect and the two halves stack. */
+#howHost .sol-how-fit{width:100%;aspect-ratio:auto;padding:8vw 0 12vw}
+#howHost .sol-how .ent-copy{position:static;width:84vw;margin:0 auto}
+#howHost .sol-how .ent-title{font-size:clamp(2rem,9vw,3.5rem);margin-bottom:1.5rem}
+#howHost .sol-how .ent-body{width:100%;font-size:clamp(.9rem,4vw,1.05rem);margin-bottom:1.5rem}
+#howHost .sol-how .ent-cta{padding:.9rem 1.4rem;min-height:0;font-size:clamp(.9rem,4vw,1.05rem)}
+#howHost .sol-how .ent-dash{position:static;width:100%;height:auto;margin-top:8vw}
 /* the heading's left edge lines up with the step copy in the first column below */
 /* No tracking. Node 3265:80578 draws this line 988 wide, and at 64px this sentence
    measures 989.9 untracked against 902.9 at the -.04em it used to carry — so the
@@ -425,7 +436,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    blank line, which is a margin here rather than an empty paragraph */
 .faq-row .faq-a p{margin:0 0 1.4em}
 .faq-row .faq-a p:last-child{margin-bottom:0}
-.faq-row{cursor:pointer}
+/* not click-to-open while the artboard writes no answers */
+.faq-row{cursor:default}
 .faq-row:focus-visible{outline:2px solid #278EFF;outline-offset:3px}
 
 /* Figma 3157-69704: the disclosures block — text at x164 on a 1464 measure, 18px
@@ -465,11 +477,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .site-footer .foot-social{display:flex;align-items:center;gap:.89vw;margin-top:27px}
 .site-footer .foot-social a{display:block;opacity:1;transition:opacity .25s}
 .site-footer .foot-social a:hover{opacity:.65}
-.site-footer .foot-social img{display:block;height:1.354vw;min-height:16px;width:auto}
+/* drawn at #666 on this footer; the marks are white artwork, so dim them to it */
+.site-footer .foot-social img{display:block;height:1.354vw;min-height:16px;width:auto;opacity:.4}
+.site-footer .foot-social a:hover img{opacity:.7}
 .site-footer .foot-logo{display:flex;align-items:center;gap:14px}
 .site-footer .foot-logo img{width:42px;height:42px;object-fit:contain}
-.site-footer .foot-logo b{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:25px;letter-spacing:-.01em;color:#fff}
+.site-footer .foot-wordmark{width:119px;height:19px;display:block}
 .site-footer .foot-tag{margin-top:16px;font-family:'Open Sans',sans-serif;font-size:clamp(1rem,1.04vw,1.25rem);line-height:1.2;color:#B4B4B4}
+.site-footer .foot-tag sup{font-size:.7em;vertical-align:super;line-height:0}
 .site-footer .foot-copy{margin-top:40px;max-width:282px;font-family:'Open Sans',sans-serif;font-size:clamp(.9rem,.94vw,1.125rem);line-height:1.34;color:#666}
 .site-footer .foot-col{max-width:292px}
 .site-footer .foot-h{font-family:'Open Sans',sans-serif;font-weight:700;font-size:clamp(.9rem,.94vw,1.125rem);line-height:1.2;color:#E3E3E3}
@@ -504,9 +519,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .solution-preview #solStateB{left:8vw}
   /* the centred, fixed-width block is a desktop composition only */
   .solution-preview #solStateA{transform:none;width:auto;max-width:84vw}
+  /* sept-8: the two card stacks are placed off the wide artboard's own coordinates,
+     which put them past the right edge of a phone. They stack under the copy here,
+     and the button and its line come back to phone-sized type. */
+  .solution-preview .biz-stats{inset:auto 0 26vh 8vw;display:flex;gap:4vw;align-items:flex-start}
+  .solution-preview .biz-stats img{position:static;width:38vw}
+  .solution-preview .biz-cta{width:auto;height:auto;padding:.9rem 1.4rem;margin-top:1.6rem}
+  .solution-preview .biz-note{max-width:84vw;margin-top:.9rem}
   .solution-preview .sol-body{max-width:84vw;margin-top:1.4em}
-  .solution-preview .sol-cta{left:8vw;top:auto;bottom:22vh}
-  .solution-preview .sol-card{right:auto;left:8vw;top:auto;bottom:33.33vh;width:84vw}
   /* the vw paddings and gaps are a few pixels at this width, so set them in their own terms */
   .closing{padding-top:0}
   .closing-copy{width:84vw}
@@ -525,66 +545,47 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 </head>
 <body>
 
+<!-- sept-8: Desktop Main Nav, Figma 3783:17481. The wordmark is the drawn
+     "dWallet." mark rather than set type, Business is the section in view so it
+     takes the semibold, and the CTA is the green split-button. -->
 <header class="nav" aria-label="dWallet">
   <a class="logo" href="#">
     <img class="mark" src="assets/img/logo.png" alt="" width="36" height="36">
     <span class="rule" aria-hidden="true"></span>
-    <b class="wordmark">dWallet</b>
+    <img class="wordmark" src="assets/img/sept8-dwallet-wordmark.svg" alt="dWallet" width="112" height="26">
   </a>
-  <nav class="links"><a class="cur" href="#">Personal</a><a href="#">Business</a></nav>
+  <nav class="links"><a href="#">Personal</a><a class="cur" href="#">Business</a></nav>
   <span class="sep" aria-hidden="true"></span>
   <div class="ctas">
     <a class="pill" href="#">Log in</a>
-    <a class="pill p" href="#">Open an Account &amp; get $25</a>
+    <a class="pill p" href="#">Open a Business dWallet</a>
   </div>
 </header>
 
 <!-- ACT 1 : YOUR LIFE CREATES DATA -->
 <section class="act" id="act1" aria-label="Your life creates data">
-  <div class="frame on" data-i="0"><img src="assets/img/website_hero_image_1.jpg" alt="A woman looking at her phone beneath a canopy of flowers against a blue sky"></div>
-  <div class="frame" data-i="1"><img src="assets/img/website_hero_image_2.jpg" alt="A man running through a park with city skyscrapers in the background" loading="lazy"></div>
-
-  <!-- every single day frames -->
-  <div class="frame" data-i="9"><img src="assets/img/website_hero_image3.jpg" alt="" loading="lazy"></div>
-  <div class="frame" data-i="10"><img src="assets/img/website_hero_image4.jpg" alt="" loading="lazy"></div>
-  <div class="frame" data-i="11"><img src="assets/img/website_hero_image5.jpg" alt="" loading="lazy"></div>
+  <!-- sept-8: the run is one ordered sequence of eleven photographs, Figma
+       3783:17479 then 3795:64559/64571/64563/64565/64567/64569/64577/68827/68829/64575.
+       The headline stands over every one of them, so there is no second copy layer
+       and no second act — the frames all live here and cut on a single beat. -->
+  <div class="frame on" data-i="0"><img src="assets/img/sept8-run-01.jpg" alt="A barista pulling a shot at an espresso machine in a cafe"></div>
+  <div class="frame" data-i="1"><img src="assets/img/sept8-run-02.jpg" alt="Ground crew signalling as an airliner passes low overhead at sunset" loading="lazy"></div>
+  <div class="frame" data-i="2"><img src="assets/img/sept8-run-03.jpg" alt="A chef finishing a dish with fresh herbs in a restaurant kitchen" loading="lazy"></div>
+  <div class="frame" data-i="3"><img src="assets/img/sept8-run-04.jpg" alt="An articulated lorry on a highway at golden hour" loading="lazy"></div>
+  <div class="frame" data-i="4"><img src="assets/img/sept8-run-05.jpg" alt="An installer fixing a solar panel on a roof under a clear sky" loading="lazy"></div>
+  <div class="frame" data-i="5"><img src="assets/img/sept8-run-06.jpg" alt="Shipping containers stacked at a port, one lifted by a crane" loading="lazy"></div>
+  <div class="frame" data-i="6"><img src="assets/img/sept8-run-07.jpg" alt="A woman packing a parcel into a cardboard box" loading="lazy"></div>
+  <div class="frame" data-i="7"><img src="assets/img/sept8-run-08.jpg" alt="A worker loading crates of drinks from a pallet" loading="lazy"></div>
+  <div class="frame" data-i="8"><img src="assets/img/sept8-run-09.jpg" alt="A shop worker restocking shelves in a personal care aisle" loading="lazy"></div>
+  <div class="frame" data-i="9"><img src="assets/img/sept8-run-10.jpg" alt="A grocer placing boxes on a shelf in a food hall" loading="lazy"></div>
+  <div class="frame" data-i="10"><img src="assets/img/sept8-run-11.jpg" alt="A film crew working in front of a large LED volume wall" loading="lazy"></div>
   <div class="photo-veil" aria-hidden="true"></div>
-
-
-  <!-- sept-3: the tap and delivery tags are on their own nodes' coordinates —
-       1367,519 and 1113,383 on the 1920x1080 frames, which is the group's top-left,
-       dot included. The run and coffee tags came with screenshots rather than nodes,
-       so their placement is read off those and is good to about a per cent. -->
 
   <h1 class="hero-h display xl">
-    <span class="ln"><span>Your life</span></span>
-    <span class="ln"><span>creates data.</span></span>
+    <span class="ln"><span>Empower your</span></span>
+    <span class="ln"><span>customers to power</span></span>
+    <span class="ln"><span>your business.</span></span>
   </h1>
-  <!-- sept-3: the run's later copy. Line 1 lands on the tap frame, lines 2 and 3 join
-       it on the delivery frame, so the sentence is whole before act 2 begins. -->
-  <div class="run-say display" id="runSay">
-    <div class="say" id="sayA">
-      <span class="ln"><span>Every tap. Every step.</span></span>
-      <span class="ln"><span>Every choice creates</span></span>
-      <span class="ln"><span>value, instantly.</span></span>
-    </div>
-    <div class="say" id="sayB">
-      <span class="ln"><span>Own and save your data.</span></span>
-      <span class="ln"><span>Grow its value.</span></span>
-    </div>
-  </div>
-  <!-- act 2 rides inside act 1 so the sequence plays straight through -->
-  <div class="act-layer" id="act2">
-  <div class="frame" data-i="0"><img src="assets/img/website_hero_image6.jpg" alt="A man wearing red headphones and glasses looking down at his phone" loading="lazy"></div>
-  <div class="frame" data-i="4"><img src="assets/img/website_hero_image7.jpg" alt="A woman crossing a city street carrying a dark shopping bag" loading="lazy"></div>
-  <div class="frame" data-i="5"><img src="assets/img/website_hero_image9.jpg" alt="An electric vehicle charging cable plugged into a car" loading="lazy"></div>
-  <div class="frame frame-baby" data-i="6"><img src="assets/img/sept3-baby-aisle.jpg" alt="A mother and young child reaching for groceries in a supermarket aisle" loading="lazy"></div>
-    <div class="frame" data-i="7"><img src="assets/img/what-happens-to-its-value.jpg" alt="A mother reading a picture book with two children by string lights" loading="lazy"></div>
-  <div class="photo-veil" aria-hidden="true"></div>
-  <div class="line-veil"></div>
-
-
-  </div>
 </section>
 
 <!-- THE DATA SAVINGS PLAN — one screen that changes its mind three times, straight
@@ -596,44 +597,102 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      stay put while the section scrolls away rather than unwinding on the way out. -->
 <section class="act" id="solution" aria-label="Introducing the Data Savings Plan">
   <div class="solution-preview" id="solutionPreview">
-    <div class="sol-glow sol-glow-l" aria-hidden="true"></div>
-    <div class="sol-glow sol-glow-r" aria-hidden="true"></div>
 
+    <!-- sept-8, framing 1 — Figma 3678:125541. Everything is placed off that 1920x1080
+         artboard: the copy column starts at 143,182 with 40px of top padding, so the
+         headline sits at 222, and the two card stacks at 1007,479 and 1362,425. The
+         stacks are product UI, so they come in as flat exports the way the how-cards
+         already do, rather than being rebuilt as live markup. -->
     <div class="sol-state" id="solStateA">
       <div class="sol-headline">
-        <span class="ln"><span>Introducing the</span></span>
-        <span class="ln"><span class="sol-blue">Data Savings Plan</span></span>
+        <span class="ln"><span>Open a Business</span></span>
+        <span class="ln"><span>dWallet. Earn $200.</span></span>
       </div>
-      <p class="sol-body">Turn the data you generate every day into a source of financial opportunity, today and for the future.</p>
+      <p class="sol-body">Begin your data savings journey today.</p>
+      <a class="biz-cta" href="#">Open a Business dWallet</a>
+      <p class="biz-note">Safe. Secure. Bank-grade encryption.</p>
     </div>
 
+    <div class="biz-stats" id="bizStats" aria-hidden="true">
+      <img class="biz-stats-a" src="assets/img/sept8-biz-stats.jpg" alt="" loading="lazy">
+      <img class="biz-stats-b" src="assets/img/sept8-biz-balance.jpg" alt="" loading="lazy">
+    </div>
+
+    <!-- sept-8, framing 2 — Figma 3783:21746, Benefits of a Business dWallet. That
+         artboard is 1920x1391, taller than the screen it lands on, so the whole thing
+         is one box of the artboard's aspect sized to whichever of width or height runs
+         out first. Every child is a percentage of that box and the type is in cqw, so
+         80px of 1920 is 4.1667cqw and the screen stays proportional with no measuring.
+         The DSP card and its button went with the old framing — this screen has
+         neither. -->
     <div class="sol-state" id="solStateB">
-      <div class="sol-headline">
-        <span class="ln"><span>Open an account,</span></span>
-        <span class="ln"><span>request your data,</span></span>
-        <span class="ln"><span>and <span class="sol-blue">earn $25.</span></span></span>
-      </div>
-    </div>
+      <div class="biz-ben" id="bizBen">
+        <h2 class="biz-ben-title">
+          <span class="ln"><span>Benefits of a</span></span>
+          <span class="ln"><span>Business dWallet</span></span>
+        </h2>
 
-    <a class="sol-cta" href="#">Open a Data Savings Account</a>
+        <div class="biz-ben-cols">
+          <article class="biz-ben-col biz-ben-col1">
+            <img class="biz-ben-photo" src="assets/img/sept8-ben-1.jpg" alt="A gallon of whole milk on a sunlit windowsill" loading="lazy">
+            <!-- the column's photo is blurred and a sharp window is revealed from
+                 x=278 of 638, which is what lets the tags read over the left of it -->
+            <img class="biz-ben-window" src="assets/img/sept8-ben-1-sharp.jpg" alt="" loading="lazy">
+            <span class="biz-ben-glow" aria-hidden="true"></span>
+            <span class="biz-chip biz-chip-blue"  style="left:19.67%;top:20.16%">Customer profile</span>
+            <span class="biz-chip biz-chip-dark"  style="left:13.59%;top:26.99%">Store location</span>
+            <span class="biz-chip biz-chip-blue2" style="left:21.40%;top:32.84%">Purchasing frequency</span>
+            <span class="biz-chip biz-chip-dark"  style="left:31.17%;top:43.04%">Nutritional facts</span>
+            <div class="biz-ben-copy">
+              <h3>Products enriched with data</h3>
+              <p>Enrich your products and services with data, turning every SKU into a traceable digital asset with product level data ownership and richer context with every transaction.</p>
+            </div>
+          </article>
 
-    <div class="sol-card">
-      <div class="sol-card-glow" aria-hidden="true"><img src="assets/img/dsp-card-glow.svg" alt=""></div>
-      <div class="sol-card-face">
-        <div class="sol-card-photo"><img src="assets/img/dsp-card-hero.jpg" alt="" loading="lazy"></div>
-        <div class="sol-cast sol-cast-warm" aria-hidden="true"></div>
-        <div class="sol-cast sol-cast-cool" aria-hidden="true"></div>
-        <div class="sol-card-brand">
-          <span class="dsp-logo"><img src="assets/img/dsp-logo.svg" alt="" loading="lazy"></span>
-          <span class="sol-card-mark">
-            <span class="dsp-word"><img src="assets/img/dsp-dsavings.svg" alt="dSavings" loading="lazy"></span>
-            <b>horizon</b>
-          </span>
-        </div>
-        <div class="sol-card-bal">$170</div>
-        <div class="sol-card-holder">
-          <span>CAROLINA WAVERLY</span>
-          <em>************3875</em>
+          <article class="biz-ben-col biz-ben-col2">
+            <img class="biz-ben-photo" src="assets/img/sept8-ben-2.jpg" alt="A shopkeeper reaching towards the camera in a store" loading="lazy">
+            <div class="biz-ben-chart">
+              <div class="biz-ben-chart-head">
+                <span class="biz-ben-value">
+                  <svg viewBox="0 0 12 25" aria-hidden="true"><path d="M6 0 12 10H0Z" fill="#00FF91"/><rect x="5" y="9" width="2" height="16" fill="#00FF91"/></svg>
+                  78.341,92
+                </span>
+                <span class="biz-ben-select">1 year
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5z" fill="#e3e3e3"/></svg>
+                </span>
+              </div>
+              <div class="biz-ben-chart-body">
+                <div class="biz-ben-y"><span>80</span><span>60</span><span>40</span><span>20</span></div>
+                <img class="biz-ben-line" src="assets/img/sept8-ben-chart.svg" alt="" loading="lazy">
+                <div class="biz-ben-x"><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span><span>Jan 26</span><span>Feb</span><span>Mar</span><span class="is-now">Apr</span></div>
+              </div>
+            </div>
+            <div class="biz-ben-copy">
+              <h3>A new revenue stream</h3>
+              <p>Turn the data your business already generates into a managed asset you can save, value, and monetize.</p>
+            </div>
+          </article>
+
+          <article class="biz-ben-col biz-ben-col3">
+            <img class="biz-ben-photo" src="assets/img/sept8-ben-3.jpg" alt="A man at an electric vehicle charging point under a blue sky" loading="lazy">
+            <div class="biz-ben-earn">
+              <p class="biz-ben-earn-title">You’ve earned $25 today<br>with dWallet.</p>
+              <div class="biz-ben-earn-body">
+                <span class="biz-ben-earn-status">Pending</span>
+                <div class="biz-ben-earn-row">
+                  <div>
+                    <p class="biz-ben-earn-h">Cash deposited</p>
+                    <p class="biz-ben-earn-sub">Claimed offer for product enriched with data</p>
+                  </div>
+                  <span class="biz-ben-earn-amt">+$25</span>
+                </div>
+              </div>
+            </div>
+            <div class="biz-ben-copy">
+              <h3>More value for your customers</h3>
+              <p>Give customers new ways to benefit from the data they generate, building trust and stronger relationships along the way.</p>
+            </div>
+          </article>
         </div>
       </div>
     </div>
@@ -641,48 +700,21 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <!-- The third framing. It used to be a section of its own that you scrolled down
        to; it arrives in place now, so the plan reads as one screen changing its mind
        three times. Everything in it is vw-scaled and it no longer sits in a section
-       that can grow, so .sol-how-fit carries a shrink-to-fit scale — see fitSolHow. -->
+       that can grow, so .sol-how-fit carries the artboard's aspect and fits itself. -->
   <div class="sol-how" id="solHow">
+    <!-- sept-8, framing 3 — Figma 3783:21832, dWallet for Enterprise. The artboard
+         is 1920x1092: a copy column at 121,235 and the Your DSP dashboard bled off
+         the right edge at 882,115. Same trick as the Benefits screen — one box of
+         the artboard's aspect, children in percentages of it, type in cqw. The
+         framing paints the artboard's own dark green so the letterboxing above and
+         below the box is invisible on a window that is not 1920x1092. -->
     <div class="sol-how-fit" id="solHowFit">
-      <h2 class="how-title">How does a Data Savings Plan work?</h2>
-
-      <div class="how-steps">
-        <article class="step" id="step1">
-          <div class="step-card"><img src="assets/img/how-card-1.jpg" alt="A woman stepping out of a rideshare car, with a card reading: You deposited data, Rideshare to 265 Horizon Rd, added to savings plan" loading="lazy"></div>
-          <div class="step-copy">
-            <p class="step-eyebrow">Own your data</p>
-            <h3 class="step-h">Sign up &amp; request your data</h3>
-            <p class="step-body">With dWallet, you can request your data from companies you interact with. From streaming to shopping, the data you generate will finally belong to you.</p>
-          </div>
-        </article>
-
-        <article class="step" id="step2">
-          <div class="step-card"><img src="assets/img/how-card-2.jpg" alt="Toggles for travel and transportation, finance and investments, retail and food, and entertainment and gaming, each switched on" loading="lazy"></div>
-          <div class="step-copy">
-            <p class="step-eyebrow">Save your data</p>
-            <h3 class="step-h">Save &amp; manage it</h3>
-            <p class="step-body">Contribute your data to a Data Savings Plan and grow its value, much like money builds in a traditional bank account. You decide what data to add and what you're open to licensing.</p>
-          </div>
-        </article>
-
-        <article class="step" id="step3">
-          <div class="step-card"><img src="assets/img/how-card-3.jpg" alt="An offer card reading: license your streaming data and earn $, with a view offer button" loading="lazy"></div>
-          <div class="step-copy">
-            <p class="step-eyebrow">Participate in offers</p>
-            <h3 class="step-h">Earn from its value</h3>
-            <p class="step-body">You're always in control. When companies want to license your data, you decide which offers to accept. Once an offer is accepted, you'll get paid directly in your dWallet. Save it or cash out anytime.</p>
-          </div>
-        </article>
-
-        <article class="step" id="step4">
-          <div class="step-card"><img src="assets/img/how-card-4.jpg" alt="A woman smiling beside a QR code and a paying-from panel showing $50 available" loading="lazy"></div>
-          <div class="step-copy">
-            <p class="step-eyebrow">Pay with data <span class="step-note">(coming soon)</span></p>
-            <h3 class="step-h">Transact using its value</h3>
-            <p class="step-body">Soon you'll be able to make purchases using the balance from your Data Savings Plan. Using a QR code, dPay enables you to pay with the value of your data.</p>
-          </div>
-        </article>
+      <div class="ent-copy">
+        <h2 class="ent-title how-title">dWallet for Enterprise</h2>
+        <p class="ent-body ent-rise">Upgrade your Business dWallet to an Enterprise Account to take custody of data assets, issue dWallets, and create Data Savings Plans for the people and businesses you serve. Enterprise Accounts don't just join the DrumWave ecosystem. They help build it.</p>
+        <a class="ent-cta ent-rise" href="#">Contact our team</a>
       </div>
+      <img class="ent-dash ent-rise" src="assets/img/sept8-ent-dsp.jpg" alt="The Your Data Savings Plans dashboard, showing balance and data-under-custody charts and a plan called Traveler" loading="lazy">
     </div>
   </div>
 </section>
@@ -694,74 +726,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      anything wider. -->
 <section class="how-scene" id="howHost" aria-label="How a Data Savings Plan works"></section>
 
-<!-- HOW MUCH IS YOUR DATA WORTH? — its own screen. It used to arrive on the tail of
-     the every-tap timeline, on a clock: the sentence left and the question took its
-     place whether or not anyone was still looking, and a reader who scrolled on early
-     never saw it. It is a question addressed to the reader, so it waits for them —
-     one gesture from the sentence, and it plays on arrival. -->
-<section class="act" id="worth" aria-label="How much is your data worth">
-  <div class="time-glow-q" aria-hidden="true"></div>
-  <div class="worth display">
-    <span class="ln"><span>How much is your</span></span>
-    <span class="ln"><span>data worth?</span></span>
-  </div>
-</section>
-
-<!-- ACT 2 : SOMETHING INVISIBLE -->
-<!-- ACT 3 : WHAT IF YOUR DATA COULD GROW WITH YOU -->
-<!-- ACT 4 : AGE TRACK -->
-<section class="act age-scene" id="ages" aria-label="How your value grows as you age">
-  <div class="frames" id="ageFrames">
-    <div class="frame" data-age="0"><img src="assets/img/age-0-newborn.jpg" alt="A mother's hand gently touching her newborn baby lying in a crib"></div>
-    <div class="frame" data-age="2"><img src="assets/img/age-2-toddler.jpg" alt="A toddler smiling while riding a pink tricycle on a sidewalk"></div>
-    <div class="frame" data-age="13"><img src="assets/img/age-13-teenageyears.jpg" alt="A teenage girl browsing lip gloss at a beauty store"></div>
-    <div class="frame" data-age="18"><img src="assets/img/age-18-college.jpg" alt="A college student writing on a tablet with a stylus at her desk"></div>
-    <div class="frame" data-age="25"><img src="assets/img/age-25-firstapartment.jpg" alt="A woman smiling while carrying a moving box up a staircase"></div>
-    <div class="frame" data-age="32"><img src="assets/img/age-32-buildingalife.jpg" alt="A woman running on a beach while holding someone's hand" loading="lazy"></div>
-    <div class="frame" data-age="36"><img src="assets/img/age-36-family.jpg" alt="A mother laughing with her young son on the living room floor" loading="lazy"></div>
-    <div class="frame" data-age="45"><img src="assets/img/age-45-career.jpg" alt="A woman with a shoulder bag walking past a glass office building" loading="lazy"></div>
-    <div class="frame" data-age="58"><img src="assets/img/age-58-enjoyinglife.jpg" alt="A couple relaxing in a pool at a tropical resort" loading="lazy"></div>
-    <div class="frame" data-age="70"><img src="assets/img/age-70-retirement.jpg" alt="A group of friends laughing together at an outdoor dinner table" loading="lazy"></div>
-  </div>
-
-  <div class="num-wrap">
-    <div class="lab mono"><i></i><span>Potential value accumulated</span></div>
-    <div class="bignum display" id="ageBigVal">$0</div>
-  </div>
-
-  <div class="stage-tag">
-    <div class="age display" id="ageNumVal">0</div>
-    <div class="cap mono" id="ageCapVal">Newborn</div>
-  </div>
-
-  <div class="ctl" id="ageCtl">
-    <div class="hint mono"><span>One life, 0 to 70</span><b id="ageDragHint">Drag to move through time</b></div>
-    <div class="track" id="ageTrack" role="slider" aria-label="Age" aria-valuemin="0" aria-valuemax="70" aria-valuenow="0" tabindex="0">
-      <div class="rail"></div>
-      <div class="fill" id="ageFill"></div>
-      <div class="ticks" id="ageTicks"></div>
-      <div class="handle" id="ageHandle"></div>
-    </div>
-    <div class="ages mono" id="ageLabels"></div>
-  </div>
-
-  <!-- Figma 3381-35616. Crossfades in over the the picker's final figure hold, on the tail of this
-       section's own pin, so it arrives with no scroll motion of its own: the age
-       screen dissolves and the closing screen is simply there. The frame's two big
-       ellipse glows sit at opacity 0 in the file, so its render is flat — they are
-       switched on here deliberately, at the level .frame-glow sets. -->
-  <div class="closing" id="closing">
-    <div class="frame-glow frame-glow-l" aria-hidden="true"></div>
-    <div class="frame-glow frame-glow-r" aria-hidden="true"></div>
-    <div class="closing-copy">
-      <h2 class="closing-h">Save your data. Grow its value.</h2>
-      <p class="closing-sub">Your everyday life creates data. Capture its value and put it to work for your future.</p>
-    </div>
-    <a class="closing-cta" href="#">Start saving your data</a>
-  </div>
-</section>
-
-<!-- FAQ + FOOTER + DISCLOSURES — closes the page. -->
 <section class="how-scene" id="how" aria-label="Questions and disclosures">
   <div class="faq">
     <div class="faq-head">
@@ -769,83 +733,37 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       <h2 class="faq-title">Questions? We&rsquo;ve got answers.</h2>
     </div>
     <div class="faq-list">
-        <div class="faq-row open">
-        <div class="faq-text">
-          <p class="faq-q">What is dWallet?</p>
-          <div class="faq-a">
-          <p>A dWallet is a data wallet to help you manage the value of your data. It lets you own, save, exchange, invest, and benefit from the value of the data you generate every day. With a dWallet, you can request your data from the companies you interact with, apply for a Data Savings Plan, and use it for personal, professional, and financial reasons, all with a secure way to keep it protected and under your control.</p>
-          </div>
-        </div><i>&minus;</i>
+      <div class="faq-row">
+        <div class="faq-text"><p class="faq-q">What is a Business dWallet?</p></div><i>+</i>
       </div>
       <div class="faq-row">
-        <div class="faq-text">
-          <p class="faq-q">Why do I need a dWallet?</p>
-          <div class="faq-a">
-          <p>The economy is becoming a data economy. Your dWallet gives you a place in it. Think about your money. You keep it in an account you control. You can save, move, invest, spend, or use your money to benefit yourself, your family, and the world around you. Your data should work the same way.</p>
-          <p>Today, your data lives across the cloud, where companies control it and benefit from its value. A dWallet changes that. It puts the data you generate every day back in your hands, so you can own, save, control, and benefit from its value. Your money has a wallet. Now your data does too.</p>
-          </div>
-        </div><i>+</i>
+        <div class="faq-text"><p class="faq-q">How do I enrich my products and services with data?</p></div><i>+</i>
       </div>
       <div class="faq-row">
-        <div class="faq-text">
-          <p class="faq-q">What is a Data Savings Plan?</p>
-          <div class="faq-a">
-          <p>A Data Savings Plan (DSP) is a data-backed financial instrument that builds data wealth, as traditional savings plans build wealth from money. With a DSP the data you generate and contribute is owned by you, and you can save, and benefit from the value it generates.</p>
-          <p>The plan defines how data contributions are governed, how they may be used, and how value generated from them is tracked and allocated. Data is treated as an asset that can be saved and managed within a defined financial and governance structure. And in the DSP you set and control preferences so the plan operates under terms you define.</p>
-          </div>
-        </div><i>+</i>
+        <div class="faq-text"><p class="faq-q">How does a business benefit?</p></div><i>+</i>
       </div>
       <div class="faq-row">
-        <div class="faq-text">
-          <p class="faq-q">How does a Data Savings Plan generate value?</p>
-          <div class="faq-a">
-          <p>A Data Savings Plan (DSP) generates value by allocating your data contributions into monetization use cases, and companies pay to license data. Nothing is allocated without your approval. The value of your data has the potential to grow over time, so the more data you contribute and the earlier you start, the more value you will have.</p>
-          <p>In your DSP, you set up an exit payment account, and the accumulated cash value can be transferred to that account. Alternatively, the DSP can be integrated with other solutions that align with your financial goals, such as investing in education, retirement, or paying down your loans.</p>
-          </div>
-        </div><i>+</i>
+        <div class="faq-text"><p class="faq-q">How does a business earn revenue?</p></div><i>+</i>
       </div>
       <div class="faq-row">
-        <div class="faq-text">
-          <p class="faq-q">How much is my data worth?</p>
-          <div class="faq-a">
-          <p>Your data has value. Companies already make money from it, but today, you don&rsquo;t get a share. Data Savings is designed so that a portion of the value your data generates comes back to you.</p>
-          <p>What you can earn depends on owning and saving your data: what you choose to contribute and what you are open to licensing. Value builds from the moment you start saving, so if you have zero data saved, your data is worth zero. Over time, your contributions increase and so does the number of use cases, so the value of your data tends to grow exponentially.</p>
-          </div>
-        </div><i>+</i>
+        <div class="faq-text"><p class="faq-q">How does this benefit a business’s customers?</p></div><i>+</i>
       </div>
       <div class="faq-row">
-        <div class="faq-text">
-          <p class="faq-q">Why would a company pay for something it currently gets free?</p>
-          <div class="faq-a">
-          <p>Because it was never free &ndash; you paid for it. The phone, the data plan, the electricity, the time. Companies collect data at no cost to themselves because the cost sits with you.</p>
-          <p>So the real question isn&rsquo;t why a company would pay. It&rsquo;s what it gets in return. On a DSP, the data you choose to contribute is combined with certified data from other participants, which makes all of it more valuable. Better data means higher revenue, lower operating costs, and less compliance risk. And it gives companies something free data never could: a direct, trusted relationship with the people behind the data. That trust comes from being transparent about what&rsquo;s collected and from returning a share of the value to the person who created it.</p>
-          </div>
-        </div><i>+</i>
+        <div class="faq-text"><p class="faq-q">What is an Enterprise Account?</p></div><i>+</i>
       </div>
       <div class="faq-row">
-        <div class="faq-text">
-          <p class="faq-q">Does DrumWave sell my data?</p>
-          <div class="faq-a">
-          <p>No. Your data stays where it already is. DrumWave never holds your data, only the value it generates, like a bank that holds your money but does not own it.</p>
-          <p>Your Data Savings Plan holds Data Certificates that represent your data and its value. Nothing happens with them without your approval.</p>
-          </div>
-        </div><i>+</i>
+        <div class="faq-text"><p class="faq-q">Does DrumWave sell my data?</p></div><i>+</i>
       </div>
       <div class="faq-row">
-        <div class="faq-text">
-          <p class="faq-q">Is my data safe?</p>
-          <div class="faq-a">
-          <p>Yes. Your dWallet is designed with banking-level security to keep your data protected and under your control. We treat your data with the same care and security banks use to protect your money. Because your dWallet is non-custodial, you don&rsquo;t hand control of your data to someone else. You decide what comes into your wallet, what goes out, and when your data is used. Your data stays yours. Protected like your money. Controlled by you.</p>
-          </div>
-        </div><i>+</i>
+        <div class="faq-text"><p class="faq-q">Is my data safe?</p></div><i>+</i>
       </div>
     </div>
   </div>
 
   <footer class="site-footer">
     <div>
-      <div class="foot-logo"><img src="assets/img/logo.png" alt="" width="42" height="42"><b>dWallet</b></div>
-      <p class="foot-tag">Your Life. Your Story. Your Data.</p>
+      <div class="foot-logo"><img src="assets/img/logo.png" alt="" width="42" height="42"><img class="foot-wordmark" src="assets/img/sept8-drumwave-wordmark.svg" alt="DrumWave" width="119" height="19"></div>
+      <p class="foot-tag">Your Business. Your Strategy. Your Data.<sup>&reg;</sup></p>
       <p class="foot-copy">Copyright &copy; 2026 DrumWave Inc. All rights reserved.</p>
       <div class="foot-social">
         <a href="#" aria-label="DrumWave on LinkedIn"><img src="assets/img/icon-linkedin.svg" alt="" loading="lazy"></a>
@@ -874,7 +792,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <p>1. The Data Savings Plan is not a security, deposit account, savings account, or investment product of any kind. It has not been registered with, and is not endorsed or approved by, the U.S. Securities and Exchange Commission (SEC), any state securities regulator, or any banking regulator. DrumWave Inc. is not a bank, broker-dealer, or investment adviser, and does not provide investment, financial, or tax advice.</p>
     <p>2. Upon completing the required actions described in the Offer Activation Terms, DrumWave will pay you a fixed amount of $25.00. It is not payment for a data sale or license to any specific company; it compensates you for completing the required steps.</p>
     <p>3. Separately from it, any additional amounts you may earn arise solely from other Offers you may receive while enrolled in the Plan. These are subject to your prior authorization for each specific use, and there is no promise, guarantee, or expectation of a fixed, increasing, or predetermined return from those Offers. The amount you actually receive from this separate component depends on demand from companies during the Plan&rsquo;s term; it may be lower than any amount shown or estimated, and may be zero.</p>
-    <p>4. Therefore, any estimate, chart, simulation, or illustration of value shown on this website is hypothetical and for illustrative purposes only. It does not represent any actual participant, does not constitute a projection or forecast, and is not a promise or guarantee of any future amount.</p>
+    <p>4. Therefore, any estimate, chart, simulation, or illustration of value shown on this website is hypothetical and for illustrative purposes only. It does not represent any actual participant, does not constitute a projection or forecast, and is not a promise or guarantee of any future amount. The methodology and assumptions underlying the illustrations presented herein are available upon written request to DrumWave, using the details below.</p>
     <p>5. This service is not directed and/or available to individuals under 18, and DrumWave does not knowingly collect personal information from individuals under 18. If you believe an individual under 18 has provided us with personal information, contact us using the information below.</p>
     <p>6. Read DrumWave&rsquo;s dWallet Terms, Terms and Conditions of Use of the Data Savings Plan, Offer Activation Terms, and Privacy Policy before enrolling.</p>
     <p class="disc-contact">Questions: <a href="mailto:support@drumwave.com">support@drumwave.com</a><span class="disc-dot">.</span></p>
@@ -962,7 +880,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // longer pin costs no extra gestures — a gentle scroll advances exactly one stop
   // whatever the distance, measured at a 601px scroll crossing a 5300px gap — so it
   // buys the wider gaps above without asking the reader for more scrolling.
-  const RUN_PINS = 525;
+  // 525 paced seven stops at about three quarters of a screen each. The run has
+  // eleven now, so this scales with them to keep one flick per photograph.
+  const RUN_PINS = 825;
 
   const autoPlay = {
     onEnter: self => self.animation.play(),
@@ -1063,9 +983,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // the headphones do under "Every tap. Every step." — at .7 the first group's
   // photographs switched noticeably quicker than the second's, which is half of why the
   // two sections did not look alike.
-  // HERO, TAP and BABY_HOLD are the three the reader is meant to dwell on, so they are
-  // deliberately several times a transit frame's length: 2.6, 3.6 and 3.4 units against
-  // the flat 1.0 every passing photograph gets. The hero was only 1.5 — half again a
+  // The hero is the one frame the reader is meant to dwell on, so it is longer than
+  // the rest: 2.6 units against the flat 1.6 every photograph after it gets. It was
+  // only 1.5 — half again a
   // frame the reader is not supposed to stop on, which is not a beat.
   //
   // They cannot grow without limit: the pin is fixed, so longer beats mean fewer pixels
@@ -1087,296 +1007,36 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // the reader lands 1415px in and the tap frame runs to 2518px, so 1103px of it remain
   // after they arrive. It stays put rather than handing over on the next flick, and its
   // zoom is keyed to TAP so it simply eases out more slowly with it.
-  const HERO = 2.6, QUICK = 1.0, TAP = 7.5, PKG = 1.0;
-  const T_RUN = HERO, T_COFFEE = T_RUN + QUICK, T_TAP = T_COFFEE + QUICK, T_PKG = T_TAP + TAP;
-  const ACT1_END = T_PKG + PKG;   // act 2 begins here, whatever the tag tails do
-
-  // A tag lives and dies inside its own frame, so a half-second frame gets a
-  // half-second tag. fromTo with immediateRender off rather than a set plus a to: a
-  // zero-duration set reverts to its pre-set value when the timeline sits before it,
-  // which left every tag painted on screen until the first one fired.
-
-  // the opening image eases out of its push across the whole second it holds
-  // 1.02 over the hero's 1.5 units is 0.0133 of scale per unit, which is exactly the
-  // rate the tap drifts at over its 3.0. It was 1.08, four times that, and it is why
-  // the "Your life creates data" photographs moved visibly differently from the "Every
-  // tap. Every step." ones — same crossfade, quite different drift. power1.out to match
-  // the tap's ease as well.
+  // sept-8: eleven photographs on one beat. The run used to be two acts with three
+  // statements moving between them, which is what the bespoke spans (a 7.5 unit "tap"
+  // frame, a 2.2 dissolve) were pacing. There is one piece of copy now and it stands
+  // over the whole sequence — so the headline is never tweened out, every frame after
+  // the opener gets the same span and the same flat cut, and the reader lands on one
+  // stop per photograph.
+  const HERO = 2.6, SPAN = 1.6;
+  const RUN_FRAMES = 11;
+  // the opening image eases out of its push across the whole time it holds
   arrive(tl1, f1(0), 0, true, HERO, 1.02, 'power1.out');
 
-  // running, coffee, tap, delivery — each an instant cut, and the tap frame the only
-  // one that moves once it lands
-  // Only the frames that hold carry a tag. On a 0.3s frame there is no room for one
-  // to arrive, be read and leave without either overlapping its neighbour or reading
-  // as a blink, so the fast frames run untagged and the montage stays clean.
-  // Each row carries its own tag limit rather than ACT1_END, so the tap's tag is gone
-  // before the delivery's arrives — one on screen at a time, as before.
-  // A photograph's settled moment: far enough in that its cut, its push and its copy
-  // have all landed, and well before it leaves. min(.6, half its stay) does both — the
-  // long frames get .6, and a .7 frame gets .35, which is past its tag's arrival.
-  // The snapping maps these onto scroll, so a gesture always comes to rest ON a
-  // photograph instead of between two.
+  // A photograph's settled moment: far enough in that its cut has landed, and well
+  // before it leaves. The snapping maps these onto scroll, so a gesture always comes
+  // to rest ON a photograph instead of between two.
   const settled = (at, span) => at + Math.min(.6, span * .5);
   // The hero's stop is the top of the page itself, not its settled moment: the reader
-  // arrives with it already on screen, so asking them to scroll 164px to "land" on it
-  // would leave the very first gesture free-scrolling instead of snapping.
+  // arrives with it already on screen.
   const runStops = [0];
 
-  // Two slots shorter than it was: each row used to carry its marker's selector and a
-  // closure for the moment the next tag arrived. Both existed only for the tags. The
-  // frame index, its moment and its span are untouched, which is what the scroll stops
-  // are derived from.
-  const act1Frames = [[1, T_RUN, QUICK],
-                      [9, T_COFFEE, QUICK],
-                      [10, T_TAP, TAP],
-                      [11, T_PKG, PKG]];
-  // One stop per sentence, and nothing else.
-  //
-  // The run had two stops for each of the three statements — the hero and the coffee
-  // both under "Your life creates data", the tap and the headphones both under "Every
-  // tap. Every step.", the baby and the family both under "Own and save your data". So
-  // every second scroll came to rest on words the reader had just finished reading,
-  // which is what feeling stuck is: the page moved and the sentence did not.
-  //
-  // Two stops per statement, one per frame that carries it.
-  //
-  // Cutting this to one stop per statement is what made the tap skippable. Measured
-  // with only four stops in the run — hero 0, tap 1420, baby 2975, family 3946 — the
-  // tap had a single stop and 1555px of nothing after it, so one gesture that carried
-  // past it went all the way to the baby and "Every tap. Every step." was never landed
-  // on at all. "Own and save your data." never had that problem, because it has always
-  // had two frames with a stop each, the baby and the family.
-  //
-  // So the delivery frame is a beat again and statement A is built the same way:
-  // land on the tap, one more gesture to the delivery, and only then out. That is the
-  // two scrolls to get past each statement that was asked for, and unlike the earlier
-  // version of two-per-statement the pair here are two DIFFERENT photographs under one
-  // sentence, not the same sentence twice on frames the reader has already read.
-  //
-  // 1 the runner and 9 the coffee shop stay transit: they are under the hero's
-  // sentence, which the reader arrives already reading.
-  const RUN_TRANSIT = [1, 9];
-  act1Frames.forEach(([fi, at, span], k) => {
-    // The tap is the exception to settled(): it rests 1.53 into its 7.5, and the number
-    // comes from the baby rather than from this frame.
-    //
-    // Asked for: "Every tap. Every step." should come in the same way "Own and save
-    // your data." does. The tween was already identical — same .45, same .08 stagger,
-    // same power1.out out of the same mask — so what differed was not the manner but
-    // where the arrival sat relative to landing. The baby's sentence finishes .67
-    // before its stop, so the reader lands just as the words settle. The tap's used to
-    // finish 1.44 before its stop, so by the time they arrived the sentence had been
-    // sitting there and the arrival had happened somewhere on the approach.
-    //
-    // Starting at .25 after the cut, as the baby's does, three lines at .08 finish at
-    // .86; .86 + .67 is 1.53. Both sentences now land on the reader the same way.
-    //
-    // The stop also sets both neighbouring gaps, and this improves them: 1275px and
-    // 1346px against the 1030 and 967 that follow, a 1.39x spread across the whole run
-    // where it was 2.7x before the frame was lengthened. And the tap photograph keeps
-    // 1242px of itself after the stop, more than the 869 it had at 2.2.
-    if(!RUN_TRANSIT.includes(fi))
-      runStops.push(fi === 10 ? at + 1.53 : settled(at, span));
-    tl1.fromTo(f1(fi), {opacity:0.001},
+  let at = HERO;
+  for(let i = 1; i < RUN_FRAMES; i++){
+    tl1.fromTo(f1(i), {opacity:0.001},
       {opacity:1, duration:CUT, ease:'none', immediateRender:false}, at);
-    tl1.set(f1(k ? act1Frames[k-1][0] : 0), {opacity:0}, at + CUT);
-    // The tap frame is the one that pushes: 1.04 rather than the 1.08 the hero and the
-    // baby take, eased across its whole stay, so it reads as a drift rather than a
-    // zoom. Every other frame in the run is a flat cut.
-    // power1.out rather than the power2.out the other pushes take: over a frame this
-    // long power2 spent 90 per cent of the drift in the first third and then sat still,
-    // which reads as a bump and then nothing rather than a slow zoom out.
-    // 1.06 and power2.out: the baby's numbers, so the two screens the reader is meant
-    // to dwell on zoom out the same way. It was 1.04 on power1.out.
-    if(fi === 10) arrive(tl1, f1(fi), at, false, TAP, 1.06, 'power2.out');
-  });
-
-  // "Your life creates data." stands over the hero, the run and the coffee, and leaves
-  // as the tap frame cuts in — that frame carries the next line instead.
-  tl1.to('#act1 .hero-h .ln > span', {yPercent:-112, duration:.3, stagger:.05}, T_TAP);
-  // How far a line of this block travels to clear its mask. 112 is what the rest of the
-  // page uses and it is not enough here: .run-say sets line-height .9, so its line box
-  // is 94px where the font's own ink is 160 — the glyphs spill 65px past the box they
-  // are masked by. Clearing takes the box, the .08em the mask is padded by underneath,
-  // and half that spill: 143%. At 112 the periods and commas sat just inside the mask
-  // and showed as a row of dots above and below the copy.
-  const SAY_OUT = 150;
-  // Every span in both statements starts behind its mask.
-  const saySpans = $$('#act1 .run-say .ln > span');
-  tl1.set(saySpans, {yPercent:SAY_OUT}, 0);
-  // The same state applied now rather than on the timeline's first render, so the block
-  // can be shown immediately: the stylesheet hides .run-say precisely so that nothing
-  // is painted between load and this line. Every path reaches it — RM only changes
-  // timeScale, and the matchMedia below rebuilds the plan screen, not this.
-  gsap.set(saySpans, {yPercent:SAY_OUT});
-  gsap.set('#act1 .run-say', {visibility:'visible'});
-  // "Every tap. Every step. Every choice creates value, instantly." arrives whole, on
-  // the tap frame — no stagger, so the three lines rise together and read as one
-  // statement rather than as a sentence being assembled a piece to a photograph.
-  const sayA = $$('#sayA .ln > span'), sayB = $$('#sayB .ln > span');
-  // The same entrance "Own and save your data." gets, to the number: .7 long, .12 of
-  // stagger between the lines, power1.out, and starting .5 after its own photograph
-  // arrives rather than .12. It was .55 and power3.out with no stagger, which on a
-  // scrubbed timeline is a quite different thing — power3.out spends most of the travel
-  // in the first fraction of the scroll, so it snapped in where the other one drifts.
-  // Landing on the tap now finds the sentence whole, the way landing on the baby does.
-  tl1.fromTo(sayA, {yPercent:SAY_OUT},
-    {yPercent:0, duration:.45, stagger:.08, ease:'power1.out', immediateRender:false}, T_TAP + .25);
-
-  /* ---------- ACT 2 ---------- */
-  // No trigger of its own: it is appended to act 1 below so the hero runs
-  // straight through to "what happens to its value" without a scroll.
-  const tl2 = gsap.timeline({defaults:{ease:'none'}});
-  const f2 = i => `#act2 .frame[data-i="${i}"]`;
-  // Every / Single / Day: one dwell for all three, so nothing sits longer than the
-  // rest. Everything downstream is derived from WD rather than written out, so the
-  // three screens can be sped up or slowed without re-timing the whole act.
-  // The words these frames used to carry are gone — the sentence from the tap frame
-  // stands over all three instead — so their lengths answer to their tags now, not to
-  // a word arriving on each. WORD_IN and RAPID went with the words.
-  // frame 0's whole time on screen. 3.4 was asked for as a longer beat on this
-  // photograph, and it was the right number while the run played on its own clock —
-  // 3.4 seconds. Scrubbed it is not time, it is distance: 1238px, the longest frame in
-  // act 2, of which 1001px falls AFTER the frame's stop with nothing changing across
-  // any of it. The baby frame holds even longer and does not read that way because its
-  // hold carries the change of copy; this one carries nothing, so it reads as the same
-  // picture costing several scrolls. Same reasoning FINAL_HOLD already gets below.
-  const HOLD0 = SCROLL_RUN ? 1.0 : 3.4;
-  // The baby photo eases over into the family photo rather than cutting to it, and
-  // the run then rests on the family photo before starting over — no fade to black,
-  // no clearing the copy. FINAL_HOLD counts from when the family photo is fully
-  // there, so it is a real five seconds of stillness, not five including the change.
-  // FINAL_HOLD is the family photo's time on screen before the run starts over. Scrubbed
-  // there is no starting over, so five seconds of it becomes five seconds of scrolling
-  // where nothing moves — a third of the whole run. The reader decides when to leave a
-  // held frame, so it only needs enough to register as a hold at all.
-  const BABY_HOLD = 3.4, DISSOLVE = 2.2, FINAL_HOLD = SCROLL_RUN ? 1.0 : 5.0;
-  // 1.0, the same as every other transit frame in the run — the runner, the coffee shop,
-  // the delivery and the headphones all hold exactly this long, so no photograph goes
-  // by faster than any other. These two were .3 first, which measured at ONE frame on a
-  // hard flick, 17ms, not a glimpse but an absence; then .7, which was still shorter
-  // than the rest and left the two sections looking unalike.
-  const SHOP = 1.0, CHARGE = 1.0;
-  const BABY = HOLD0 + SHOP + CHARGE, FAMILY = BABY + BABY_HOLD;
-  const END = FAMILY + DISSOLVE + FINAL_HOLD;
-  const ESD2 = [[0, 0], [4, HOLD0], [5, HOLD0 + SHOP]];
-  // Every swap is an instant cut but the last one: the family photo eases over the
-  // baby across DISSOLVE, with the baby held at full opacity underneath and dropped
-  // only once it is covered, so nothing dips through black on the way. Linear, which
-  // is what a cross-dissolve wants — every eased version of this hung at one end and
-  // then arrived all at once.
-  const act2Spans = {0:HOLD0, 4:SHOP, 5:CHARGE, 6:BABY_HOLD, 7:DISSOLVE + FINAL_HOLD};
-  ESD2.concat([[6, BABY], [7, FAMILY]]).forEach(([i, at], k, arr) => {
-    // the family frame dissolves rather than cuts, so it is settled once the dissolve
-    // is through, not half a stay in
-    // tl2 is added to tl1 at ACT1_END, so its own times need that offset to become
-    // times on the run's clock, which is what runStops is measured in.
-    // 0 the headphones, 4 the shopping bag and 5 the charger are all transit, crossed
-    // between the tap and the baby. The headphones was a beat and carried the same
-    // sentence as the tap, so resting on it read as the page going nowhere.
-    //
-    // The baby rests at 1.0 rather than settled()'s .6, because "Own and save your
-    // data." starts arriving at .3 and is not whole until .9 — so at .6 the reader
-    // came to rest on a sentence still moving, and only read it on the scroll after.
-    // Two scrolls from the tap should land on the copy, not just on the photograph.
-    if(i !== 0 && i !== 4 && i !== 5)
-      runStops.push(ACT1_END + (i === 7 ? at + DISSOLVE + Math.min(.6, FINAL_HOLD * .5)
-                                        : i === 6 ? at + 1.45
-                                        : settled(at, act2Spans[i])));
-    if(i === 7){
-      tl2.fromTo(f2(i), {opacity:0.001},
-        {opacity:1, duration:DISSOLVE, ease:'none', immediateRender:false}, at);
-      tl2.set(f2(arr[k-1][0]), {opacity:0}, at + DISSOLVE);
-    } else {
-      tl2.fromTo(f2(i), {opacity:0.001},
-        {opacity:1, duration:CUT, ease:'none', immediateRender:false}, at);
-      if(k) tl2.set(f2(arr[k-1][0]), {opacity:0}, at + CUT);
-    }
-  });
-  // The baby frame is where the act slows down, and it is the one image in act 2 that
-  // moves: it eases out of a slight push across the whole time it holds. Everything
-  // else arrives at rest — the half-second frames especially, which have no time to.
-  tl2.fromTo(f2(6) + ' img', {scale:1.06},
-    {scale:1, duration:BABY_HOLD, ease:'power2.out', immediateRender:false}, BABY);
-  // The family photo is full-bleed 1920x1080, and the frame it first composites on
-  // costs enough to drop one. Left alone that lands on the head of the dissolve, which
-  // is precisely where it reads as a hitch. Put the photo on screen at a hair of
-  // opacity partway through the baby hold instead, so the upload happens on a still
-  // frame, with nothing moving for it to interrupt.
-  tl2.set(f2(7), {opacity:0.001}, BABY + .4);
-  // The veil used to step 0 -> .5 -> .25 -> .12 right ON the Every/Single/Day
-  // handovers, so the screen darkened and lifted while the photos swapped and the
-  // beat read as a fade through black. It reaches its level during a hold instead and
-  // sits still across every dissolve.
-  //
-  // .05 rather than .9, because the headphones frame's own stop is at .6 — settled(0,
-  // HOLD0) — and a veil running .9 to 1.5 finished AFTER it. So the reader came to rest
-  // on the untinted photo, and the tint then arrived on their next scroll, which reads
-  // as the same photograph costing two. Done by .45 it is on screen when the frame
-  // settles, and it is still inside that frame's hold rather than on a handover.
-  tl2.to('#act2 .line-veil', {opacity:.12, duration:.4}, .05);
-  // The photo swap here is the same cut as the others; what sets the beat apart is
-  // the text riding on it — an eased lead-out and a brighten. Both are kept short so
-  // they land with the cut rather than running long past it.
-  // a word per frame — headphones, shopping bag, charger — in the same corners
-  // they used to occupy, each arriving with its own image
-  // Word and tag are built from one list off a single start, and the tag now takes
-  // the word's own duration and ease. Before, the tag ran .3 against the word's .5
-  // and started .1 earlier, so it landed first and read as arriving ahead of the text.
-  // "Every. Single. Day." used to arrive here, three words across these three frames.
-  // The designs replace it: the sentence that began on the tap frame simply stays up
-  // across all three, so there is nothing to bring in — only somewhere to take it out.
-  // one tag per photo, in and out with the photo it sits on — the two rapid frames
-  // get a shorter stay than frame 0, having only a second of photo to sit on
-  // Same helper as act 1, so each tag lives on its own frame. These used to be
-  // written as explicit in/out times, which went NEGATIVE once the frames were short
-  // — the shopping tag's fade-out was scheduled 0.02s before its fade-in.
-  // the headphones frame holds long enough for a tag; shopping and charging do not
-  // One tag per photo, each capped by the next one's arrival so only ever one is up.
-  // The sentence used to leave here and hand over to "What happens to its value?".
-  // The family node has no such line — it finishes the same sentence differently — so
-  // nothing leaves. Line 1 stands the whole way and only the tail changes, swapped as
-  // the family photo settles rather than on the baby frame, so the change lands with
-  // the picture it belongs to.
-  // Statement two stands from the tap frame through the charging frame and leaves whole
-  // as the baby frame cuts in; statement three arrives whole in its place. Both move as
-  // a block — the line-by-line build these used to do, and the transparent first line
-  // that went with it, are gone.
-  // The change of copy is the choppy part of this beat, and it was choppy because it
-  // was fast: 150 yPercent of travel in .34 of a unit, which at this density is 153px
-  // of scroll — about 26px of moving text per frame. Nearly twice the distance the
-  // pictures move per frame, in the one element made of readable edges.
-  //
-  // .6 out and .7 in now, and the two overlap by .1 rather than butting together, so
-  // the sentences pass each other instead of one stopping and the next starting. The
-  // baby's stop moves out to 1.45 to match, since that is where the new sentence has
-  // finished arriving.
-  // The easings matter more than the durations here, because this is scrubbed: an ease
-  // is a distribution of travel over SCROLL, not over time. power3.out put most of the
-  // sentence's 150 units into the first fraction of its distance and left it crawling
-  // the rest — measured peaks of 48 and 54px of moving text per frame, against the
-  // 22px a photograph moves. Snap, then crawl, which is what choppy is.
-  //
-  // power1 in both directions spreads it far more evenly, which for a masked line
-  // arriving is also the more legible reveal.
-  // .25 out and in at .25, rather than .4 and .4. The two cannot overlap — they share
-  // an origin — so the first has to be clear before the second starts, and shortening
-  // the exit is what buys the arrival its earlier start.
-  tl2.to(sayA, {yPercent:-SAY_OUT, duration:.25, ease:'power1.in'}, BABY);
-  tl2.fromTo(sayB, {yPercent:SAY_OUT},
-    {yPercent:0, duration:.45, stagger:.08, ease:'power1.out', immediateRender:false}, BABY + .25);
-  // the grocery tag belongs to the baby frame, which carries no word
-  // The run just stops here, on the family photo with the question in white, and holds
-  // for FINAL_HOLD before starting over. Nothing is faded out and nothing is cleared:
-  // the restart re-states every baseline itself (see resetRun), so the loop point is a
-  // straight cut back to the hero.
-  tl2.to({}, {duration:.05}, END - .05);
-
-  // One run: act 2 starts the moment act 1 finishes, no scroll in between. Positioned
-  // explicitly rather than with '>', which in GSAP means the end of the PREVIOUSLY
-  // ADDED animation — so it was landing on the headline's clear and cutting the
-  // delivery frame short of its own time.
-  tl1.add(tl2, ACT1_END);
+    tl1.set(f1(i - 1), {opacity:0}, at + CUT);
+    runStops.push(settled(at, SPAN));
+    at += SPAN;
+  }
+  // the last frame holds before the run starts over
+  const END = at;
+  tl1.to({}, {duration:.05}, END - .05);
 
   // The run's trigger, created here rather than in the timeline's own vars, because the
   // snap points are the run's settled moments as a fraction of the finished duration
@@ -1413,47 +1073,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   //            of unwinding on the way out
   // Every fromTo takes immediateRender:false so the timeline does not paint its
   // start values over the page the moment it is built.
-  const solA = lines('#solStateA .sol-headline'), solB = lines('#solStateB .sol-headline');
+  // sept-8: framing 2 is the Benefits screen now, so its reveal lines are the
+  // section title's rather than a .sol-headline's.
+  const solA = lines('#solStateA .sol-headline'), solB = lines('#solStateB .biz-ben-title');
   // header.nav is the bar; the bare <nav> inside it is only the Personal/Business links
   const solHowEl = $('#solHow'), solHowFit = $('#solHowFit'),
         solHost = $('#howHost'), solSec = $('#solution'), navEl = $('header.nav');
 
-  // Everything in the cards framing is sized in vw, and as a framing it has a pinned
-  // screen's height to fit rather than a section that grows to hold it. On a wide,
-  // short window the block is taller than the screen, so scale it down from the middle
-  // — never up, because at the design's proportions it sits at its natural size.
+  // sept-8: the Enterprise framing that replaced the cards is one box of its own
+  // artboard aspect (see .sol-how-fit), so it already fits the pinned screen on
+  // both axes — there is nothing to measure and nothing to scale. The old cards
+  // block was sized in vw and could outgrow a short window, which is what the
+  // padding and the shrink here were for. This now only clears anything a previous
+  // layout left behind, and stays wired to refresh so the call sites keep working.
   const fitSolHow = () => {
     if(!solHowFit) return;
     solHowFit.style.transform = 'none';
     solHowEl.style.paddingTop = '';
-    if(solHowEl.parentElement !== solSec) return;   // flowing on a phone, nothing to fit
-    // Centre in the space the fixed nav leaves, not in the whole screen. At the
-    // design's proportions the block clears the nav by a hair; centring on the full
-    // height would slide the title up under it as soon as the window got shorter.
-    const pad = navEl ? Math.round(navEl.getBoundingClientRect().bottom) + 14 : 0;
-    solHowEl.style.paddingTop = pad + 'px';
-    const room = solSec.clientHeight - pad - 20;
-    const h = solHowFit.getBoundingClientRect().height;
-    if(h > room && h > 0) solHowFit.style.transform = 'scale(' + (room / h).toFixed(4) + ')';
   };
-  // The second framing's button sat at a fixed 69.8vh, the way the design's frame
-  // places it. But the headline above it is sized in vw while the button was placed in
-  // vh, so the space between them swung with the window — 38px at 714 tall, 135px at
-  // 900. Anchor it under the headline instead, which is what that space is measured
-  // from. The CSS keeps a static top as the pre-script fallback.
-  const solCta = $('#solutionPreview .sol-cta'), solStateB = $('#solStateB');
-  const SOL_CTA_GAP = 3.4;   // vw — about 65px at 1920, the gap the designs use
-  const placeSolCta = () => {
-    if(!solCta || !solStateB) return;
-    solCta.style.top = '';
-    // on a phone the card sits between the two and the button is laid out from the
-    // bottom of the screen, so there is no headline gap to hold
-    if(window.matchMedia('(max-width:760px)').matches) return;
-    const top = solStateB.offsetTop + solStateB.offsetHeight + innerWidth * SOL_CTA_GAP / 100;
-    solCta.style.top = Math.round(top) + 'px';
-  };
-  placeSolCta();
-  ScrollTrigger.addEventListener('refresh', () => { fitSolHow(); placeSolCta(); });
+  ScrollTrigger.addEventListener('refresh', fitSolHow);
 
   const buildSolTl = withCards => {
     const tl = gsap.timeline({defaults:{ease:'none', immediateRender:false}});
@@ -1461,11 +1099,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // 1 — introducing the Data Savings Plan. The two blue casts come up first, so the
     // copy lands on a lit page rather than on flat black — .4 and .2, the levels the
     // design gives them.
-    tl.fromTo('#solutionPreview .sol-glow-l', {opacity:0}, {opacity:.4, duration:.5, ease:'power1.out'}, 0);
-    tl.fromTo('#solutionPreview .sol-glow-r', {opacity:0}, {opacity:.2, duration:.5, ease:'power1.out'}, 0);
     tl.fromTo(solA, {yPercent:SOL_OUT}, {yPercent:0, duration:.3, stagger:.08, ease:'power3.out'}, .14);
-    tl.fromTo('#solutionPreview .sol-card', {opacity:0, scale:1.04}, {opacity:1, scale:1, duration:.34, ease:'power2.out'}, .24);
-    tl.fromTo('#solStateA .sol-body', {opacity:0, y:16}, {opacity:.7, y:0, duration:.24, ease:'power2.out'}, .40);
+    // sept-8: the card stacks stand in for the DSP card here, and the button and the
+    // encryption line belong to this framing too — the artboard puts both in the copy
+    // column, so they arrive with it rather than on the second screen.
+    tl.fromTo('#bizStats', {opacity:0, scale:1.04}, {opacity:1, scale:1, duration:.34, ease:'power2.out'}, .24);
+    tl.fromTo('#solStateA .sol-body', {opacity:0, y:16}, {opacity:1, y:0, duration:.24, ease:'power2.out'}, .40);
+    tl.fromTo('#solStateA .biz-cta', {opacity:0, y:12}, {opacity:1, y:0, duration:.24, ease:'power2.out'}, .52);
+    tl.fromTo('#solStateA .biz-note', {opacity:0}, {opacity:1, duration:.2}, .62);
     tl.to({}, {duration:.22}, .64);
 
     // 2 — open an account, the card easing up between the two framings. The blue casts
@@ -1477,17 +1118,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // dismantling it at once. It is now whole from 1.64 and does not start leaving
     // until 2.2, which puts the stop inside the plateau rather than at its edge.
     tl.fromTo(solA, {yPercent:0}, {yPercent:-112, duration:.26, stagger:.05}, 1.15);
-    tl.fromTo('#solStateA .sol-body', {opacity:.7}, {opacity:0, duration:.2}, 1.15);
-    tl.fromTo('#solutionPreview .sol-glow-l', {opacity:.4}, {opacity:0, duration:.3, ease:'power1.inOut'}, 1.15);
-    tl.fromTo('#solutionPreview .sol-glow-r', {opacity:.2}, {opacity:0, duration:.3, ease:'power1.inOut'}, 1.15);
-    // The card used to ease up 3.33vh here, which is what gave it two different y
-    // values across the two framings. It rests at the risen height now (see
-    // .sol-card's top) and does not move between them at all.
+    tl.fromTo('#solStateA .sol-body', {opacity:1}, {opacity:0, duration:.2}, 1.15);
+    // sept-8: the button, the encryption line and the card stacks are framing 1's, so
+    // they clear out with its copy instead of carrying into the next screen.
+    tl.fromTo('#solStateA .biz-cta', {opacity:1, y:0}, {opacity:0, y:-10, duration:.22}, 1.15);
+    tl.fromTo('#solStateA .biz-note', {opacity:1}, {opacity:0, duration:.18}, 1.15);
+    tl.fromTo('#bizStats', {opacity:1}, {opacity:0, duration:.3, ease:'power1.inOut'}, 1.15);
+    // The Benefits screen arrives as one piece: the title's two lines first, then
+    // the three columns just behind them.
     tl.fromTo(solB, {yPercent:SOL_OUT}, {yPercent:0, duration:.3, stagger:.08, ease:'power3.out'}, 1.25);
-    tl.fromTo('#solutionPreview .sol-cta', {opacity:0, y:12}, {opacity:1, y:0, duration:.24, ease:'power2.out'}, 1.47);
+    tl.fromTo('#solStateB .biz-ben-col', {opacity:0, y:34}, {opacity:1, y:0, duration:.3, stagger:.06, ease:'power2.out'}, 1.33);
 
-    // 3 — how does a Data Savings Plan work. The card and the copy that framed it clear
-    // out, and the four cards come up in their place. This is the beat that used to be a
+    // 3 — how does a Data Savings Plan work. The Benefits screen clears out and the
+    // four cards come up in its place. This is the beat that used to be a
     // section below; on anything wider than a phone it happens on the spot.
     if(withCards){
       // 2.2 rather than 2.0: the extra fifth of a unit is the headroom the open-an-
@@ -1496,11 +1139,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // their own stop at 3.0, which is what matters. The hold below is untouched, so
       // the timeline is still 4.0 and the three stops do not move.
       tl.fromTo(solB, {yPercent:0}, {yPercent:-112, duration:.26, stagger:.05}, 2.25);
-      tl.fromTo('#solutionPreview .sol-cta', {opacity:1, y:0}, {opacity:0, y:-10, duration:.22}, 2.25);
-      tl.fromTo('#solutionPreview .sol-card', {opacity:1}, {opacity:0, duration:.32, ease:'power1.inOut'}, 2.29);
+      tl.fromTo('#solStateB .biz-ben-cols', {opacity:1}, {opacity:0, duration:.28, ease:'power1.inOut'}, 2.25);
       tl.fromTo('#solHow', {opacity:0}, {opacity:1, duration:.4, ease:'power1.inOut'}, 2.35);
-      tl.fromTo('#solHow .how-title', {y:26}, {y:0, duration:.34, ease:'power2.out'}, 2.39);
-      tl.fromTo('#solHow .step', {y:36, opacity:0}, {y:0, opacity:1, duration:.36, stagger:.05, ease:'power2.out'}, 2.45);
+      tl.fromTo('#solHow .ent-title', {y:26}, {y:0, duration:.34, ease:'power2.out'}, 2.39);
+      tl.fromTo('#solHow .ent-rise', {y:36, opacity:0}, {y:0, opacity:1, duration:.36, stagger:.05, ease:'power2.out'}, 2.45);
     }
 
     // the hold that carries the last framing out of view unchanged
@@ -1548,43 +1190,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 
 
-  /* ---------- HOW MUCH IS YOUR DATA WORTH? ---------- */
-  // The reason this is a screen and not the tail of the one above: it asks the reader
-  // something, so it should be on screen because they arrived at it, not because a
-  // timeline reached it. One gesture down from the sentence, and it plays on arrival.
-  // Its own disc comes up with it — lower and smaller than the opening one, the same
-  // #2731B6 over the same near-black, so the ground stays purple either side of the
-  // gesture and only where the light sits changes.
-  const worthLn = lines('#worth .worth');
-  const resetWorth = () => {
-    gsap.set('#worth .time-glow-q', {opacity:0});
-    gsap.set(worthLn, {yPercent:112});
-  };
-  const tl5 = gsap.timeline({
-    defaults:{ease:'none'},
-    paused:true,
-    scrollTrigger:{
-      trigger:'#worth', start:'top top', end:'+=100%', pin:true,
-      onEnter:      self => self.animation.play(),
-      onEnterBack:  () => restartWorth(),
-      onLeave:      self => self.animation.pause(),
-      onLeaveBack:  self => { self.animation.invalidate().pause(0); resetWorth(); }
-    }
-  });
-  function restartWorth(){
-    tl5.invalidate().pause(0);
-    resetWorth();
-    tl5.play();
-  }
-  tl5.fromTo('#worth .time-glow-q', {opacity:0},
-    {opacity:.32, duration:.75, ease:'power1.inOut', immediateRender:false}, 0);
-  tl5.fromTo(worthLn, {yPercent:-118},
-    {yPercent:0, duration:.55, stagger:.1, ease:'back.out(1.5)', immediateRender:false}, 0.15);
-
   // These three were paced as scrub distances, so at 1x they would each run for
   // nine or ten seconds on their own. Speed them up to land around five, and
   // under reduced motion run them out instantly to their end state.
-  if(RM){ tl1.timeScale(100); tl5.timeScale(100); }
+  if(RM){ tl1.timeScale(100); }
   else tl1.timeScale(1.0);    // 24.2 units -> ~24s, close to the authored pace
 
   // The opening runs on its own clock, so when it ends the reader is still parked at
@@ -1615,152 +1224,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   }
   if(!SCROLL_RUN) loopWhileHere(tl1, restartRun);
 
-  /* ---------- ACT 4 : AGE TRACK ---------- */
-  const AGE_DATA = [
-    {age:0,  val:0,      label:'Newborn'},
-    {age:2,  val:675,    label:'Toddler'},
-    {age:13, val:3497,   label:'Teenage years'},
-    {age:18, val:5805,   label:'College'},
-    {age:23, val:8999,   label:'First apartment'},
-    {age:32, val:18033,  label:'Building a life'},
-    {age:36, val:23982,  label:'Family'},
-    {age:45, val:44085,  label:'Career'},
-    {age:52, val:69300,  label:'Enjoying life'},
-    {age:70, val:209763, label:'Retirement'}
-  ];
-  const AGES = AGE_DATA.map(d => d.age);
-  const ageFrames = $$('#ageFrames .frame');
-  const ageBigVal = $('#ageBigVal'), ageNumVal = $('#ageNumVal'), ageCapVal = $('#ageCapVal');
-  const AGE_MIN = AGES[0], AGE_MAX = AGES[AGES.length-1];
-
-  const ageTrack = $('#ageTrack'), ageFill = $('#ageFill'), ageHandle = $('#ageHandle');
-  const ageTicksEl = $('#ageTicks'), ageLabelsEl = $('#ageLabels');
-  for(let a=AGE_MIN; a<=AGE_MAX; a++){ const i=document.createElement('i'); ageTicksEl.appendChild(i); }
-  const ageTicks = $$('#ageTicks i');
-  AGES.forEach(a => { const s=document.createElement('span'); s.textContent=a; s.style.left=((a-AGE_MIN)/(AGE_MAX-AGE_MIN)*100)+'%'; ageLabelsEl.appendChild(s); });
-  const ageLabelSpans = $$('#ageLabels span');
-  let ageCurrent = AGE_MIN;
-
-  function ageValueAt(age){
-    for(let i=0;i<AGE_DATA.length-1;i++){
-      if(age <= AGE_DATA[i+1].age){
-        const u = (age-AGE_DATA[i].age)/(AGE_DATA[i+1].age-AGE_DATA[i].age);
-        return AGE_DATA[i].val + (AGE_DATA[i+1].val-AGE_DATA[i].val)*u;
-      }
-    }
-    return AGE_DATA[AGE_DATA.length-1].val;
-  }
-  const smooth = u => u*u*u*(u*(u*6-15)+10);
-  function renderAge(age){
-    age = clamp(age, AGE_MIN, AGE_MAX);
-    let si = 0;
-    for(let i=0;i<AGES.length-1;i++){ if(age >= AGES[i]) si = i; }
-    const next = AGES[si+1];
-    const segLen = next ? next - AGES[si] : 1;
-    const u = next ? clamp((age-AGES[si])/segLen, 0, 1) : 0;
-    const x = next ? smooth(clamp((u-0.4)/0.6, 0, 1)) : 0;
-    ageFrames.forEach((f,i)=>{
-      let o = 0;
-      if(i===si) o = 1;
-      else if(i===si+1) o = x;
-      f.style.opacity = o;
-      const img = f.firstElementChild;
-      const local = i===si ? u : (i===si+1 ? 0 : 1);
-      img.style.transform = `scale(${1.06 - 0.06*local}) translateX(${(-1.5 + 3*local)}%)`;
-    });
-    ageBigVal.textContent = '$' + Math.round(ageValueAt(age)).toLocaleString('en-US');
-    ageNumVal.textContent = Math.round(age);
-    ageCapVal.textContent = (next && x > .5) ? AGE_DATA[si+1].label : AGE_DATA[si].label;
-
-    ageCurrent = age;
-    const t = (age - AGE_MIN) / (AGE_MAX - AGE_MIN);
-    ageFill.style.width = (t*100)+'%';
-    ageHandle.style.left = (t*100)+'%';
-    ageTrack.setAttribute('aria-valuenow', Math.round(age));
-    ageTicks.forEach((tk,i)=> tk.classList.toggle('hit', (AGE_MIN+i) <= Math.round(age) && t > 0));
-    ageLabelSpans.forEach((l,i)=> l.classList.toggle('cur', age >= AGES[i]));
-  }
-  renderAge(AGE_MIN);
-
-
-  // The tail of #ages' pin dissolves the the picker's final figure screen and brings the closing screen
-  // up in its place, on the same pin — so it arrives with no scroll motion of its own,
-  // the way the plan reveal used to before it moved to the top of the page. The reader
-  // is not snapped through here: from the timeline down the page scrolls normally,
-  // because there the scroll IS the interaction, so this simply scrubs as they go.
-  const closeTl = gsap.timeline({paused:true, defaults:{ease:'none'}});
-  // Everything here is brought forward, to leave the last third of the tail as a hold.
-  // This screen carries the page's closing line and its only real call to action, and
-  // it used to be the least readable thing on the page: the button did not arrive until
-  // progress .92, which is 173px before the pin lets go — so it was whole for 173px of
-  // an 8532px section, against 346px for the shortest of the plan framings and 3404px
-  // for the run's copy. Finishing at .62 instead leaves .62-1.0 held, which is 821px.
-  // No stop is involved; this stretch is deliberately free-scrubbed, because the years
-  // are the reader's to move through. This just gives the ending room inside it.
-  closeTl.to({}, {duration:.12}, 0);                    // the picker's final figure holds a beat first
-  closeTl.to('#ages > .frames, #ages > .num-wrap, #ages > .stage-tag, #ageCtl',
-             {opacity:0, duration:.26, ease:'power1.inOut'}, .12);
-  // an opacity-0 slider still takes the pointer, so take it out of reach as it goes
-  closeTl.set('#ageCtl', {pointerEvents:'none'}, .40);
-  closeTl.fromTo('#closing', {opacity:0}, {opacity:1, duration:.26, ease:'power1.inOut'}, .20);
-  closeTl.fromTo('#closing .closing-h', {y:26, opacity:0}, {y:0, opacity:1, duration:.22, ease:'power2.out'}, .30);
-  closeTl.fromTo('#closing .closing-sub', {y:18, opacity:0}, {y:0, opacity:.7, duration:.20, ease:'power2.out'}, .36);
-  closeTl.fromTo('#closing .closing-cta', {y:14, opacity:0}, {y:0, opacity:1, duration:.20, ease:'power2.out'}, .42);
-  closeTl.to({}, {duration:.38}, .62);
-
-  const ageBaseTotal = AGES.length*59;
-  // Two viewports of tail: a hold on the number, the dissolve, then the closing screen
-  // held while the section scrolls away.
-  const ageBufferPct = 200;
-  const ageGrandTotal = ageBaseTotal + ageBufferPct;
-  let ageDragging = false;
-  const ageST = ScrollTrigger.create({
-    trigger:'#ages', start:'top top', end:'+=' + ageGrandTotal + '%', pin:true, scrub:true,
-    onUpdate(self){
-      const ap = clamp(self.progress * ageGrandTotal / ageBaseTotal, 0, 1);
-      if(!ageDragging) renderAge(AGE_MIN + ap*(AGE_MAX-AGE_MIN));
-
-      const bp = clamp((self.progress*ageGrandTotal - ageBaseTotal) / ageBufferPct, 0, 1);
-      closeTl.progress(bp);
-    }
-  });
-
-  // Drag: the handle scrolls the page, so scroll and drag share one source of truth
-  function ageTFromEvent(e){
-    const r = ageTrack.getBoundingClientRect();
-    return clamp((e.clientX - r.left)/r.width, 0, 1);
-  }
-  function ageScrollToT(t){
-    // t spans the age-scrub only, so dragging to 70 lands at the start of the
-    // buffer rather than scrubbing through the fade to the solution screen.
-    const scrubSpan = (ageST.end - ageST.start) * ageBaseTotal / ageGrandTotal;
-    window.scrollTo(0, ageST.start + t*scrubSpan);
-  }
-  let ageHinted = false;
-  ageTrack.addEventListener('pointerdown', e => {
-    ageDragging = true; ageTrack.setPointerCapture(e.pointerId);
-    const t = ageTFromEvent(e); renderAge(AGE_MIN + t*(AGE_MAX-AGE_MIN)); ageScrollToT(t);
-    if(!ageHinted){ ageHinted = true; gsap.to('#ageDragHint', {opacity:.5, duration:.6}); }
-  });
-  ageTrack.addEventListener('pointermove', e => {
-    if(!ageDragging) return;
-    const t = ageTFromEvent(e); renderAge(AGE_MIN + t*(AGE_MAX-AGE_MIN)); ageScrollToT(t);
-  });
-  const ageEndDrag = () => { ageDragging = false; };
-  ageTrack.addEventListener('pointerup', ageEndDrag);
-  ageTrack.addEventListener('pointercancel', ageEndDrag);
-  ageTrack.addEventListener('keydown', e => {
-    const step = e.shiftKey ? 5 : 1;
-    let na = ageCurrent;
-    if(e.key === 'ArrowRight' || e.key === 'ArrowUp') na = ageCurrent + step;
-    else if(e.key === 'ArrowLeft' || e.key === 'ArrowDown') na = ageCurrent - step;
-    else return;
-    e.preventDefault();
-    na = clamp(na, AGE_MIN, AGE_MAX);
-    renderAge(na);
-    ageScrollToT((na - AGE_MIN)/(AGE_MAX - AGE_MIN));
-  });
-
   /* ---------- ACT 7 : HOW IT WORKS + FAQ + FOOTER ---------- */
   // A normal scrolling screen — no pin. Each block just lifts into place as it
   // comes up, so it settles rather than animating on scrub like the acts above.
@@ -1774,21 +1237,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // Every row carries an answer now, so the +/- is a real control rather than a
   // painted-on affordance. Rows open independently — the design shows them all open
   // at once — and the first is open on arrival.
-  $$('#how .faq-row').forEach(row => {
-    const mark = row.querySelector('i');
-    row.setAttribute('role', 'button');
-    row.setAttribute('tabindex', '0');
-    row.setAttribute('aria-expanded', row.classList.contains('open') ? 'true' : 'false');
-    const toggle = () => {
-      const open = row.classList.toggle('open');
-      row.setAttribute('aria-expanded', open ? 'true' : 'false');
-      mark.innerHTML = open ? '&minus;' : '+';
-    };
-    row.addEventListener('click', toggle);
-    row.addEventListener('keydown', e => {
-      if(e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar'){ e.preventDefault(); toggle(); }
-    });
-  });
+  // sept-8: Figma 3783:22367 draws the rows collapsed with no answers written, so
+  // there is nothing to open. The rows stay plain text rather than advertising a
+  // control that would do nothing — wire the toggle back up when the copy exists.
 
   rise('#how .faq-head', '#how .faq');
   rise($$('#how .faq-row'), '#how .faq', {duration:.5, stagger:.07});
@@ -1804,21 +1255,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // tags: while the run is parked at the top, state the true baseline outright.
   const resetRun = () => {
     if(tl1.time() >= 0.01) return;
-    gsap.set($$('#act1 > .frame, #act2 .frame'), {opacity:0});
+    gsap.set($$('#act1 > .frame'), {opacity:0});
     gsap.set($$('#act1 > .frame[data-i="0"]'), {opacity:1});
-    // The veil the run darkens the screen with is never tweened back down — it ends
-    // at .94 — so a rewind would leave it holding that value over the hero and the
-    // screen would read as black.
-    gsap.set('#act2 .line-veil', {opacity:0});
     // and the copy, back behind its masks, the hero's own lines being the one set
     // that starts already in view. Same two statements the run opens with.
     gsap.set($$('.ln > span'), {yPercent:112});
     gsap.set('#act1 .hero-h .ln > span', {yPercent:0});
-    gsap.set($$('#act1 .run-say .ln > span'), {yPercent:150});
     // this runs on every refresh, so the plan headline's deeper offset has to be
     // reapplied here too or a refresh leaves the queued state peeking below its mask
     gsap.set($$(solHeadSpans), {yPercent:SOL_OUT});
-    gsap.set($$('#runSay > .ln > span'), {opacity:1});
   };
   const hideTags = resetRun;
   ScrollTrigger.addEventListener('refresh', hideTags);
