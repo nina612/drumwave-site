@@ -666,6 +666,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      the top on the first gesture — and leave once it is behind the reader.
      .chrome-away is put on the body by the run's own pin, so what they answer to
      is the run ending rather than a scroll distance. */
+  /* The tap photograph is 16:9 and a phone crops it to a strip a quarter of its
+     width. Centred, that strip lands on the sweater and leaves the wallet off
+     to the right of it — the one thing the frame is here to show. 75% brings
+     the strip across onto the hand and the wallet it is holding. */
+  /* Every photograph in the run is 16:9, and a phone crops each to a strip a
+     quarter of its width — so what the middle of that strip lands on decides
+     what the frame is of. Centred, several of them land on nothing in
+     particular. Only the horizontal figure does anything: the full height of
+     these already shows, since cover fits the height and spills the width. */
+  #act1 .frame[data-i="10"] img{object-position:75% 50%}   /* the wallet */
+  /* his face and the headphone cup together are wider than the strip, so this
+     is their midpoint rather than either one centred */
+  #act1 .act-layer .frame[data-i="0"] img{object-position:59% 50%}
+  #act1 .act-layer .frame[data-i="4"] img{object-position:69% 50%}  /* the shopping bag */
+  #act1 .act-layer .frame[data-i="5"] img{object-position:77% 50%}  /* the lit charge port */
+  #act1 .act-layer .frame[data-i="7"] img{object-position:62% 50%}  /* the mother and her son */
   .nav{top:78px;transition:opacity .3s ease, transform .3s ease}
   .status-bar{transition:opacity .3s ease}
   body.chrome-away .nav{opacity:0;pointer-events:none;
