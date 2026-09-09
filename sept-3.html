@@ -687,7 +687,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   #ages .frame[data-age="25"] img{object-position:32% 50%}  /* her, and the box */
   #ages .frame[data-age="36"] img{object-position:66% 50%}  /* between the two faces */
   #ages .frame[data-age="45"] img{object-position:27% 50%}  /* her, not the building */
-  #ages .frame[data-age="58"] img{object-position:86% 50%}  /* the woman, not the man */
+  #ages .frame[data-age="58"] img{object-position:92% 50%}  /* her face whole, clear of the edge */
+  /* The newborn is the one frame asked to sit wider. It cannot: cover fits the
+     height of a 4:3 photograph on a portrait screen exactly, so there is no
+     slack to give back and anything wider letterboxes. What there is, is the
+     6% push the age track opens every frame on — !important because that is
+     set inline, on the element, by renderAge. This holds the photograph at the
+     widest it goes instead of starting tighter and easing out to it. */
+  #ages .frame[data-age="0"] img{transform:none !important}
   .nav{top:78px;transition:opacity .3s ease, transform .3s ease}
   .status-bar{transition:opacity .3s ease}
   body.chrome-away .nav{opacity:0;pointer-events:none;
