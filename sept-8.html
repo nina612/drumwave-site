@@ -80,6 +80,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .nav .links a.cur{font-weight:600}
 .nav .sep{width:1px;height:40.5px;background:rgba(255,255,255,.3);flex:none}
 .nav .ctas{display:flex;align-items:center;gap:14px}
+.nav .nav-menu{display:none}
 .nav .pill{
   display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;
   padding:12px 24px;border-radius:500px;border:.911px solid #fff;
@@ -349,16 +350,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* the phone placement: an ordinary block in an ordinary section, no fit, no fade */
 #howHost:empty{display:none}
 #howHost{padding-bottom:9vw}
-#howHost .sol-how{position:static;display:block;opacity:1;padding-top:0}
-#howHost .sol-how-fit{transform:none}
-/* sept-8: on the flowing phone host the artboard box would be a letterbox strip,
-   so it drops its aspect and the two halves stack. */
-#howHost .sol-how-fit{width:100%;aspect-ratio:auto;padding:8vw 0 12vw}
-#howHost .sol-how .ent-copy{position:static;width:84vw;margin:0 auto}
-#howHost .sol-how .ent-title{font-size:clamp(2rem,9vw,3.5rem);margin-bottom:1.5rem}
-#howHost .sol-how .ent-body{width:100%;font-size:clamp(.9rem,4vw,1.05rem);margin-bottom:1.5rem}
-#howHost .sol-how .ent-cta{padding:.9rem 1.4rem;min-height:0;font-size:clamp(.9rem,4vw,1.05rem)}
-#howHost .sol-how .ent-dash{position:static;width:100%;height:auto;margin-top:8vw}
+/* #howHost stays empty now: the Enterprise framing lives in #solution on both
+   sides of the breakpoint, and :empty above hides this section. */
 /* the heading's left edge lines up with the step copy in the first column below */
 /* No tracking. Node 3265:80578 draws this line 988 wide, and at 64px this sentence
    measures 989.9 untracked against 902.9 at the -.04em it used to carry — so the
@@ -499,39 +492,92 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .faq-list{width:100%}
   .faq-row .faq-q{white-space:normal}
 }
+/* ============================================================
+   PHONE — Figma 3783:22552, a 390 x 5280 scroll
+   The wide page holds its three plan framings on one pinned screen and
+   crossfades between them. That artboard does not: it runs them one under the
+   next as ordinary sections, 897 / 1348 / 894 / 827 tall. So on a phone the
+   pin is dropped (see the matchMedia branch in the script) and everything here
+   lays the framings out as flowing blocks. Type that was sized in cqw against
+   a 1920 container is restated in phone terms, since 1.6667cqw of 390 is 6px.
+   ============================================================ */
 @media (max-width:760px){
-  .how-steps{grid-template-columns:1fr;gap:8vw;padding:8vw 8vw 0}
-  .how-title{padding-left:8.5vw}
-  .step-card{width:100%}
-  .step-eyebrow{font-size:.8rem}
-  .step-h{font-size:1.35rem}
-  .step-body{font-size:.9rem}
+  /* --- nav: the mark and a menu button --- */
+  .nav{width:calc(100vw - 48px);height:68px;padding:0 20px;gap:0}
+  .nav .links,.nav .sep,.nav .ctas{display:none}
+  .nav .logo{gap:14px}
+  .nav .logo .mark{width:30px;height:30px}
+  .nav .logo .wordmark{width:92px;height:15.7px}
+  .nav .nav-menu{display:flex;flex-direction:column;justify-content:center;gap:5px;
+    width:32px;height:32px;margin-left:auto;padding:0;border:0;background:none;cursor:pointer}
+  .nav .nav-menu span{display:block;width:20px;height:1.5px;margin:0 auto;background:#fff;border-radius:2px}
+
+  /* --- hero: one photo, the headline low and left --- */
+  #act1 .hero-h{left:7.7vw;bottom:5.6vh;top:auto;max-width:87vw;
+    font-size:clamp(2.1rem,10.3vw,2.7rem);line-height:1.02;letter-spacing:-.02em}
+
+  /* --- the plan framings stop being one screen and become three --- */
+  #solution{height:auto !important;min-height:0}
+  .solution-preview{position:static;inset:auto;pointer-events:auto}
+  .solution-preview .sol-state{position:static;left:auto;top:auto;width:auto;max-width:none;opacity:1}
+
+  /* 1 — Open a Business dWallet */
+  /* the wide build sets width:50.74vw on this id, which is 198px here */
+  .solution-preview #solStateA{transform:none;width:auto;max-width:none;padding:14vw 6.2vw 0}
+  .solution-preview #solStateA .sol-headline{font-size:clamp(2rem,8.7vw,2.4rem);line-height:1.04}
+  .solution-preview #solStateA .sol-body{margin-top:1rem;font-size:clamp(1rem,4.4vw,1.15rem);line-height:1.3;opacity:1}
+  .solution-preview .biz-cta{width:auto;min-width:0;height:auto;margin-top:2rem;padding:1rem 1.6rem;font-size:1rem;opacity:1}
+  .solution-preview .biz-note{max-width:none;margin-top:1rem;font-size:.62rem;opacity:1}
+  /* the two exports are pairs of cards, so stacking them gives the artboard's four */
+  .solution-preview .biz-stats{position:static;inset:auto;display:flex;flex-direction:column;
+    gap:4vw;margin:9vw 0 0;padding:0 6.2vw;opacity:1}
+  .solution-preview .biz-stats img{position:static;width:100%;height:auto}
+
+  /* 2 — Benefits: the three columns become a snap carousel */
+  .solution-preview #solStateB{height:auto;padding:16vw 0 0}
+  .solution-preview .biz-ben{position:static;transform:none;width:auto;aspect-ratio:auto;container-type:normal}
+  .solution-preview .biz-ben-title{position:static;width:auto;padding:0 6.2vw;font-size:clamp(2rem,8.7vw,2.4rem)}
+  .solution-preview .biz-ben-cols{position:static;height:auto;margin-top:8vw;
+    display:flex;gap:4vw;padding:0 6.2vw;overflow-x:auto;scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .solution-preview .biz-ben-cols::-webkit-scrollbar{display:none}
+  .solution-preview .biz-ben-col{position:relative;flex:0 0 auto;left:auto;width:80vw;height:auto;
+    aspect-ratio:342/560;border-radius:14px;scroll-snap-align:center;opacity:1}
+  .solution-preview .biz-ben-window,.solution-preview .biz-ben-glow{display:none}
+  .solution-preview .biz-ben-copy{top:auto;height:38%;padding:5vw 5vw 6vw}
+  .solution-preview .biz-ben-copy h3{margin-bottom:.5rem;font-size:1.15rem;line-height:1.2}
+  .solution-preview .biz-ben-copy p{font-size:.78rem;line-height:1.45}
+  .solution-preview .biz-chip{padding:2.4vw;border-radius:2.2vw;font-size:.72rem}
+  .solution-preview .biz-ben-chart{left:8%;width:84%;height:24%;padding:3.4vw;border-radius:3.4vw}
+  .solution-preview .biz-ben-value{gap:1.6vw;font-size:.62rem}
+  .solution-preview .biz-ben-value svg{width:1.7vw;height:3.4vw}
+  .solution-preview .biz-ben-select{gap:1vw;padding:1.8vw;font-size:.65rem}
+  .solution-preview .biz-ben-select svg{width:3.6vw;height:3.6vw}
+  .solution-preview .biz-ben-y,.solution-preview .biz-ben-x{font-size:.42rem}
+  .solution-preview .biz-ben-earn{left:8%;width:84%;gap:4vw;padding:3.4vw 0;border-radius:2.4vw}
+  .solution-preview .biz-ben-earn-title{padding:0 3.4vw;font-size:.95rem}
+  .solution-preview .biz-ben-earn-body{gap:1.2vw;padding:1.2vw 3.4vw}
+  .solution-preview .biz-ben-earn-status,.solution-preview .biz-ben-earn-sub{font-size:.56rem}
+  .solution-preview .biz-ben-earn-h,.solution-preview .biz-ben-earn-amt{font-size:.72rem}
+
+  /* 3 — Enterprise: copy, button, then the dashboard under it */
+  .sol-how{position:static;inset:auto;display:block;opacity:1;pointer-events:auto}
+  .sol-how-fit{width:auto;aspect-ratio:auto;container-type:normal;padding:16vw 0 0}
+  .sol-how .ent-copy{position:static;width:auto;padding:0 6.2vw}
+  .sol-how .ent-title{margin-bottom:1.2rem;font-size:clamp(2rem,8.7vw,2.4rem)}
+  .sol-how .ent-body{width:auto;margin-bottom:1.6rem;font-size:clamp(.9rem,4vw,1rem)}
+  .sol-how .ent-cta{padding:1rem 1.4rem;min-height:0;font-size:1rem}
+  .sol-how .ent-dash{position:static;width:100%;height:auto;margin:10vw 0 0}
+
+  /* --- FAQ and footer --- */
+  .faq{flex-direction:column;gap:36px;width:auto;padding:16vw 6.2vw 14vw}
+  .faq-title{max-width:none;font-size:clamp(2rem,8.7vw,2.4rem)}
+  .faq-list{width:100%}
+  .faq-row{padding:20px}
+  .faq-row .faq-q{white-space:normal;font-size:.92rem;line-height:1.25}
   .site-footer{grid-template-columns:1fr;gap:32px;padding-bottom:9vw}
+  .disclosures{padding-left:6.2vw;padding-right:6.2vw}
   .brand{top:16px;left:16px}
-  /* a tag has no width of its own — it fills whatever room its left offset leaves,
-     so on a narrow screen one placed well left grows until it meets the edge */
-  #worth .worth{left:5vw;top:38vh;width:90vw}
-  .age-scene .ctl{bottom:10vh}
-  .solution-preview .sol-state{left:8vw;max-width:84vw}
-  .solution-preview #solStateA,
-  .solution-preview #solStateB{top:20vh}
-  /* the desktop 115 is an id rule, so it outranks .sol-state's 8vw here unless said again */
-  .solution-preview #solStateB{left:8vw}
-  /* the centred, fixed-width block is a desktop composition only */
-  .solution-preview #solStateA{transform:none;width:auto;max-width:84vw}
-  /* sept-8: the two card stacks are placed off the wide artboard's own coordinates,
-     which put them past the right edge of a phone. They stack under the copy here,
-     and the button and its line come back to phone-sized type. */
-  .solution-preview .biz-stats{inset:auto 0 26vh 8vw;display:flex;gap:4vw;align-items:flex-start}
-  .solution-preview .biz-stats img{position:static;width:38vw}
-  .solution-preview .biz-cta{width:auto;height:auto;padding:.9rem 1.4rem;margin-top:1.6rem}
-  .solution-preview .biz-note{max-width:84vw;margin-top:.9rem}
-  .solution-preview .sol-body{max-width:84vw;margin-top:1.4em}
-  /* the vw paddings and gaps are a few pixels at this width, so set them in their own terms */
-  .closing{padding-top:0}
-  .closing-copy{width:84vw}
-  .closing-sub{margin-top:1.2em}
-  .closing-cta{margin-top:12vw;padding:14px 24px;font-size:1rem}
 }
 /* On a phone the nav's own content is wider than 94vw — logo, rule, wordmark and a
    CTA whose label runs to 25 characters — so the CTA's text was being clipped. The
@@ -560,6 +606,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <a class="pill" href="#">Log in</a>
     <a class="pill p" href="#">Open a Business dWallet</a>
   </div>
+  <!-- sept-8 mobile, Figma 3783:22552: the phone nav is the mark and a menu button;
+       the links and both buttons fold into it. -->
+  <button class="nav-menu" type="button" aria-label="Open menu" aria-expanded="false">
+    <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+  </button>
 </header>
 
 <!-- ACT 1 : YOUR LIFE CREATES DATA -->
@@ -1175,17 +1226,21 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     fitSolHow();
     return () => { trig.kill(); tl.kill(); };
   }).add('(max-width: 760px)', () => {
-    solHost.appendChild(solHowEl);
-    fitSolHow();
-    const tl = buildSolTl(false);
-    const trig = ScrollTrigger.create({trigger:'#solution', start:'top top',
-      end:'+=300%', pin:true, scrub:true, animation:tl});
-    // the cards lift into view on the way past, the way every other block in the
-    // scrolling part of the page does
-    const lift = gsap.fromTo('#howHost .step', {opacity:0, y:28},
-      {opacity:1, y:0, duration:.6, stagger:.08, ease:'power2.out',
-       scrollTrigger:{trigger:'#howHost', start:'top 82%'}});
-    return () => { trig.kill(); tl.kill(); lift.scrollTrigger && lift.scrollTrigger.kill(); lift.kill(); };
+    // sept-8 mobile, Figma 3783:22552: the phone artboard runs the three framings
+    // one under the next as ordinary sections rather than crossfading them on one
+    // pinned screen, so there is no pin and no timeline here. The stylesheet lays
+    // them out; all this has to do is undo the resting opacities the wide build
+    // relies on, since nothing will tween them open.
+    solSec.appendChild(solHowEl);
+    const shown = ['#solStateA', '#solStateB', '#solHow', '#bizStats',
+                   '#solStateA .biz-cta', '#solStateA .biz-note', '#solStateA .sol-body',
+                   '#solStateB .biz-ben-col'];
+    gsap.set(shown, {clearProps:'all'});
+    gsap.set(shown, {opacity:1, y:0, scale:1});
+    // the masked headline lines are opened too — the reveal belonged to the pin
+    gsap.set($$('#solStateA .sol-headline .ln > span, #solStateB .biz-ben-title .ln > span'),
+             {yPercent:0});
+    return () => {};
   });
 
 
