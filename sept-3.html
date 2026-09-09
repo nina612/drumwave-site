@@ -579,14 +579,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .how-steps{grid-template-columns:1fr;gap:8vw;padding:8vw 8vw 0}
   .how-title{padding-left:8.5vw}
   .step-card{width:100%}
+  /* 1.458vw is only 5-6px at phone widths — barely a gap between the card
+     and its eyebrow/heading/body. A fixed 20px reads as an actual gap
+     regardless of viewport width. */
+  .step-copy{margin-top:20px;gap:8px}
   .step-eyebrow{font-size:.8rem}
   .step-h{font-size:1.35rem}
   .step-body{font-size:.9rem}
   .site-footer{grid-template-columns:1fr;gap:32px;padding-bottom:9vw}
   .brand{top:16px;left:16px}
   /* a tag has no width of its own — it fills whatever room its left offset leaves,
-     so on a narrow screen one placed well left grows until it meets the edge */
-  #worth .worth{left:5vw;top:38vh;width:90vw}
+     so on a narrow screen one placed well left grows until it meets the edge.
+     Bottom-anchored like the desktop rule, not top:38vh — that top value left
+     most of the 100vh pinned screen empty underneath the line. */
+  #worth .worth{left:5vw;bottom:12.31vh;width:90vw}
+  /* the glow followed the text down: it was still centred at 31.30vh, well
+     above the line now that the line sits near the bottom. */
+  #worth .time-glow-q{top:auto;bottom:2vh}
   .age-scene .ctl{bottom:10vh}
   .solution-preview .sol-state{left:8vw;max-width:84vw}
   .solution-preview #solStateA,
