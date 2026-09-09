@@ -74,7 +74,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .nav .logo{display:flex;align-items:center;gap:24px;margin-right:auto}
 .nav .logo .mark{width:36px;height:36px;display:block;object-fit:contain;flex:none}
 .nav .logo .rule{width:1px;height:35px;background:rgba(153,153,153,.4);flex:none}
-.nav .logo .wordmark{width:111.966px;height:25.547px;display:block;flex:none}
+/* height:auto, not the node's container box: the mark's artwork is 113.995 x
+   27.577 and overflows that container, so pinning both axes squashed it. */
+.nav .logo .wordmark{width:111.966px;height:auto;display:block;flex:none}
 .nav .links{display:flex;align-items:center;gap:40px}
 .nav .links a{font-weight:400;color:#fff}
 .nav .links a.cur{font-weight:600}
@@ -95,7 +97,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .nav .links,.nav .sep{display:none}
   .nav .logo{gap:14px}
   .nav .logo .rule{height:28px}
-  .nav .logo .wordmark{font-size:22px}
   .nav .pill{padding:10px 16px;font-size:15px}
   .nav .pill:not(.p){display:none}
 }
@@ -507,7 +508,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .nav .links,.nav .sep,.nav .ctas{display:none}
   .nav .logo{gap:14px}
   .nav .logo .mark{width:30px;height:30px}
-  .nav .logo .wordmark{width:92px;height:15.7px}
+  .nav .logo .wordmark{width:92px;height:auto}
   .nav .nav-menu{display:flex;flex-direction:column;justify-content:center;gap:5px;
     width:32px;height:32px;margin-left:auto;padding:0;border:0;background:none;cursor:pointer}
   .nav .nav-menu span{display:block;width:20px;height:1.5px;margin:0 auto;background:#fff;border-radius:2px}
@@ -579,12 +580,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .disclosures{padding-left:6.2vw;padding-right:6.2vw}
   .brand{top:16px;left:16px}
 }
-/* On a phone the nav's own content is wider than 94vw — logo, rule, wordmark and a
-   CTA whose label runs to 25 characters — so the CTA's text was being clipped. The
-   logo disc carries the brand on its own down here. */
-@media (max-width:440px){
-  .nav .logo .rule,.nav .logo .wordmark{display:none}
-}
+/* The mark used to be hidden below 440 because the nav also carried a CTA whose
+   label ran to 25 characters and was clipping beside it. The phone nav folds the
+   buttons into the menu now, so there is room, and Figma 3783:22552 shows the mark
+   at 390. */
 @media (prefers-reduced-motion:reduce){
 }
 </style>
