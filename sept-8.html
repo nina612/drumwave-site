@@ -61,10 +61,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* chrome */
 /* Figma 3068-141400: 1058px pill, 24/16 padding, 100px radius, 70% ink under a
    10px blur, 1px hairline at 30% grey. Type is Titillium 18 throughout. */
-/* absolute, not fixed: the bar belongs to the top of the page and scrolls
-   away with it rather than riding over every scene below */
+/* fixed here, absolute at the phone breakpoint: on a wide screen the bar
+   stays with the reader, and only on a phone does it belong to the top of the
+   page and leave with it */
 .nav{
-  position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:50;
+  position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:50;
   /* Figma 3157-67646: 1200 x 84, padded 16 all round but 24 on the left where the
      logo sits, and a solid #8b8b8b hairline rather than a faded one */
   width:min(1200px,94vw);height:84px;padding:16px 24px;
@@ -599,7 +600,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   /* --- nav: the hamburger/panel/backdrop system itself now lives in the
      1000px block above (no separate tablet tier); down here it only needs to
      sit 78px from the top instead of 12, to clear the status bar above it. */
-  .nav{top:78px}
+  /* the bar scrolls away with the page here rather than riding over every
+     scene below; the wide build keeps it fixed */
+  .nav{position:absolute;top:78px}
 
   /* --- hero: one photo, the headline low and left --- */
   #act1 .hero-h{left:7.7vw;bottom:5.6vh;top:auto;max-width:87vw;
