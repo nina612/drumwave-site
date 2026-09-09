@@ -311,14 +311,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* ACT 6 : THE SOLUTION — fades up on black at the end of the #ages pin */
 .solution-preview{position:absolute;inset:0;z-index:9;pointer-events:none}
 .solution-preview .sol-state{position:absolute;left:5.83vw;max-width:49vw;z-index:2}
-/* Figma 3260-117245: the copy block is vertically centred on the frame and 849px
-   wide on a 1920 measure, with the body 37px under the headline */
-.solution-preview #solStateA{top:50%;transform:translateY(-50%);width:44.22vw;max-width:none}
-/* State B's own node: 115 in from the left, 333 down, and 390 under a block that is
-   three 118.8 lines — 333+357+390 is the 1080 frame. So it is deliberately NOT
-   centred the way state A is; it sits 29px above centre, and the 3px of left is
-   its own too. Both states are drawn on their own frame, and the words differ
-   across the change, so neither offset reads as a jump. */
+/* State A used to sit vertically centred on its own frame (Figma 3260-117245)
+   while state B sat at its own fixed 30.8vh (Figma's own node for that
+   screen, deliberately not centred) — two different boxes reasoned to not
+   read as a jump because the words differ across the change. Personal now
+   wants the crossfade to read as only the words changing, so state A gives
+   up its own centred position and 44.22vw width and takes state B's box
+   exactly, on every breakpoint. */
+.solution-preview #solStateA,
 .solution-preview #solStateB{left:5.99vw;top:30.8vh}
 .solution-preview .sol-headline{font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2.2rem,6.25vw,7.5rem);line-height:.99;letter-spacing:-.03em;color:#E3E3E3}
 /* The descender of the g in "Introducing" and "Savings" was being cut off.
@@ -605,12 +605,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   #worth .time-glow-q{top:auto;bottom:2vh}
   .age-scene .ctl{bottom:10vh}
   .solution-preview .sol-state{left:8vw;max-width:84vw}
+  /* the desktop rule above is an id selector, so it outranks .sol-state's 8vw/20vh
+     here unless said again at the same specificity */
   .solution-preview #solStateA,
-  .solution-preview #solStateB{top:20vh}
-  /* the desktop 115 is an id rule, so it outranks .sol-state's 8vw here unless said again */
-  .solution-preview #solStateB{left:8vw}
-  /* the centred, fixed-width block is a desktop composition only */
-  .solution-preview #solStateA{transform:none;width:auto;max-width:84vw}
+  .solution-preview #solStateB{top:20vh;left:8vw}
   .solution-preview .sol-body{max-width:84vw;margin-top:1.4em}
   .solution-preview .sol-cta{left:8vw;top:auto;bottom:22vh}
   .solution-preview .sol-card{right:auto;left:8vw;top:auto;bottom:33.33vh;width:84vw}
