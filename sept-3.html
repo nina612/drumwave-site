@@ -310,6 +310,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .age-scene .ctl .ages{position:relative;display:flex;justify-content:space-between;margin-top:10px}
 .age-scene .ctl .ages span{position:absolute;transform:translateX(-50%);color:var(--mute);transition:color .3s;font-size:11px}
 .age-scene .ctl .ages span.cur{color:var(--bone)}
+/* the phone caption that stands in for .hint below 760px — see the note by
+   the markup for why this is a second element rather than a relabel */
+.age-scene .hint-phone{display:none}
+
+/* Figma 3898:98620/3361:82763 — skip past the age-scrub pin without dragging
+   through all 70 years. #ageCtl sits at bottom:8vh (desktop) / 10vh (phone)
+   with its age labels as its last, bottom-most row, so this needs a smaller
+   bottom offset than either to actually clear them rather than overlap. */
+.age-scene .age-skip{position:absolute;right:5vw;bottom:3vh;z-index:8;
+  display:flex;align-items:center;gap:8px;background:none;border:0;padding:0;cursor:pointer;
+  color:#E3E3E3;font-family:'Open Sans',sans-serif;font-weight:600;font-size:.8rem;
+  letter-spacing:.1em;text-transform:uppercase;opacity:.5;transition:opacity .25s}
+.age-scene .age-skip:hover{opacity:.85}
+/* the source glyph is two stacked up-chevrons; turned 90° it reads as
+   pointing on toward what comes next instead of up the page */
+.age-scene .age-skip-arrow{display:block;width:9px;height:8px;transform:rotate(90deg)}
 
 /* ACT 6 : THE SOLUTION — fades up on black at the end of the #ages pin */
 .solution-preview{position:absolute;inset:0;z-index:9;pointer-events:none}
@@ -615,6 +631,31 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      above the line now that the line sits near the bottom. */
   #worth .time-glow-q{top:auto;bottom:2vh}
   .age-scene .ctl{bottom:10vh}
+  /* Figma 3898:98620 — text and picker restyled for the phone; position,
+     the scroll-jacked pin, and the drag/frame logic behind all of it are
+     untouched. The dollar figure loses its "potential value accumulated"
+     tag (the new caption below stands in for it), the hint pair is swapped
+     for that caption, and the track drops the rail/fill/glowing handle for
+     a plain even tick row over a hairline, with only the two end labels
+     shown. */
+  .age-scene .num-wrap .lab{display:none}
+  .age-scene .bignum{font-size:min(20vw,5.5rem)}
+  .age-scene .ctl .hint{display:none}
+  .age-scene .hint-phone{display:block;margin-bottom:14px;color:#bababa;
+    font-family:'Open Sans',sans-serif;font-weight:600;font-size:1rem;
+    letter-spacing:.1em;text-transform:uppercase;line-height:1.3}
+  /* the rail moves down to sit as the hairline under the ticks instead of
+     running through their middle; the fill and the handle's glowing dot
+     aren't part of this design, so both go transparent — the handle stays
+     in the DOM (and draggable: pointerdown listens on the track, not it)
+     purely to keep the drag math it's read from intact */
+  .age-scene .track .rail{top:auto;bottom:-6px;background:rgba(255,255,255,.2)}
+  .age-scene .track .fill{display:none}
+  .age-scene .track .ticks{top:0;transform:none}
+  .age-scene .track .ticks i{width:1px;height:12px;background:rgba(255,255,255,.3);opacity:1;transform:none}
+  .age-scene .track .ticks i.hit{background:#fff;height:12px;opacity:1}
+  .age-scene .track .handle{opacity:0}
+  .age-scene .ctl .ages span:not(:first-child):not(:last-child){display:none}
   .solution-preview .sol-state{left:8vw;max-width:84vw}
   /* the desktop rule above is an id selector, so it outranks .sol-state's 8vw/20vh
      here unless said again at the same specificity */
@@ -805,6 +846,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   <div class="ctl" id="ageCtl">
     <div class="hint mono"><span>One life, 0 to 70</span><b id="ageDragHint">Drag to move through time</b></div>
+    <!-- Figma 3898:98620 — the phone caption, replacing the hint pair above
+       rather than sharing its markup: it isn't announcing that the track
+       drags, it's captioning the dollar figure, so it needs its own text
+       and its own on/off switch at the breakpoint instead of relabelling
+       #ageDragHint (which the first-drag reveal below still targets). -->
+    <p class="hint-phone mono">Data value generated<br>from birth to retirement*</p>
     <div class="track" id="ageTrack" role="slider" aria-label="Age" aria-valuemin="0" aria-valuemax="70" aria-valuenow="0" tabindex="0">
       <div class="rail"></div>
       <div class="fill" id="ageFill"></div>
@@ -813,6 +860,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     </div>
     <div class="ages mono" id="ageLabels"></div>
   </div>
+
+  <!-- Figma 3898:98620/3361:82763 — a way off the age pin that isn't scrubbing
+       through all 70 years first. Figma's own layers nest two 90° rotations
+       (the control, then the glyph again inside it) but the rendered result
+       is a plain horizontal row — the glyph is a stacked double up-chevron
+       that one turn reads as pointing on toward what comes next, not the
+       vertical column two stacked turns would suggest. -->
+  <button class="age-skip" id="ageSkip" type="button" aria-label="Skip to next section">
+    <span class="age-skip-label mono">Skip to next section</span>
+    <img class="age-skip-arrow" src="assets/img/sept3-icon-skip-arrow.svg" alt="" width="7" height="8">
+  </button>
 
 </section>
 
@@ -1765,6 +1823,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     onUpdate(self){
       if(!ageDragging) renderAge(AGE_MIN + self.progress*(AGE_MAX-AGE_MIN));
     }
+  });
+  // Figma 3898:98620/3361:82763 — past the pin in one jump rather than
+  // dragging or scrubbing through all 70 years first. Instant, not smooth:
+  // this section is scrub-pinned, and a smooth scroll fights that the whole
+  // way rather than landing cleanly, the same reason ageScrollToT above it
+  // jumps outright instead of easing.
+  $('#ageSkip').addEventListener('click', () => {
+    window.scrollTo(0, ageST.end + 1);
   });
 
   // Drag: the handle scrolls the page, so scroll and drag share one source of truth
