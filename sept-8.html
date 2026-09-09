@@ -1541,6 +1541,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // this runs on every refresh, so the plan headline's deeper offset has to be
     // reapplied here too or a refresh leaves the queued state peeking below its mask
     gsap.set($$(solHeadSpans), {yPercent:SOL_OUT});
+    // On a phone #solution has no pin and no scrub to open these two back up later —
+    // the mobile matchMedia branch below opens them once at setup, but this blanket
+    // hide runs again on every refresh and on every autoplay loop restart (the run
+    // plays itself on a phone now), stomping them back to queued/hidden each time
+    // with nothing left to reveal them again. Reopen them here too when on a phone.
+    if(MOBILE) gsap.set($$('#solStateA .sol-headline .ln > span, #solStateB .biz-ben-title .ln > span'), {yPercent:0});
   };
   const hideTags = resetRun;
   ScrollTrigger.addEventListener('refresh', hideTags);
