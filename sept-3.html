@@ -1768,6 +1768,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
                       [T_TAP, ACT1_END + BABY],
                       [ACT1_END + BABY, tl1.duration()]];
   const segOf = p => Math.min(phraseSegs.length - 1, Math.floor(p * phraseSegs.length));
+  // how much quicker the phone plays a statement than the run's authored pace
+  const PHONE_RATE = 1.45;
 
   const buildRunPin = phone => {
     if(!phone){
@@ -1786,7 +1788,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       if(i === seg) return;
       seg = i;
       if(segTween) segTween.kill();
-      segTween = tl1.tweenFromTo(phraseSegs[i][0], phraseSegs[i][1]);
+      const [a, b] = phraseSegs[i];
+      // The run was authored as scroll distance, and read slow once it was
+      // playing to a clock instead — asked for. Said as the tween's own
+      // duration rather than a timeScale on tl1, which the wide branch shares
+      // and which is set again below this. Everything inside a statement is
+      // carried by it, the cuts between photographs included.
+      segTween = tl1.tweenFromTo(a, b, {duration:(b - a) / PHONE_RATE, ease:'none'});
     };
     const trig = ScrollTrigger.create({
       trigger:'#act1', start:'top top', end:'+=' + (phraseSegs.length * 100) + '%',
