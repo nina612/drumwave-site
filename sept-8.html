@@ -1314,11 +1314,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   const RUN_FRAMES = 13;
   // Asked for on phones: the run goes in fours rather than a span a frame — one
   // image easing out of a slight push and holding 1.5s, then three going by at
-  // half a second each, the four repeated to the end of the set. Thirteen
+  // a fifth of a second each, the four repeated to the end of the set. Thirteen
   // frames makes three whole cycles and leaves the last as a held one.
-  // Its own cut, too: the flat .25 is half the life of a half-second frame, so
-  // those three would have spent most of their time mid-crossfade.
-  const M_HOLD = 1.5, M_QUICK = .5, M_CYCLE = 4, M_CUT = .15;
+  // Their own cut, too, and it comes down with them: the flat .25 is longer
+  // than a quick frame now lives, so those three would never finish arriving.
+  // .06 keeps the same share of the frame the cut had at half a second.
+  const M_HOLD = 1.5, M_QUICK = .2, M_CYCLE = 4, M_CUT = .06;
   const spanOf = i => MOBILE ? (i % M_CYCLE === 0 ? M_HOLD : M_QUICK)
                              : (i === 0 ? HERO : SPAN);
   const cutOf   = i => MOBILE && i % M_CYCLE !== 0 ? M_CUT : CUT;
