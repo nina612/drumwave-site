@@ -83,6 +83,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .nav .sep{width:1px;height:40.5px;background:rgba(255,255,255,.3);flex:none}
 .nav .ctas{display:flex;align-items:center;gap:14px}
 .nav .nav-menu{display:none}
+/* hidden at every width by default; the 760px block below is the only place
+   that gives it real layout, so without this base rule it falls back to a
+   plain block div and leaks into the desktop/tablet nav above that width */
+.nav-menu-panel{display:none}
+/* same reasoning as .nav-menu-panel above, for the backdrop behind it */
+.nav-menu-backdrop{display:none}
 /* device chrome from the phone artboard; hidden until the phone breakpoint */
 .status-bar{display:none}
 .nav .pill{
@@ -109,7 +115,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .frame{position:absolute;inset:0;opacity:0;will-change:opacity,transform}
 .frame img{width:100%;height:100%;object-fit:cover}
 #act1 > .frame::after{content:none}
-/* sept-8: the run now holds one headline over eleven photographs, and several of
+/* sept-8: the run now holds one headline over thirteen photographs, and several of
    them are bright where the old set was uniformly dark — the copy measured 124
    luma behind it on the solar and crate frames against 66 on the opener. The
    lower half of the scrim is deepened so the one piece of copy reads on all of
@@ -478,18 +484,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* drawn at #666 on this footer; the marks are white artwork, so dim them to it */
 .site-footer .foot-social img{display:block;height:1.354vw;min-height:16px;width:auto;opacity:.4}
 .site-footer .foot-social a:hover img{opacity:.7}
-.site-footer .foot-logo{display:flex;align-items:center;gap:14px}
+/* Figma 3783:22382: the lockup is 175.18 x 42, the mark 42.04 x 42 at x0
+   and the wordmark 118.12 x 18.64 at x57.06 — a 15.02px gap. Same lockup
+   at both breakpoints; the design draws no separate phone footer. */
+.site-footer .foot-logo{display:flex;align-items:center;gap:15px}
 /* the wordmark is in this lockup too, and `.foot-logo img` outranks
    `.foot-wordmark` on specificity, so it was being squashed into the mark's
    42 x 42 box and drawn about 42 x 6.7 by object-fit. Exclude it here. */
 .site-footer .foot-logo img:not(.foot-wordmark){width:42px;height:42px;object-fit:contain}
-/* Sized to match the nav's dWallet lockup rather than Figma 3783:22383,
-   which draws this at 118.12 x 18.64. Both marks have a tallest letter and
-   no descender, so equal ink height is equal apparent text size: dWallet
-   inks 26.358 of its 113.995 box, DrumWave 18.642 of its 119, so matching
-   the nav's 111.966 needs 119 x 1.3887. height stays auto — pinning both
-   axes to a derived box is what stretched the nav mark. */
-.site-footer .foot-wordmark{width:165.26px;height:auto;display:block}
+.site-footer .foot-wordmark{width:118.12px;height:auto;display:block}
 .site-footer .foot-tag{margin-top:16px;font-family:'Open Sans',sans-serif;font-size:clamp(1rem,1.04vw,1.25rem);line-height:1.2;color:#B4B4B4}
 .site-footer .foot-tag sup{font-size:.7em;vertical-align:super;line-height:0}
 .site-footer .foot-copy{margin-top:40px;max-width:282px;font-family:'Open Sans',sans-serif;font-size:clamp(.9rem,.94vw,1.125rem);line-height:1.34;color:#666}
@@ -544,6 +547,49 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .nav .nav-menu{display:flex;align-items:center;justify-content:center;flex:none;
     width:24px;height:24px;margin-left:auto;padding:0;border:0;background:none;cursor:pointer}
   .nav .nav-menu img{display:block;width:24px;height:24px}
+  /* the collapsed pill's own logo and button sit underneath the panel once it
+     opens — hidden rather than just covered, so they drop out of tab order.
+     Direct-child combinator: the panel has its own .logo nested inside it,
+     and a descendant selector here would hide that one too. */
+  .nav.menu-open>.logo,.nav.menu-open>.nav-menu{visibility:hidden}
+
+  /* --- mobile menu panel, Figma 3849:44947: opens in the pill's own
+     footprint — same fixed position and width as the collapsed bar, sitting
+     over it rather than pushing it down, with its height given by content.
+     24 padding, 24 radius, #070707 on a #202020 hairline, 30 between the top
+     row and the links/CTAs stack. The logo lockup reuses .nav .logo exactly:
+     the phone rule already sizes it 30.033/34/86.371, matching this frame. */
+  .nav-menu-panel{display:none;position:absolute;top:0;left:0;right:0;
+    flex-direction:column;gap:30px;padding:24px;
+    background:#070707;border:1px solid #202020;border-radius:24px}
+  .nav-menu-panel.open{display:flex}
+  .nav-menu-panel .mp-top{display:flex;align-items:center;gap:10px;width:100%}
+  .nav-menu-panel .logo{flex:1;min-width:0}
+  .nav-menu-panel .mp-close{flex:none;width:24px;height:24px;display:flex;
+    align-items:center;justify-content:center;padding:0;border:0;background:none;cursor:pointer}
+  .nav-menu-panel .mp-close img{display:block;width:24px;height:24px}
+  .nav-menu-panel .mp-body{display:flex;flex-direction:column;gap:48px;width:100%}
+  .nav-menu-panel .mp-links{display:flex;flex-direction:column;gap:28px;width:100%;
+    font-family:'Open Sans',sans-serif;font-size:24px;line-height:1.2;color:#fff}
+  .nav-menu-panel .mp-links a{font-weight:400;color:#fff}
+  .nav-menu-panel .mp-links a.cur{font-weight:600}
+  .nav-menu-panel .mp-ctas{display:flex;flex-direction:column;gap:16px;width:100%}
+  /* .pill/.pill.p are .nav's own CTA styles (border, gradient, radius) —
+     reused as-is, just stretched full width instead of the desktop's fixed
+     258px, and restored past the 900px rule that hides the outline pill. */
+  .nav-menu-panel .pill:not(.p){display:inline-flex;width:100%}
+  .nav-menu-panel .pill.p{width:100%}
+
+  /* --- backdrop behind the open panel, Figma 3849:44946/3849:44932: the
+     whole page dims and blurs, full screen, and clears once the menu closes.
+     z-index sits under the nav (50) so the pill and panel stay crisp on top,
+     and under the status bar (60) so that device chrome is never dimmed.
+     Toggled by .nav's own .menu-open class via the sibling combinator, so
+     opening the panel needs no separate JS call for this element. */
+  .nav-menu-backdrop{display:block;position:fixed;inset:0;z-index:49;
+    background:rgba(0,0,0,.8);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    opacity:0;pointer-events:none;transition:opacity .25s}
+  .nav.menu-open~.nav-menu-backdrop{opacity:1;pointer-events:auto}
 
   /* --- hero: one photo, the headline low and left --- */
   #act1 .hero-h{left:7.7vw;bottom:5.6vh;top:auto;max-width:87vw;
@@ -635,8 +681,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .faq-row .faq-q{white-space:normal;font-size:16px;line-height:1.375;letter-spacing:-.48px}
   .faq-row i{width:24px;height:24px;line-height:24px}
   .site-footer{grid-template-columns:1fr;gap:32px;padding-bottom:9vw}
-  /* the phone nav's dWallet is 86.371 wide, so the match lands lower here */
-  .site-footer .foot-wordmark{width:127.48px}
   .disclosures{padding-left:6.2vw;padding-right:6.2vw}
   .brand{top:16px;left:16px}
 }
@@ -659,7 +703,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <span class="rule" aria-hidden="true"></span>
     <img class="wordmark" src="assets/img/sept8-dwallet-wordmark.svg" alt="dWallet" width="112" height="26">
   </a>
-  <nav class="links"><a href="#">Personal</a><a class="cur" href="#">Business</a></nav>
+  <nav class="links"><a href="sept-3.html">Personal</a><a class="cur" href="#">Business</a></nav>
   <span class="sep" aria-hidden="true"></span>
   <div class="ctas">
     <a class="pill" href="#">Log in</a>
@@ -667,10 +711,43 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   </div>
   <!-- sept-8 mobile, Figma 3783:23119: the phone nav is the mark and a menu button;
        the links and both buttons fold into it. -->
-  <button class="nav-menu" type="button" aria-label="Open menu" aria-expanded="false">
+  <button class="nav-menu" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navMenuPanel">
     <img src="assets/img/sept8-icon-menu.svg" alt="" width="24" height="24">
   </button>
+
+  <!-- sept-8 mobile, Figma 3849:44947: the open state of that menu — the pill's
+       own footprint, opaque, holding the logo lockup again next to a close
+       button, then Personal/Business, then both CTAs full width. -->
+  <div class="nav-menu-panel" id="navMenuPanel">
+    <div class="mp-top">
+      <a class="logo" href="#">
+        <img class="mark" src="assets/img/logo.png" alt="" width="30" height="30">
+        <span class="rule" aria-hidden="true"></span>
+        <img class="wordmark" src="assets/img/sept8-dwallet-wordmark.svg" alt="dWallet" width="86" height="20">
+      </a>
+      <button class="mp-close" type="button" aria-label="Close menu">
+        <img src="assets/img/sept8-icon-close.svg" alt="" width="24" height="24">
+      </button>
+    </div>
+    <div class="mp-body">
+      <nav class="mp-links" aria-label="Mobile">
+        <a href="sept-3.html">Personal</a>
+        <a class="cur" href="#">Business</a>
+      </nav>
+      <div class="mp-ctas">
+        <a class="pill" href="#">Log in</a>
+        <a class="pill p" href="#">Open a Business dWallet</a>
+      </div>
+    </div>
+  </div>
 </header>
+
+<!-- sept-8 mobile, Figma 3849:44866: the whole page dims and blurs behind the
+     open menu panel. A sibling of .nav rather than nested in it — .nav's own
+     translateX(-50%) would otherwise anchor a fixed-position child to its
+     small pill box instead of the viewport. Toggled purely in CSS off the
+     same .menu-open flag the panel already uses (see the ~ selector below). -->
+<div class="nav-menu-backdrop" aria-hidden="true"></div>
 
 <!-- sept-8 mobile, Figma 3783:27397 — the iPhone status bar the artboard is drawn
      over. It is device chrome, not part of the site, so it is decorative: phones
@@ -687,8 +764,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 <!-- ACT 1 : YOUR LIFE CREATES DATA -->
 <section class="act" id="act1" aria-label="Your life creates data">
-  <!-- sept-8: the run is one ordered sequence of eleven photographs, Figma
-       3783:17479 then 3795:64559/64571/64563/64565/64567/64569/64577/68827/68829/64575.
+  <!-- sept-8: the run is one ordered sequence of thirteen photographs, Figma
+       3783:17479 then 3795:64559/64571/64563/64565/64567/64569/64577/68827/68829/64575,
+       then 3819:69030/3801:60531 (the trading floor and the developer).
        The headline stands over every one of them, so there is no second copy layer
        and no second act — the frames all live here and cut on a single beat. -->
   <div class="frame on" data-i="0"><img src="assets/img/sept8-run-01.jpg" alt="A barista pulling a shot at an espresso machine in a cafe"></div>
@@ -702,6 +780,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <div class="frame" data-i="8"><img src="assets/img/sept8-run-09.jpg" alt="A shop worker restocking shelves in a personal care aisle" loading="lazy"></div>
   <div class="frame" data-i="9"><img src="assets/img/sept8-run-10.jpg" alt="A grocer placing boxes on a shelf in a food hall" loading="lazy"></div>
   <div class="frame" data-i="10"><img src="assets/img/sept8-run-11.jpg" alt="A film crew working in front of a large LED volume wall" loading="lazy"></div>
+  <div class="frame" data-i="11"><img src="assets/img/sept8-run-13.jpg" alt="A developer working at a code editor in a modern office" loading="lazy"></div>
+  <div class="frame" data-i="12"><img src="assets/img/sept8-run-12.jpg" alt="A trader on the phone surrounded by market data screens on a stock exchange floor" loading="lazy"></div>
   <div class="photo-veil" aria-hidden="true"></div>
 
   <h1 class="hero-h display xl">
@@ -961,6 +1041,31 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 <script>
 (function(){
   gsap.registerPlugin(ScrollTrigger);
+  // Figma 3849:44947 — the phone hamburger opens this panel in the collapsed
+  // pill's own place. A plain disclosure toggle: the menu button and the
+  // panel's own close button both flip it, Escape and an outside click do
+  // too, and focus follows open/close so keyboard use lands somewhere sane.
+  (function(){
+    const nav = document.querySelector('.nav');
+    const toggle = nav && nav.querySelector('.nav-menu');
+    const panel = document.getElementById('navMenuPanel');
+    if(!nav || !toggle || !panel) return;
+    const closeBtn = panel.querySelector('.mp-close');
+    const setOpen = open => {
+      nav.classList.toggle('menu-open', open);
+      panel.classList.toggle('open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+      if(open) closeBtn.focus(); else toggle.focus();
+    };
+    toggle.addEventListener('click', () => setOpen(!panel.classList.contains('open')));
+    closeBtn.addEventListener('click', () => setOpen(false));
+    document.addEventListener('keydown', e => {
+      if(e.key === 'Escape' && panel.classList.contains('open')) setOpen(false);
+    });
+    document.addEventListener('click', e => {
+      if(panel.classList.contains('open') && !nav.contains(e.target)) setOpen(false);
+    });
+  })();
   // Always open at the top. The browser otherwise restores the last scroll position on
   // reload, and with the run pinned across fifteen thousand pixels that drops the reader
   // into the middle of a scrubbed sequence — which, arriving a moment after load, looks
@@ -1039,7 +1144,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // buys the wider gaps above without asking the reader for more scrolling.
   // 525 paced seven stops at about three quarters of a screen each. The run has
   // eleven now, so this scales with them to keep one flick per photograph.
-  const RUN_PINS = 825;
+  // 975 — two more photographs (the trading floor and the developer, Figma
+  // 3819:69030 and 3801:60531), same 75%-per-frame ratio as the eleven before.
+  const RUN_PINS = 975;
 
   const autoPlay = {
     onEnter: self => self.animation.play(),
@@ -1164,14 +1271,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // the reader lands 1415px in and the tap frame runs to 2518px, so 1103px of it remain
   // after they arrive. It stays put rather than handing over on the next flick, and its
   // zoom is keyed to TAP so it simply eases out more slowly with it.
-  // sept-8: eleven photographs on one beat. The run used to be two acts with three
+  // sept-8: thirteen photographs on one beat. The run used to be two acts with three
   // statements moving between them, which is what the bespoke spans (a 7.5 unit "tap"
   // frame, a 2.2 dissolve) were pacing. There is one piece of copy now and it stands
   // over the whole sequence — so the headline is never tweened out, every frame after
   // the opener gets the same span and the same flat cut, and the reader lands on one
   // stop per photograph.
   const HERO = 2.6, SPAN = 1.6;
-  const RUN_FRAMES = 11;
+  const RUN_FRAMES = 13;
   // the opening image eases out of its push across the whole time it holds
   arrive(tl1, f1(0), 0, true, HERO, 1.02, 'power1.out');
 
