@@ -434,6 +434,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* Figma 3265-80136: four equal 380-wide cards with 52.667 gaps on a 1678 measure.
    The copy stays on a 340 column, so it sits in from each card's right edge. */
 .step-card{position:relative;width:100%;aspect-ratio:380/442;overflow:hidden;border-radius:5.27%/4.53%}
+/* picture wraps the mobile-only <source> swap below 760px; it isn't the
+   thing being sized, the img inside still is, but picture defaults to
+   inline and its baseline gap otherwise pokes a sliver out under the card */
+.step-card picture{display:block;width:100%;height:100%}
 .step-card img{display:block;width:100%;height:100%;object-fit:cover}
 .step-copy{margin-top:1.458vw;display:flex;flex-direction:column;gap:.625vw;width:17.699vw;max-width:100%}
 .step-eyebrow{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(.65rem,.833vw,1rem);letter-spacing:.1em;line-height:1.1;color:#278EFF;text-transform:uppercase}
@@ -856,7 +860,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
       <div class="how-steps">
         <article class="step" id="step1">
-          <div class="step-card"><img src="assets/img/how-card-1.jpg" alt="A woman stepping out of a rideshare car, with a card reading: You deposited data, Rideshare to 265 Horizon Rd, added to savings plan" loading="lazy"></div>
+          <div class="step-card"><picture>
+            <source media="(max-width:760px)" srcset="assets/img/how-card-1-mobile.jpg">
+            <img src="assets/img/how-card-1.jpg" alt="A woman stepping out of a rideshare car, with a card reading: You deposited data, Rideshare to 265 Horizon Rd, added to savings plan" loading="lazy">
+          </picture></div>
           <div class="step-copy">
             <p class="step-eyebrow">Own your data</p>
             <h3 class="step-h">Sign up &amp; request your data</h3>
@@ -865,7 +872,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         </article>
 
         <article class="step" id="step2">
-          <div class="step-card"><img src="assets/img/how-card-2.jpg" alt="Toggles for travel and transportation, finance and investments, retail and food, and entertainment and gaming, each switched on" loading="lazy"></div>
+          <div class="step-card"><picture>
+            <source media="(max-width:760px)" srcset="assets/img/how-card-2-mobile.jpg">
+            <img src="assets/img/how-card-2.jpg" alt="Toggles for travel and transportation, finance and investments, retail and food, and entertainment and gaming, each switched on" loading="lazy">
+          </picture></div>
           <div class="step-copy">
             <p class="step-eyebrow">Save your data</p>
             <h3 class="step-h">Save &amp; manage it</h3>
@@ -874,7 +884,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         </article>
 
         <article class="step" id="step3">
-          <div class="step-card"><img src="assets/img/how-card-3.jpg" alt="An offer card reading: license your streaming data and earn $, with a view offer button" loading="lazy"></div>
+          <div class="step-card"><picture>
+            <source media="(max-width:760px)" srcset="assets/img/how-card-3-mobile.jpg">
+            <img src="assets/img/how-card-3.jpg" alt="An offer card reading: license your streaming data and earn $, with a view offer button" loading="lazy">
+          </picture></div>
           <div class="step-copy">
             <p class="step-eyebrow">Participate in offers</p>
             <h3 class="step-h">Earn from its value</h3>
@@ -883,7 +896,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         </article>
 
         <article class="step" id="step4">
-          <div class="step-card"><img src="assets/img/how-card-4.jpg" alt="A woman smiling beside a QR code and a paying-from panel showing $50 available" loading="lazy"></div>
+          <div class="step-card"><picture>
+            <source media="(max-width:760px)" srcset="assets/img/how-card-4-mobile.jpg">
+            <img src="assets/img/how-card-4.jpg" alt="A woman smiling beside a QR code and a paying-from panel showing $50 available" loading="lazy">
+          </picture></div>
           <div class="step-copy">
             <p class="step-eyebrow">Pay with data <span class="step-note">(coming soon)</span></p>
             <h3 class="step-h">Transact using its value</h3>
