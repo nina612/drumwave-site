@@ -633,6 +633,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 @media (max-width:760px){
   /* the phone frame's 128 up from the bottom of its 844 */
   #act1{--hero-bottom:15.17vh}
+  /* Asked for: on a phone the statements travel the screen as one another
+     arrives — the outgoing one rides up and away while the next comes up from
+     below — rather than each line clearing its own mask in place. So the masks
+     come off here, and the per-line reveals with them: the run's timeline
+     writes those transforms inline, on the element, which is the one thing a
+     stylesheet only beats with !important. What moves instead is the block,
+     and that is driven from the statement change (see buildRunPin). */
+  #act1 .hero-h .ln,
+  #act1 .run-say .ln{overflow:visible}
+  #act1 .hero-h .ln > span,
+  #act1 .run-say .ln > span{transform:none !important}
   /* 45 of leading on 48, not the wide artboard's 112/140. At .8 the two lines
      all but touched; this is the 90 the frame gives the two of them. The
      nudge in the base rule goes with it — it corrects .8 against .run-say's
@@ -1850,10 +1861,31 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     let seg = -1, segTween = null, settled = 0;
     const stepP = 1 / phraseSegs.length;
     const clampSeg = i => Math.max(0, Math.min(phraseSegs.length - 1, i));
+    // The three statements, in the order they are spoken. They already share one
+    // resting place (all three sit on --hero-bottom), so moving them is a matter
+    // of carrying one away from it while the next comes to it.
+    const phraseEl = ['#act1 .hero-h', '#sayA', '#sayB'].map(s => $(s));
+    // far enough that the one leaving is still on screen, and well up it, as the
+    // one arriving reaches its place
+    const travel = () => window.innerHeight * .38;
     const play = i => {
       if(i === seg) return;
+      const from = seg;
       seg = i;
       if(segTween) segTween.kill();
+      // Asked for: the statements move through the screen rather than clearing
+      // their masks in place. The one being left rides out the way the reader is
+      // going and the one arriving comes from the other side, so for a moment
+      // both are up and the screen reads as one turning into the next.
+      if(from < 0){
+        phraseEl.forEach((el, k) => gsap.set(el, {y:0, opacity: k === i ? 1 : 0}));
+      } else {
+        const d = travel(), fwd = i > from;
+        gsap.to(phraseEl[from], {y: fwd ? -d : d, opacity:0,
+          duration:.5, ease:'power2.in', overwrite:true});
+        gsap.fromTo(phraseEl[i], {y: fwd ? d : -d, opacity:0},
+          {y:0, opacity:1, duration:.5, ease:'power2.out', overwrite:true});
+      }
       // A chain that walks tl1's playhead photograph by photograph, each leg
       // given the time that photograph is meant to be on screen rather than the
       // span it was authored at — those run from 1 unit to 7.5 and would read
@@ -1917,7 +1949,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     gsap.matchMedia()
       .add('(min-width: 761px)', () => { const t = buildRunPin(false); return () => t.kill(); })
       .add('(max-width: 760px)',  () => { const t = buildRunPin(true);
-        return () => { t.kill(); document.body.classList.remove('chrome-away'); }; });
+        return () => { t.kill();
+          document.body.classList.remove('chrome-away');
+          // the statements are carried by hand here; hand them back
+          gsap.set(['#act1 .hero-h', '#sayA', '#sayB'], {clearProps:'transform,opacity'});
+        }; });
   }
 
   /* ---------- HOW MUCH IS YOUR DATA WORTH? ---------- */
