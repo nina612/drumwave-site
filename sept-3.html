@@ -301,6 +301,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* the phone break is the default-hidden one; see the max-width:760px block
    for the swap and for why two markups exist at all */
 #worth .worth-phone{display:none}
+/* these two headings take a phone-only break (3870:45302); the wide screen has
+   the room to set each as one line */
+.faq-br,.closing-br{display:none}
 
 /* AGE SCENES (Age 0, Age 2, ...) */
 .age-scene .frames{position:absolute;inset:0}
@@ -629,6 +632,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 @media (max-width:760px){
   /* the phone frame's 128 up from the bottom of its 844 */
   #act1{--hero-bottom:15.17vh}
+  /* 45 of leading on 48, not the wide artboard's 112/140. At .8 the two lines
+     all but touched; this is the 90 the frame gives the two of them. The
+     nudge in the base rule goes with it — it corrects .8 against .run-say's
+     .9, and at .9375 what is left is under a pixel. */
+  #act1 .hero-h{line-height:.9375;bottom:var(--hero-bottom)}
   /* --- status bar, ported from sept-8's phone artboard: 54 tall with a 21
      top inset, device chrome rather than part of the site. --- */
   .status-bar{display:flex;align-items:center;position:absolute;left:0;right:0;top:0;z-index:60;
@@ -654,16 +662,34 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      sit 78px from the top instead of 12, to clear the status bar above it. */
   .nav{top:78px}
 
-  .how-steps{grid-template-columns:1fr;gap:8vw;padding:8vw 8vw 0}
-  .how-title{padding-left:8.5vw}
+  /* Figma 3870:45302 runs one headline size across the phone page — 44 on the
+     frame's 390, against the 32-35 these clamps were bottoming out at. Capped
+     rather than left on vw: the frame is drawn at 390 and 11.28vw would reach
+     86 by the time this breakpoint hands over at 760. */
+  .solution-preview .sol-headline,
+  .how-title,
+  .faq-title,
+  .closing-h{font-size:min(11.28vw,44px)}
+  /* the frame sets these on ~45 of leading, and gives this one the tracking
+     the rest of its headlines carry — the wide rule leaves it at normal */
+  .how-title,
+  .faq-title{line-height:.99}
+  .how-title{letter-spacing:-.03em}
+  .faq-br,.closing-br{display:inline}
+  /* 3870:45302 keeps the phone page on a 24-25 margin throughout; these were
+     on 31-33, which read as a wider gutter than anything the frame draws */
+  .how-steps{grid-template-columns:1fr;gap:8vw;padding:8vw 6.15vw 0}
+  .how-title{padding-left:7.2vw}
   .step-card{width:100%}
   /* 1.458vw is only 5-6px at phone widths — barely a gap between the card
      and its eyebrow/heading/body. A fixed 20px reads as an actual gap
      regardless of viewport width. */
   .step-copy{margin-top:20px;gap:8px}
-  .step-eyebrow{font-size:.8rem}
-  .step-h{font-size:1.35rem}
-  .step-body{font-size:.9rem}
+  /* Figma 3870:45302 sets the step copy a size up from what was here: the
+     eyebrow 16 on its .1em, the heading 26, the body 16 on 22 of leading. */
+  .step-eyebrow{font-size:16px}
+  .step-h{font-size:26px}
+  .step-body{font-size:16px;line-height:1.375}
   .site-footer{grid-template-columns:1fr;gap:32px;padding-bottom:9vw}
   .brand{top:16px;left:16px}
   /* a tag has no width of its own — it fills whatever room its left offset leaves,
@@ -706,19 +732,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .age-scene .ctl .hint{display:flex;position:absolute;left:0;right:0;bottom:100%;margin:0 0 14px}
   .age-scene .ctl-cap br{display:block}
   .age-scene .ctl .ages span:not(:first-child):not(:last-child){display:none}
-  .solution-preview .sol-state{left:8vw;max-width:84vw}
+  .solution-preview .sol-state{left:6.4vw;max-width:87.2vw}
   /* the desktop rule above is an id selector, so it outranks .sol-state's 8vw/20vh
      here unless said again at the same specificity */
   .solution-preview #solStateA,
-  .solution-preview #solStateB{top:20vh;left:8vw}
-  .solution-preview .sol-body{max-width:84vw;margin-top:1.4em}
+  .solution-preview #solStateB{top:20vh;left:6.4vw}
+  .solution-preview .sol-body{max-width:87.2vw;margin-top:1.4em}
   .solution-preview .sol-cta{left:8vw;top:auto;bottom:22vh}
   .solution-preview .sol-card{right:auto;left:8vw;top:auto;bottom:33.33vh;width:84vw}
   /* the vw paddings and gaps are a few pixels at this width, so set them in their own terms */
   .closing{padding-top:0}
-  .closing-copy{width:84vw}
+  /* 88 rather than 84: the frame sets the line under the heading in two, and at
+     84 the last word of the first one fell to a third */
+  .closing-copy{width:88vw}
   .closing-sub{margin-top:1.2em}
-  .closing-cta{margin-top:12vw;padding:14px 24px;font-size:1rem}
+  /* the frame's button is 216 x 50; at 16 on a line-height of 1 that is what
+     these paddings come to around this label */
+  .closing-cta{margin-top:12vw;padding:17px 33px;font-size:1rem}
 }
 /* The 440px rule that used to hide the rule/wordmark here is gone: it existed
    because the nav carried its full CTA down to that width and the label
@@ -1053,7 +1083,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <div class="frame-glow frame-glow-l" aria-hidden="true"></div>
     <div class="frame-glow frame-glow-r" aria-hidden="true"></div>
     <div class="closing-copy">
-      <h2 class="closing-h">Save your data. Grow its value.</h2>
+      <h2 class="closing-h">Save your data. <br class="closing-br">Grow its value.</h2>
       <p class="closing-sub">Your everyday life creates data. Capture its value and put it to work for your future.</p>
     </div>
     <a class="closing-cta" href="https://personal.drumwave.com/offers/cab925e5-2230-45fb-824f-3d20f757f0c7">Start saving your data</a>
@@ -1065,7 +1095,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <div class="faq">
     <div class="faq-head">
       <p class="faq-label">FAQS</p>
-      <h2 class="faq-title">Questions? We&rsquo;ve got answers.</h2>
+      <!-- the phone frame breaks this after the question; the break is switched
+           off above 760, where it sets as one line -->
+      <h2 class="faq-title">Questions? <br class="faq-br">We&rsquo;ve got answers.</h2>
     </div>
     <div class="faq-list">
         <div class="faq-row open">
