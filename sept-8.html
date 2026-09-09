@@ -477,8 +477,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .site-footer .foot-social img{display:block;height:1.354vw;min-height:16px;width:auto;opacity:.4}
 .site-footer .foot-social a:hover img{opacity:.7}
 .site-footer .foot-logo{display:flex;align-items:center;gap:14px}
-.site-footer .foot-logo img{width:42px;height:42px;object-fit:contain}
-.site-footer .foot-wordmark{width:119px;height:19px;display:block}
+/* the wordmark is in this lockup too, and `.foot-logo img` outranks
+   `.foot-wordmark` on specificity, so it was being squashed into the mark's
+   42 x 42 box and drawn about 42 x 6.7 by object-fit. Exclude it here. */
+.site-footer .foot-logo img:not(.foot-wordmark){width:42px;height:42px;object-fit:contain}
+/* Sized to match the nav's dWallet lockup rather than Figma 3783:22383,
+   which draws this at 118.12 x 18.64. Both marks have a tallest letter and
+   no descender, so equal ink height is equal apparent text size: dWallet
+   inks 26.358 of its 113.995 box, DrumWave 18.642 of its 119, so matching
+   the nav's 111.966 needs 119 x 1.3887. height stays auto — pinning both
+   axes to a derived box is what stretched the nav mark. */
+.site-footer .foot-wordmark{width:165.26px;height:auto;display:block}
 .site-footer .foot-tag{margin-top:16px;font-family:'Open Sans',sans-serif;font-size:clamp(1rem,1.04vw,1.25rem);line-height:1.2;color:#B4B4B4}
 .site-footer .foot-tag sup{font-size:.7em;vertical-align:super;line-height:0}
 .site-footer .foot-copy{margin-top:40px;max-width:282px;font-family:'Open Sans',sans-serif;font-size:clamp(.9rem,.94vw,1.125rem);line-height:1.34;color:#666}
@@ -589,7 +598,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .sol-how .ent-title{margin-bottom:1.2rem;font-size:clamp(2rem,8.7vw,2.4rem)}
   .sol-how .ent-body{width:auto;margin-bottom:1.6rem;font-size:clamp(.9rem,4vw,1rem)}
   .sol-how .ent-cta{padding:1rem 1.4rem;min-height:0;font-size:1rem}
-  .sol-how .ent-dash{position:static;width:100%;height:auto;margin:10vw 0 0}
+  /* Figma 3783:22580 sits at x 28.769, 338.534 wide on the 402 artboard, so the
+     card is 84.212vw inset 7.157vw — it was bleeding the full width. Height
+     stays auto: the phone export's 1016x1257 gives 104.19vw against the
+     artboard's 104.23, so the box lands where the design has it. */
+  .sol-how .ent-dash{position:static;width:84.212vw;height:auto;margin:10vw 0 0 7.157vw}
 
   /* --- FAQ and footer --- */
   .faq{flex-direction:column;gap:36px;width:auto;padding:16vw 6.2vw 14vw}
@@ -598,6 +611,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .faq-row{padding:20px}
   .faq-row .faq-q{white-space:normal;font-size:.92rem;line-height:1.25}
   .site-footer{grid-template-columns:1fr;gap:32px;padding-bottom:9vw}
+  /* the phone nav's dWallet is 86.371 wide, so the match lands lower here */
+  .site-footer .foot-wordmark{width:127.48px}
   .disclosures{padding-left:6.2vw;padding-right:6.2vw}
   .brand{top:16px;left:16px}
 }
@@ -798,7 +813,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         <p class="ent-body ent-rise">Upgrade your Business dWallet to an Enterprise Account to take custody of data assets, issue dWallets, and create Data Savings Plans for the people and businesses you serve. Enterprise Accounts don't just join the DrumWave ecosystem. They help build it.</p>
         <a class="ent-cta ent-rise" href="#">Contact our team</a>
       </div>
-      <img class="ent-dash ent-rise" src="assets/img/sept8-ent-dsp.jpg" alt="The Your Data Savings Plans dashboard, showing balance and data-under-custody charts and a plan called Traveler" loading="lazy">
+      <!-- Figma 3783:22580 is the phone's own crop of this card: 338.534 x 419,
+           a 0.808 ratio against the wide asset's 1.062. Same composition, but
+           narrower and taller, so the dashboard's own type stays readable at
+           phone width. <picture> rather than CSS because only markup can pick
+           the file; the classes stay on the <img> the timeline animates. -->
+      <picture>
+        <source media="(max-width:760px)" srcset="assets/img/sept8-ent-dsp-phone.png" width="1016" height="1257">
+        <img class="ent-dash ent-rise" src="assets/img/sept8-ent-dsp.jpg" alt="The Your Data Savings Plans dashboard, showing balance and data-under-custody charts and a plan called Traveler" loading="lazy">
+      </picture>
     </div>
   </div>
 </section>
@@ -846,7 +869,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   <footer class="site-footer">
     <div>
-      <div class="foot-logo"><img src="assets/img/logo.png" alt="" width="42" height="42"><img class="foot-wordmark" src="assets/img/sept8-drumwave-wordmark.svg" alt="DrumWave" width="119" height="19"></div>
+      <div class="foot-logo"><img src="assets/img/logo.png" alt="" width="42" height="42"><img class="foot-wordmark" src="assets/img/sept8-drumwave-wordmark.svg" alt="DrumWave" width="165" height="26"></div>
       <p class="foot-tag">Your Business. Your Strategy. Your Data.<sup>&reg;</sup></p>
       <p class="foot-copy">Copyright &copy; 2026 DrumWave Inc. All rights reserved.</p>
       <div class="foot-social">
