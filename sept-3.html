@@ -1757,17 +1757,61 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // and not. Nearest-snap undoes a gentle scroll: 655px forward from the hero is still
   // nearer the hero than the tap, so it was pulled straight back and the page appeared
   // stuck. Directional snaps to the next point the reader was already heading for.
-  if(SCROLL_RUN){
-    const runSnap = runStops.map(t => t / tl1.duration()).concat([1]);
-    ScrollTrigger.create({
-      trigger:'#act1', start:'top top', end:'+=' + RUN_PINS + '%',
-      pin:true, scrub:RUN_SCRUB, animation:tl1,
-      snap:{snapTo:runSnap, directional:true, duration:{min:.25, max:.6},
-            delay:.08, ease:'power2.inOut'}
+  // Asked for, phones only: the run is not scrubbed there. Each statement plays
+  // its own stretch of this timeline on its own clock and stops at the end of
+  // it, and a scroll moves to the next statement rather than through the
+  // frames. The three stretches are the three statements' own lives —
+  // "Your life creates data" over the hero, the runner and the coffee;
+  // "Every tap" from the tap frame through to the baby, which is where it
+  // leaves; "Own and save your data" over the baby and the family.
+  const phraseSegs = [[0, T_TAP],
+                      [T_TAP, ACT1_END + BABY],
+                      [ACT1_END + BABY, tl1.duration()]];
+  const segOf = p => Math.min(phraseSegs.length - 1, Math.floor(p * phraseSegs.length));
+
+  const buildRunPin = phone => {
+    if(!phone){
+      const runSnap = runStops.map(t => t / tl1.duration()).concat([1]);
+      return ScrollTrigger.create({
+        trigger:'#act1', start:'top top', end:'+=' + RUN_PINS + '%',
+        pin:true, scrub:RUN_SCRUB, animation:tl1,
+        snap:{snapTo:runSnap, directional:true, duration:{min:.25, max:.6},
+              delay:.08, ease:'power2.inOut'}
+      });
+    }
+    // one screen of scroll per statement, snapped so an ordinary gesture lands
+    // on the next one whole rather than part way between two
+    let seg = -1, segTween = null;
+    const play = i => {
+      if(i === seg) return;
+      seg = i;
+      if(segTween) segTween.kill();
+      segTween = tl1.tweenFromTo(phraseSegs[i][0], phraseSegs[i][1]);
+    };
+    const trig = ScrollTrigger.create({
+      trigger:'#act1', start:'top top', end:'+=' + (phraseSegs.length * 100) + '%',
+      pin:true,
+      snap:{snapTo:[0, 1/3, 2/3, 1], directional:true,
+            duration:{min:.2, max:.5}, delay:.05, ease:'power2.inOut'},
+      onUpdate: self => play(segOf(self.progress)),
+      onLeaveBack: () => {
+        if(segTween) segTween.kill();
+        segTween = null; seg = -1;
+        tl1.pause(0);
+        resetRun();
+      }
     });
-  } else {
+    play(segOf(trig.progress));
+    return trig;
+  };
+
+  if(!SCROLL_RUN){
     ScrollTrigger.create({trigger:'#act1', start:'top top', end:'+=100%',
       pin:true, animation:tl1, ...autoPlay});
+  } else {
+    gsap.matchMedia()
+      .add('(min-width: 761px)', () => { const t = buildRunPin(false); return () => t.kill(); })
+      .add('(max-width: 760px)',  () => { const t = buildRunPin(true);  return () => t.kill(); });
   }
 
   /* ---------- HOW MUCH IS YOUR DATA WORTH? ---------- */
