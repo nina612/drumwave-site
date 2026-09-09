@@ -648,14 +648,32 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      running through their middle; the fill and the handle's glowing dot
      aren't part of this design, so both go transparent — the handle stays
      in the DOM (and draggable: pointerdown listens on the track, not it)
-     purely to keep the drag math it's read from intact */
-  .age-scene .track .rail{top:auto;bottom:-6px;background:rgba(255,255,255,.2)}
+     purely to keep the drag math it's read from intact.
+     Figma 3898:98938 sizes the assembly off the rail: 5px ticks, a 12px
+     gap, then the hairline. The track keeps its full 44px height as the
+     touch target, so both sit at the bottom of it and the gap down to the
+     labels is set here rather than left to the 44px box. */
+  .age-scene .track .rail{top:auto;bottom:0;background:#999}
   .age-scene .track .fill{display:none}
-  .age-scene .track .ticks{top:0;transform:none}
-  .age-scene .track .ticks i{width:1px;height:12px;background:rgba(255,255,255,.3);opacity:1;transform:none}
-  .age-scene .track .ticks i.hit{background:#fff;height:12px;opacity:1}
+  /* 13px clears the 1px rail sitting on the track's bottom edge, leaving the
+     12px the design puts between the ticks and the hairline */
+  .age-scene .track .ticks{top:auto;bottom:13px;transform:none;align-items:flex-end}
+  .age-scene .track .ticks i{width:1px;height:5px;background:#999;opacity:1;transform:none}
+  /* the export is a flat ruler — one static frame can't show a position, so
+     the scrubbed-past ticks stay the design's 5px and only go white. The
+     transform has to be said again: desktop lifts .hit ticks 10px and that
+     rule outranks the one above it on class count alone. */
+  .age-scene .track .ticks i.hit{background:#fff;height:5px;opacity:1;transform:none}
   .age-scene .track .handle{opacity:0}
+  .age-scene .ctl .ages{margin-top:16px}
   .age-scene .ctl .ages span:not(:first-child):not(:last-child){display:none}
+  /* Titillium 16 white, not the .mono caption treatment the desktop row uses */
+  .age-scene .ctl .ages span{font-family:'Titillium Web',sans-serif;font-weight:600;
+    font-size:16px;letter-spacing:-.03em;text-transform:none;color:#fff}
+  /* the ends sit flush with the track rather than centred on it, so neither
+     hangs off the edge the way translateX(-50%) leaves them */
+  .age-scene .ctl .ages span:first-child{transform:none}
+  .age-scene .ctl .ages span:last-child{transform:translateX(-100%)}
   .solution-preview .sol-state{left:8vw;max-width:84vw}
   /* the desktop rule above is an id selector, so it outranks .sol-state's 8vw/20vh
      here unless said again at the same specificity */
