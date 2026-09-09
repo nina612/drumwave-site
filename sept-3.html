@@ -200,8 +200,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    comes after it in the DOM with an automatic z-index — and #act2's own scrim is at full
    opacity from the start, so "Your life creates data" was reading through an extra layer
    of it that none of the other copy had over it. */
+/* Figma 3912:17639 — asked for since: anchor the run's copy to the bottom of the
+   screen rather than hanging it from a top offset. The phone frame (390x844)
+   puts the headline's box 128 up from the bottom, 15.17vh; the wide frame's own
+   12.78vh is the number the note above says the node always drew and that the
+   top-anchoring overrode. One value for all three statements, so they still
+   occupy one place — they now share a bottom edge instead of a top one, which
+   is also what keeps a three-line statement off the bottom of a short screen. */
+#act1{--hero-bottom:12.78vh}
+/* .025em up: at equal box bottoms the .8 line-height here overflows .05em below
+   its box against .9's .025em there, so the glyphs would rest that much lower
+   than the copy this is meant to land on. The old .05em did the same job for
+   the tops these used to share. */
 #act1 .hero-h{z-index:6;
-  position:absolute;left:6.3vw;top:calc(51.67vh + .05em);bottom:auto;max-width:92vw;color:#fff;
+  position:absolute;left:6.3vw;top:auto;bottom:calc(var(--hero-bottom) + .025em);max-width:92vw;color:#fff;
   /* 7.29vw is 140/1920, so the cap is reached at exactly the frame it was drawn on.
      The floor stays at the 3rem it has always been: the spec is for the wide screen,
      and letting it set the phone's size too would have shrunk the headline there
@@ -223,7 +235,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    three sentences occupy one place on screen and the eye never travels between them.
    Only one is ever visible: A clears out over .25 before B starts, so stacking the two
    on one origin costs no overlap. */
-#act1 .run-say .say{position:absolute;left:0;top:0;width:100%}
+/* bottom:0, not top:0 — the container is zero-height (every statement in it is
+   absolute), so hanging these from its top would put their first lines on the
+   anchor and let the three-line statement run on past the bottom of the screen.
+   On its bottom they end level with the headline instead. */
+#act1 .run-say .say{position:absolute;left:0;bottom:0;width:100%}
 /* Hidden until the timeline has pushed these lines behind their masks.
    The masked start state (SAY_OUT) only exists in JS, so between first paint and GSAP
    running the browser drew both statements where they rest. That never showed while the
@@ -243,7 +259,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    that is not this node's: 1407/1920 is the family tail's measure, the widest of the
    set, and it only has to be wide enough that no line wraps — the box hugs its text,
    so this node's 1310 is the width of the line itself, not a constraint on it. */
-#act1 .run-say{position:absolute;left:6.3vw;top:51.67vh;width:73.28vw;z-index:6;
+#act1 .run-say{position:absolute;left:6.3vw;top:auto;bottom:var(--hero-bottom);width:73.28vw;z-index:6;
   font-size:clamp(2.2rem,7.29vw,8.75rem);font-weight:400;
   line-height:.9;letter-spacing:-.03em;color:#fff}
 
@@ -611,6 +627,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .faq-row .faq-q{white-space:normal}
 }
 @media (max-width:760px){
+  /* the phone frame's 128 up from the bottom of its 844 */
+  #act1{--hero-bottom:15.17vh}
   /* --- status bar, ported from sept-8's phone artboard: 54 tall with a 21
      top inset, device chrome rather than part of the site. --- */
   .status-bar{display:flex;align-items:center;position:absolute;left:0;right:0;top:0;z-index:60;
