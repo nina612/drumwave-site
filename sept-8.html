@@ -100,11 +100,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* the CTA is the split-button: 258 wide on a 56 radius, and the green ramp */
 .nav .pill.p{width:258px;border:1px solid transparent;border-radius:56px;font-weight:600;background-image:linear-gradient(142.86deg,#108B22 1.43%,#11CA51 106.43%)}
 .nav .pill.p:hover{filter:brightness(1.12)}
-@media (max-width:900px){
+@media (max-width:1000px){
   /* Straight to the hamburger here — no in-between tier that trims the nav
      down to just the logo and CTA. Same pill dimensions and menu system as
      the phone breakpoint below; only the status bar and the 78px top offset
-     it forces are phone-only, so those stay down there instead. */
+     it forces are phone-only, so those stay down there instead.
+     1000, not 900: the full nav's own min-content width (logo, links, sep,
+     Log in, the CTA) measures ~910px at its widest between the two pages, so
+     900px cut it too close — min(1200px,94vw) fell under that at anything
+     below ~968px wide, and the CTA pill overflowed past the pill's own
+     rounded edge instead of ever reaching this breakpoint. */
   .nav{width:calc(100vw - 48px);height:68px;padding:17px 25px;gap:30px;
     background:rgba(7,7,7,.6);border-color:rgba(255,255,255,.1)}
   .nav .links,.nav .sep,.nav .ctas{display:none}
@@ -590,7 +595,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .sb-levels img:nth-child(3){width:27.328px;height:13px}
 
   /* --- nav: the hamburger/panel/backdrop system itself now lives in the
-     900px block above (no separate tablet tier); down here it only needs to
+     1000px block above (no separate tablet tier); down here it only needs to
      sit 78px from the top instead of 12, to clear the status bar above it. */
   .nav{top:78px}
 

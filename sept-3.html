@@ -94,7 +94,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .nav .pill.p{border:1px solid transparent;border-radius:56px;font-weight:600;background:linear-gradient(138.73deg,#4B27FF 1.94%,#0091FF 100.59%)}
 .nav .pill.p:hover{background:linear-gradient(138.73deg,#4B27FF 1.94%,#0091FF 100.59%);filter:brightness(1.12)}
 .nav .nav-menu{display:none}
-/* hidden at every width by default; the 900px block below is the only place
+/* hidden at every width by default; the 1000px block below is the only place
    that gives it real layout, so without this base rule it falls back to a
    plain block div and leaks into the desktop nav above that width */
 .nav-menu-panel{display:none}
@@ -102,11 +102,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .nav-menu-backdrop{display:none}
 /* device chrome from the phone artboard; hidden until the phone breakpoint */
 .status-bar{display:none}
-@media (max-width:900px){
+@media (max-width:1000px){
   /* Straight to the hamburger here — no in-between tier that trims the nav
      down to just the logo and CTA. Same pill dimensions and menu system as
      the phone breakpoint below; only the status bar and the 78px top offset
-     it forces are phone-only, so those stay down there instead. */
+     it forces are phone-only, so those stay down there instead.
+     1000, not 900: the full nav's own min-content width (logo, links, sep,
+     Log in, the CTA) measures ~910px at its widest between the two pages, so
+     900px cut it too close — min(1200px,94vw) fell under that at anything
+     below ~968px wide, and the CTA pill overflowed past the pill's own
+     rounded edge instead of ever reaching this breakpoint. */
   .nav{width:calc(100vw - 48px);height:68px;padding:17px 25px;gap:30px;
     background:rgba(7,7,7,.6);border-color:rgba(255,255,255,.1)}
   .nav .links,.nav .sep,.nav .ctas{display:none}
@@ -571,7 +576,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .sb-levels img:nth-child(3){width:27.328px;height:13px}
 
   /* --- nav: the hamburger/panel/backdrop system itself now lives in the
-     900px block above (no separate tablet tier); down here it only needs to
+     1000px block above (no separate tablet tier); down here it only needs to
      sit 78px from the top instead of 12, to clear the status bar above it. */
   .nav{top:78px}
 
