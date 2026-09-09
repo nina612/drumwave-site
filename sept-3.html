@@ -61,8 +61,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* chrome */
 /* Figma 3068-141400: 1058px pill, 24/16 padding, 100px radius, 70% ink under a
    10px blur, 1px hairline at 30% grey. Type is Titillium 18 throughout. */
+/* absolute, not fixed: the bar belongs to the top of the page and scrolls
+   away with it rather than riding over every scene below */
 .nav{
-  position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:50;
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:50;
   /* Figma 3157-67646: 1200 x 84, padded 16 all round but 24 on the left where the
      logo sits, and a solid #8b8b8b hairline rather than a faded one */
   width:min(1200px,94vw);height:84px;padding:16px 16px 16px 24px;
@@ -583,7 +585,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 @media (max-width:760px){
   /* --- status bar, ported from sept-8's phone artboard: 54 tall with a 21
      top inset, device chrome rather than part of the site. --- */
-  .status-bar{display:flex;align-items:center;position:fixed;left:0;right:0;top:0;z-index:60;
+  .status-bar{display:flex;align-items:center;position:absolute;left:0;right:0;top:0;z-index:60;
     height:54px;padding:21px 16px 0;
     font-family:-apple-system,'SF Pro Text','Helvetica Neue',system-ui,sans-serif}
   /* Three ratioed tracks rather than flex:1 either side of the island. Grown boxes
@@ -709,7 +711,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <span class="sep" aria-hidden="true"></span>
   <div class="ctas">
     <a class="pill" href="#">Log in</a>
-    <a class="pill p" href="#">Open an Account &amp; get $25</a>
+    <a class="pill p" href="https://personal.drumwave.com/offers/cab925e5-2230-45fb-824f-3d20f757f0c7">Open an Account &amp; get $25</a>
   </div>
   <!-- ported from sept-8's phone nav: the mark and a menu button, the links
        and both buttons fold into it. -->
@@ -737,7 +739,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       </nav>
       <div class="mp-ctas">
         <a class="pill" href="#">Log in</a>
-        <a class="pill p" href="#">Open an Account &amp; get $25</a>
+        <a class="pill p" href="https://personal.drumwave.com/offers/cab925e5-2230-45fb-824f-3d20f757f0c7">Open an Account &amp; get $25</a>
       </div>
     </div>
   </div>
@@ -920,7 +922,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       </div>
     </div>
 
-    <a class="sol-cta" href="#">Open a Data Savings Account</a>
+    <a class="sol-cta" href="https://personal.drumwave.com/offers/cab925e5-2230-45fb-824f-3d20f757f0c7">Open a Data Savings Account</a>
 
     <div class="sol-card">
       <div class="sol-card-glow" aria-hidden="true"><img src="assets/img/dsp-card-glow.svg" alt=""></div>
@@ -1024,7 +1026,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       <h2 class="closing-h">Save your data. Grow its value.</h2>
       <p class="closing-sub">Your everyday life creates data. Capture its value and put it to work for your future.</p>
     </div>
-    <a class="closing-cta" href="#">Start saving your data</a>
+    <a class="closing-cta" href="https://personal.drumwave.com/offers/cab925e5-2230-45fb-824f-3d20f757f0c7">Start saving your data</a>
   </div>
 </section>
 
@@ -1921,10 +1923,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     solHowFit.style.transform = 'none';
     solHowEl.style.paddingTop = '';
     if(solHowEl.parentElement !== solSec) return;   // flowing on a phone, nothing to fit
-    // Centre in the space the fixed nav leaves, not in the whole screen. At the
+    // Centre in the space the nav leaves, not in the whole screen. At the
     // design's proportions the block clears the nav by a hair; centring on the full
     // height would slide the title up under it as soon as the window got shorter.
-    const pad = navEl ? Math.round(navEl.getBoundingClientRect().bottom) + 14 : 0;
+    // Measured from the document, not the viewport: the bar scrolls away now, so
+    // its rect depends on where the reader is and this runs at refresh time. Its
+    // offset top plus height is the same number the fixed bar's rect always gave.
+    const pad = navEl ? Math.round(navEl.offsetTop + navEl.offsetHeight) + 14 : 0;
     solHowEl.style.paddingTop = pad + 'px';
     const room = solSec.clientHeight - pad - 20;
     const h = solHowFit.getBoundingClientRect().height;

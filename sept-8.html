@@ -61,8 +61,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* chrome */
 /* Figma 3068-141400: 1058px pill, 24/16 padding, 100px radius, 70% ink under a
    10px blur, 1px hairline at 30% grey. Type is Titillium 18 throughout. */
+/* absolute, not fixed: the bar belongs to the top of the page and scrolls
+   away with it rather than riding over every scene below */
 .nav{
-  position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:50;
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:50;
   /* Figma 3157-67646: 1200 x 84, padded 16 all round but 24 on the left where the
      logo sits, and a solid #8b8b8b hairline rather than a faded one */
   width:min(1200px,94vw);height:84px;padding:16px 24px;
@@ -576,7 +578,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    ============================================================ */
 @media (max-width:760px){
   /* --- status bar, Figma 3783:27397 — 54 tall with a 21 top inset --- */
-  .status-bar{display:flex;align-items:center;position:fixed;left:0;right:0;top:0;z-index:60;
+  .status-bar{display:flex;align-items:center;position:absolute;left:0;right:0;top:0;z-index:60;
     height:54px;padding:21px 16px 0;
     font-family:-apple-system,'SF Pro Text','Helvetica Neue',system-ui,sans-serif}
   /* Three ratioed tracks rather than flex:1 either side of the island. Grown boxes
