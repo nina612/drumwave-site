@@ -480,9 +480,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .site-footer .foot-social a{display:block;opacity:1;transition:opacity .25s}
 .site-footer .foot-social a:hover{opacity:.65}
 .site-footer .foot-social img{display:block;height:1.354vw;min-height:16px;width:auto}
-.site-footer .foot-logo{display:flex;align-items:center;gap:14px}
-.site-footer .foot-logo img{width:42px;height:42px;object-fit:contain}
-.site-footer .foot-logo b{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:25px;letter-spacing:-.01em;color:#fff}
+.site-footer .foot-logo{display:flex;align-items:center;gap:15px}
+/* the wordmark is in this lockup too, and `.foot-logo img` outranks
+   `.foot-wordmark` on specificity, so it was being squashed into the mark's
+   42 x 42 box and drawn about 42 x 6.7 by object-fit. Exclude it here. */
+.site-footer .foot-logo img:not(.foot-wordmark){width:42px;height:42px;object-fit:contain}
+.site-footer .foot-wordmark{width:118.12px;height:auto;display:block}
 .site-footer .foot-tag{margin-top:16px;font-family:'Open Sans',sans-serif;font-size:clamp(1rem,1.04vw,1.25rem);line-height:1.2;color:#B4B4B4}
 .site-footer .foot-copy{margin-top:40px;max-width:282px;font-family:'Open Sans',sans-serif;font-size:clamp(.9rem,.94vw,1.125rem);line-height:1.34;color:#666}
 .site-footer .foot-col{max-width:292px}
@@ -994,7 +997,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   <footer class="site-footer">
     <div>
-      <div class="foot-logo"><img src="assets/img/logo.png" alt="" width="42" height="42"><b>dWallet</b></div>
+      <div class="foot-logo"><img src="assets/img/logo.png" alt="" width="42" height="42"><img class="foot-wordmark" src="assets/img/sept8-drumwave-wordmark.svg" alt="DrumWave" width="118" height="19"></div>
       <p class="foot-tag">Your Life. Your Story. Your Data.</p>
       <p class="foot-copy">Copyright &copy; 2026 DrumWave Inc. All rights reserved.</p>
       <div class="foot-social">
