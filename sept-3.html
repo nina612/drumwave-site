@@ -225,6 +225,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    meant to occupy one place, so they move together. This headline's own pair,
    "Your life" over "creates data.", only ever wanted .728, so it was never the
    one at risk. */
+/* 1.03, not .95. Measured on the desktop layout at 1440x900: at .95 the leading
+   is 99.7px and the ink these lines actually need - the descender of one plus the
+   ascender of the next, from the font's own metrics rather than its box - is
+   98.7. That is 1.1px of clearance on 105px type, which is not clearance, it is a
+   near miss. Anything that shifts a metric slightly - a different rendering
+   engine, a fallback face while Titillium loads, a zoom level - takes it
+   negative, which is why the overlap was intermittent rather than always there.
+   1.03 gives 9.4px, and it is the ratio .sol-headline was already moved to for
+   the same reason. */
 #act1 .hero-h{z-index:6;
   position:absolute;left:6.3vw;top:auto;bottom:var(--hero-bottom);max-width:92vw;color:#fff;
   /* 7.29vw is 140/1920, so the cap is reached at exactly the frame it was drawn on.
@@ -232,7 +241,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      and letting it set the phone's size too would have shrunk the headline there
      from 48px to 35px, which is not what was asked for. */
   font-size:clamp(3rem,7.29vw,8.75rem);
-  font-weight:400;line-height:.95;letter-spacing:-.03em;
+  font-weight:400;line-height:1.03;letter-spacing:-.03em;
 }
 /* SEPT-3 ONLY. Figma 3406-5930 and 3406-5968 give the run a second block of copy:
    the tap frame carries "Every tap. Every step." and the delivery frame finishes the
@@ -279,7 +288,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    worth heading needed, for the same reason. */
 #act1 .run-say{position:absolute;left:6.3vw;top:auto;bottom:var(--hero-bottom);width:73.28vw;z-index:6;
   font-size:clamp(2.2rem,7.29vw,8.75rem);font-weight:400;
-  line-height:.95;letter-spacing:-.03em;color:#fff}
+  line-height:1.03;letter-spacing:-.03em;color:#fff}
 
 
 /* ACT 2 */
@@ -320,7 +329,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    safe. .95 is the tightest that clears, and it clears the phone's own three-line
    break too, whose worst pair ("is your data" over "worth?") wants the same .94. */
 #worth .worth{position:absolute;left:6.3vw;bottom:12.31vh;text-align:left;width:57.92vw;z-index:6;
-  font-size:clamp(2.2rem,7.29vw,8.75rem);font-weight:400;line-height:.95;letter-spacing:-.03em;color:#fff}
+  font-size:clamp(2.2rem,7.29vw,8.75rem);font-weight:400;line-height:1.03;letter-spacing:-.03em;color:#fff}
 /* the phone break is the default-hidden one; see the max-width:760px block
    for the swap and for why two markups exist at all */
 #worth .worth-phone{display:none}
