@@ -649,6 +649,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .faq-list{width:100%}
   .faq-row .faq-q{white-space:normal}
 }
+/* This block runs from 320 all the way to 760, but the design in it is drawn for
+   a phone — 390 on the frames, and the type caps at the size those frames give
+   it. Left alone that made every width above a phone look wrong rather than
+   large: the columns are shares of the viewport and kept growing while the type
+   they hold sat frozen, so at 760 the longest line of a statement filled 47% of
+   its measure and the breaks read as arbitrary. So every copy column and gutter
+   below is capped at its value at 430, the widest phone there is. Under that
+   nothing changes and the layout stays proportional; over it the phone
+   composition holds and the screen gains margin rather than stretching the copy.
+   Growing it instead would mean scaling the whole block, and half of it is in px
+   and some in vh, so there is no one number to scale it by. */
 @media (max-width:760px){
   /* Measured off the phone frame and asked for again since: the run's copy sits
      24 in and 128 up from the bottom of the 390x844 artboard — 6.15vw and
@@ -668,13 +679,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      is drawn on. It replaces two sizes — a 10.3vw headline and an 8.5vw pair of
      statements — which is why it is now said once here for all of them. */
   #act1 .hero-h,
-  #act1 .run-say{left:6.15vw;
+  #act1 .run-say{left:min(6.15vw,26px);
     font-size:min(14.36vw,56px);line-height:1.16;letter-spacing:-.02em}
-  #act1 .hero-h{max-width:87vw}
+  #act1 .hero-h{max-width:min(87vw,374px)}
   /* a definite width, not auto: every statement inside this one is absolutely
      positioned and takes its width from it, so shrink-to-fit left them a few
      characters wide and every line wrapped three and four times over */
-  #act1 .run-say{width:87vw;max-width:none}
+  #act1 .run-say{width:min(87vw,374px);max-width:none}
   /* 56 re-breaks the statements, and only the second one needs saying in the
      markup. "Own and save your data." does not fit the 339 measure either — it
      wants 553 — but it wraps in two clean halves, "Own and save" / "your data.",
@@ -761,6 +772,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      the rest of its headlines carry — the wide rule leaves it at normal */
   .how-title,
   .faq-title{line-height:.99}
+  /* the FAQ column too, for the same reason as the caps above: its heading is
+     one of the 44s and stops growing, so the list under it must stop widening
+     with it. 428 is the 430 cap, the block carrying its own padding inside. */
+  .faq{max-width:428px}
   .how-title{letter-spacing:-.03em}
   .faq-br,.closing-br{display:inline}
   /* 3870:45302 keeps the phone page on a 24-25 margin throughout; these were
@@ -772,8 +787,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      not the 8vw (31 at 390) it was: the number is a spacing, not a proportion.
      The 6.15vw sides are the 24 gutter the rest of the phone page keeps, which
      is also what makes the card exactly the 342 its image is drawn at. */
-  .how-steps{grid-template-columns:1fr;gap:8vw;padding:48px 6.15vw 0}
-  .how-title{padding-left:7.2vw}
+  .how-steps{grid-template-columns:1fr;gap:min(8vw,34px);padding:48px min(6.15vw,26px) 0;
+    max-width:428px}
+  .how-title{padding-left:min(7.2vw,31px)}
   /* Figma 4045:23202 — the card is 443 tall on the 342 the gutter leaves, where
      the base rule's 380/442 made it 395 and cropped 48px off an image whose
      glass panel is drawn into it. 20.06 flat, too: the base radius is a pair of
@@ -790,7 +806,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .step-eyebrow{font-size:16px}
   .step-h{font-size:28px;letter-spacing:-.03em}
   .step-body{font-size:16px;line-height:1.4}
-  .site-footer{grid-template-columns:1fr;gap:32px;padding-bottom:9vw}
+  .site-footer{grid-template-columns:1fr;gap:32px;padding-bottom:min(9vw,39px)}
   .brand{top:16px;left:16px}
   /* a tag has no width of its own — it fills whatever room its left offset leaves,
      so on a narrow screen one placed well left grows until it meets the edge.
@@ -801,7 +817,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      phone is 104 rather than 81. The 88.5vw measure is the frame's 345 (23 left,
      22 right); as with the run's statements it only governs wrapping, and all
      three of these lines are far inside it. */
-  #worth .worth{left:5.9vw;bottom:9.6vh;width:88.5vw}
+  #worth .worth{left:min(5.9vw,25px);bottom:9.6vh;width:min(88.5vw,381px)}
   /* Figma 3898:98612 — the phone break, three short lines instead of the
      desktop's two */
   #worth .worth-wide{display:none}
@@ -883,17 +899,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      The card's own proportions and the glow hanging off it are already right
      in the base rules — the card is 617/386.076 there, the same 1.598, and the
      glow is a percentage of it — so the two only need their widths here. */
-  .solution-preview .sol-state{left:6.15vw;max-width:87.69vw}
+  .solution-preview .sol-state{left:min(6.15vw,26px);max-width:min(87.69vw,377px)}
   /* the desktop rule above is an id selector, so it outranks .sol-state's
      placement here unless said again at the same specificity */
   .solution-preview #solStateA,
-  .solution-preview #solStateB{top:20vh;left:6.15vw}
+  .solution-preview #solStateB{top:20vh;left:min(6.15vw,26px)}
   /* 44 flat, not the base clamp: its 2.2rem floor is what a 390 screen gets,
      and that is 35 against the frame's 44. The colour is the page's own bone,
      which is #F3F2EE — the same off-white the frame sets on the block, and
      which the base rule misses by using #E3E3E3. */
   .solution-preview .sol-headline{line-height:1.0182;letter-spacing:-.0172em;color:var(--bone)}
-  .solution-preview .sol-body{max-width:87.69vw;margin-top:24px;
+  .solution-preview .sol-body{max-width:min(87.69vw,377px);margin-top:24px;
     font-size:16px;line-height:1.5469;letter-spacing:-.01465em;color:var(--bone)}
   /* 32 between the copy and the card, off a copy block the frame fixes at 212 —
      so 244 from the top of the state to the top of the card. Anchored from the
@@ -904,16 +920,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      --sol-card-h is the card's width through its own 617/386.076, which is the
      one thing here CSS cannot work out for itself: the button below reads both
      of these, so the two are said once rather than twice. */
-  .solution-preview{--sol-card-top:calc(20vh + 244px);--sol-card-h:52.88vw}
-  .solution-preview .sol-card{right:auto;left:7.74vw;bottom:auto;
-    top:var(--sol-card-top);width:84.51vw}
+  .solution-preview{--sol-card-top:calc(20vh + 244px);--sol-card-h:min(52.88vw,227px)}
+  .solution-preview .sol-card{right:auto;left:min(7.74vw,33px);bottom:auto;
+    top:var(--sol-card-top);width:min(84.51vw,363px)}
   /* The button hangs off the card, not off the bottom of the screen. It was
      bottom:22vh while the card was top-anchored, and .solution-preview is not
      as tall as the viewport on a phone — so the two closed on each other as
      the window grew and the button ended up over the card. Measured at 950
      tall it was 43 inside it. Off the card there is 24 between them at every
      height. */
-  .solution-preview .sol-cta{left:6.15vw;bottom:auto;
+  .solution-preview .sol-cta{left:min(6.15vw,26px);bottom:auto;
     top:calc(var(--sol-card-top) + var(--sol-card-h) + 24px)}
   /* --- SAVE YOUR DATA. GROW ITS VALUE. on the phone: Figma 4045:23128 ---
      the vw paddings and gaps are a few pixels at this width, so set them in
@@ -921,7 +937,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .closing{padding-top:0}
   /* 88 rather than 84: the frame sets the line under the heading in two, and at
      84 the last word of the first one fell to a third */
-  .closing-copy{width:88vw}
+  .closing-copy{width:min(88vw,378px)}
   /* 48, which is why this one is not in the run of 44s above — it is the only
      headline on the phone page its frame draws bigger. On vw so a narrower
      phone scales with it, reaching the 48 at the 390 it is drawn on. Tracking
