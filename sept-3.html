@@ -1430,6 +1430,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 <script>
 (function(){
   gsap.registerPlugin(ScrollTrigger);
+  /* On a phone the address bar hides and shows as you scroll, and that changes
+     innerHeight — which fires resize, which makes ScrollTrigger refresh, which
+     re-evaluates every trigger's state. Anything hung off a trigger callback
+     then re-fires for a reason the reader had nothing to do with. That is what
+     was making the business run flicker between two photographs instead of
+     playing through: each refresh re-entered act 1 and restarted the run from
+     frame 0, over and over while the bar animated.
+     ignoreMobileResize is GSAP's own answer to it — height-only changes on a
+     touch device no longer count as a resize. The guards on the restarts below
+     are the second half: this stops most of the spurious refreshes, and they
+     make a spurious one harmless. */
+  ScrollTrigger.config({ignoreMobileResize:true});
   // Ported from sept-8 — the phone hamburger opens this panel in the
   // collapsed pill's own place. A plain disclosure toggle: the menu button
   // and the panel's own close button both flip it, Escape and an outside
@@ -1540,7 +1552,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // parking the reader on whatever frame it stopped on. Hung off onEnterBack,
     // whose boundary is the far edge of the pin — unlike onLeaveBack below, which
     // sits at scroll 0 and so re-fires on every refresh.
-    onEnterBack: () => restartRun(),
+    // guarded: onLeave is what pauses the run, so a paused run is one the
+    // reader really did leave and come back to. Playing means they are still
+    // inside it and this fired for a refresh, not for them — restarting there is
+    // what threw the playhead back to the first frame.
+    onEnterBack: self => { if(self.animation.paused()) restartRun(); },
     onLeave: self => self.animation.pause(),
     // guarded: act 1's trigger starts at scroll 0, so sitting at the top of the
     // page straddles its boundary and would re-fire this every refresh, holding
@@ -2182,7 +2198,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     scrollTrigger:{
       trigger:'#worth', start:'top top', end:'+=100%', pin:true,
       onEnter:      self => self.animation.play(),
-      onEnterBack:  () => restartWorth(),
+      onEnterBack:  self => { if(self.animation.paused()) restartWorth(); },
       onLeave:      self => self.animation.pause(),
       onLeaveBack:  self => { self.animation.invalidate().pause(0); resetWorth(); }
     }

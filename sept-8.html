@@ -1113,6 +1113,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 <script>
 (function(){
   gsap.registerPlugin(ScrollTrigger);
+  /* On a phone the address bar hides and shows as you scroll, and that changes
+     innerHeight — which fires resize, which makes ScrollTrigger refresh, which
+     re-evaluates every trigger's state. Anything hung off a trigger callback
+     then re-fires for a reason the reader had nothing to do with. That is what
+     was making the business run flicker between two photographs instead of
+     playing through: each refresh re-entered act 1 and restarted the run from
+     frame 0, over and over while the bar animated.
+     ignoreMobileResize is GSAP's own answer to it — height-only changes on a
+     touch device no longer count as a resize. The guards on the restarts below
+     are the second half: this stops most of the spurious refreshes, and they
+     make a spurious one harmless. */
+  ScrollTrigger.config({ignoreMobileResize:true});
   // Figma 3849:44947 — the phone hamburger opens this panel in the collapsed
   // pill's own place. A plain disclosure toggle: the menu button and the
   // panel's own close button both flip it, Escape and an outside click do
@@ -1231,7 +1243,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // parking the reader on whatever frame it stopped on. Hung off onEnterBack,
     // whose boundary is the far edge of the pin — unlike onLeaveBack below, which
     // sits at scroll 0 and so re-fires on every refresh.
-    onEnterBack: () => restartRun(),
+    // guarded: onLeave is what pauses the run, so a paused run is one the
+    // reader really did leave and come back to. Playing means they are still
+    // inside it and this fired for a refresh, not for them — restarting there is
+    // what threw the playhead back to the first frame and made the photographs
+    // flicker between two of them on a phone.
+    onEnterBack: self => { if(self.animation.paused()) restartRun(); },
     onLeave: self => self.animation.pause(),
     // guarded: act 1's trigger starts at scroll 0, so sitting at the top of the
     // page straddles its boundary and would re-fire this every refresh, holding
@@ -1366,10 +1383,21 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // than a quick frame now lives, so those three would never finish arriving.
   // .06 keeps the same share of the frame the cut had at half a second.
   const M_HOLD = 1.5, M_QUICK = .2, M_CYCLE = 4, M_CUT = .06;
-  const spanOf = i => MOBILE ? (i % M_CYCLE === 0 ? M_HOLD : M_QUICK)
+  /* ...and the last frame of the set is held too, whatever its place in the four.
+     The note above is written for thirteen frames, where three whole cycles left
+     the thirteenth as a held one. There are twelve now — the trading floor came
+     out — and twelve does not divide that way: the set ended on the three quick
+     frames of its last cycle and looped straight into the opening image, so four
+     photographs changed in a row at a fifth of a second each with no hold
+     anywhere among them. That is the flicker. Holding the last one restores what
+     the thirteenth used to give: the set comes to rest before it starts over.
+     Said once, here, because the span, the cut and the push all have to agree
+     about which frames are held — they read it from this. */
+  const heldIdx = i => i % M_CYCLE === 0 || i === RUN_FRAMES - 1;
+  const spanOf = i => MOBILE ? (heldIdx(i) ? M_HOLD : M_QUICK)
                              : (i === 0 ? HERO : SPAN);
-  const cutOf   = i => MOBILE && i % M_CYCLE !== 0 ? M_CUT : CUT;
-  const isHeld  = i => MOBILE && i % M_CYCLE === 0;
+  const cutOf   = i => MOBILE && !heldIdx(i) ? M_CUT : CUT;
+  const isHeld  = i => MOBILE && heldIdx(i);
   // the opening image eases out of its push across the whole time it holds
   if(MOBILE) arrive(tl1, f1(0), 0, true, M_HOLD, 1.06, 'power2.out');
   else       arrive(tl1, f1(0), 0, true, HERO, 1.02, 'power1.out');
