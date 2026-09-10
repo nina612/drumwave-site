@@ -579,7 +579,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    ============================================================ */
 @media (max-width:760px){
   /* --- status bar, Figma 3783:27397 — 54 tall with a 21 top inset --- */
-  .status-bar{display:flex;align-items:center;position:absolute;left:0;right:0;top:0;z-index:60;
+  .status-bar{display:flex;align-items:center;position:fixed;left:0;right:0;top:0;z-index:60;
+    transition:opacity .3s ease;
     height:54px;padding:21px 16px 0;
     font-family:-apple-system,'SF Pro Text','Helvetica Neue',system-ui,sans-serif}
   /* Three ratioed tracks rather than flex:1 either side of the island. Grown boxes
@@ -600,9 +601,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   /* --- nav: the hamburger/panel/backdrop system itself now lives in the
      1000px block above (no separate tablet tier); down here it only needs to
      sit 78px from the top instead of 12, to clear the status bar above it. */
-  /* the bar scrolls away with the page here rather than riding over every
-     scene below; the wide build keeps it fixed */
-  .nav{position:absolute;top:78px}
+  /* The bar and the phone chrome hold their place while the run is on screen —
+     it is pinned, so scrolling through it would otherwise take them straight off
+     the top on the first gesture — and leave once it is behind the reader.
+     .chrome-away is put on the body by the run's own pin, so what they answer to
+     is the run ending rather than a scroll distance. Same as sept-3. */
+  .nav{top:78px;transition:opacity .3s ease, transform .3s ease}
+  body.chrome-away .nav{opacity:0;pointer-events:none;
+    transform:translateX(-50%) translateY(-24px)}
+  body.chrome-away .status-bar{opacity:0}
 
   /* The run's photographs are wide, and a phone crops each to a strip a
      quarter to a third of that width — so where the strip sits decides
@@ -1395,8 +1402,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
             delay:.08, ease:'power2.inOut'}
     });
   } else {
+    // The bar and the phone chrome go with the run rather than with a scroll
+    // distance: the run is pinned, so scrolling through it would carry them off
+    // the top while the reader is still on the opening screen. Same as sept-3.
+    //
+    // These two wrap autoPlay's own rather than replacing them — spreading it
+    // first and then naming onLeave/onEnterBack again would take the pause and
+    // the restart-from-the-top with them, since the later key wins.
     ScrollTrigger.create({trigger:'#act1', start:'top top', end:'+=100%',
-      pin:true, animation:tl1, ...autoPlay});
+      pin:true, animation:tl1, ...autoPlay,
+      onLeave: self => { autoPlay.onLeave(self);
+        document.body.classList.add('chrome-away'); },
+      onEnterBack: self => { autoPlay.onEnterBack(self);
+        document.body.classList.remove('chrome-away'); }});
   }
 
   /* ---------- THE DATA SAVINGS PLAN : TWO FRAMINGS ON ONE PIN ---------- */
