@@ -1900,9 +1900,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // without the reader asking for it. Both the snap and what plays are taken
     // from the statement being rested on rather than from raw progress, so a
     // gesture can only ever move to the one either side of it.
-    let seg = -1, segTween = null, settled = 0;
+    let seg = -1, segTween = null;
     const stepP = 1 / phraseSegs.length;
-    const clampSeg = i => Math.max(0, Math.min(phraseSegs.length - 1, i));
     // The three statements, in the order they are spoken. They already share one
     // resting place (all three sit on --hero-bottom), so moving them is a matter
     // of carrying one away from it while the next comes to it.
@@ -1952,21 +1951,28 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       segTween = chain;
     };
     const trig = ScrollTrigger.create({
-      trigger:'#act1', start:'top top', end:'+=' + (phraseSegs.length * 100) + '%',
+      // Two screens a statement, not one. That is what keeps an ordinary flick
+      // from crossing two of them, and it does it with distance rather than
+      // with state — see the snap below for why that matters.
+      trigger:'#act1', start:'top top', end:'+=' + (phraseSegs.length * 200) + '%',
       pin:true,
-      snap:{
-        // one step from where the reader is resting, in whichever direction they
-        // went — not the nearest point to wherever the flick happened to land
-        snapTo: value => {
-          const from = settled * stepP;
-          if(Math.abs(value - from) < stepP * .1) return from;
-          return Math.max(0, Math.min(1, from + (value > from ? stepP : -stepP)));
-        },
-        duration:{min:.2, max:.5}, delay:.05, ease:'power2.inOut'
-      },
-      onUpdate: self => play(clampSeg(Math.max(settled - 1,
-                              Math.min(settled + 1, segOf(self.progress))))),
-      onSnapComplete: self => { settled = clampSeg(Math.round(self.progress / stepP)); },
+      // Snap to the nearest statement boundary, and nothing more. This used to
+      // answer with a point one step from the statement it believed the reader
+      // was resting on, which made it a second account of where they were — and
+      // when the two accounts disagreed, as a restored scroll or a remeasured
+      // pin was enough to make them, it moved the page to reconcile them. Every
+      // snap then armed the next, so the run walked itself through the
+      // statements and "Own and save your data" arrived with nobody touching
+      // the page. Quantising the reader's own position cannot do that: land on
+      // a boundary and the answer is the boundary you are on.
+      // directional:false is the half of "nearest" that GSAP does not give you by
+      // default: left on, it answers with the next boundary the reader was heading
+      // towards rather than the one they came to rest beside, so a firm flick out
+      // of the first statement arrives at the third. Off, the answer is a plain
+      // function of position, and crossing a statement takes the two screens the
+      // pin is now long enough to require.
+      snap:{snapTo:stepP, directional:false, duration:{min:.2, max:.5}, delay:.05, ease:'power2.inOut'},
+      onUpdate: self => play(segOf(self.progress)),
       // the bar and the phone chrome stay with the reader for as long as the run
       // is on screen, and leave only once it is behind them
       onLeave:     () => document.body.classList.add('chrome-away'),
