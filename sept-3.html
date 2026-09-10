@@ -207,18 +207,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    occupy one place — they now share a bottom edge instead of a top one, which
    is also what keeps a three-line statement off the bottom of a short screen. */
 #act1{--hero-bottom:12.78vh}
-/* .025em up: at equal box bottoms the .8 line-height here overflows .05em below
-   its box against .9's .025em there, so the glyphs would rest that much lower
-   than the copy this is meant to land on. The old .05em did the same job for
-   the tops these used to share. */
+/* No nudge any more, and none needed: this and .run-say share one line-height
+   now (.95), so their glyphs sit the same distance inside their boxes and equal
+   box bottoms put them on the same line by construction. The .025em that used
+   to be here was correcting .8 against .9 — a difference that no longer exists.
+   .95 rather than the .8 this was drawn at because .run-say had to go there: its
+   own pairs want .94 of the font size (see that rule), and the two blocks are
+   meant to occupy one place, so they move together. This headline's own pair,
+   "Your life" over "creates data.", only ever wanted .728, so it was never the
+   one at risk. */
 #act1 .hero-h{z-index:6;
-  position:absolute;left:6.3vw;top:auto;bottom:calc(var(--hero-bottom) + .025em);max-width:92vw;color:#fff;
+  position:absolute;left:6.3vw;top:auto;bottom:var(--hero-bottom);max-width:92vw;color:#fff;
   /* 7.29vw is 140/1920, so the cap is reached at exactly the frame it was drawn on.
      The floor stays at the 3rem it has always been: the spec is for the wide screen,
      and letting it set the phone's size too would have shrunk the headline there
      from 48px to 35px, which is not what was asked for. */
   font-size:clamp(3rem,7.29vw,8.75rem);
-  font-weight:400;line-height:.8;letter-spacing:-.03em;
+  font-weight:400;line-height:.95;letter-spacing:-.03em;
 }
 /* SEPT-3 ONLY. Figma 3406-5930 and 3406-5968 give the run a second block of copy:
    the tap frame carries "Every tap. Every step." and the delivery frame finishes the
@@ -258,9 +263,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    that is not this node's: 1407/1920 is the family tail's measure, the widest of the
    set, and it only has to be wide enough that no line wraps — the box hugs its text,
    so this node's 1310 is the width of the line itself, not a constraint on it. */
+/* .95, not the .9 drawn: "Every choice creates" sets its d, h and t under the
+   y and p of "Every tap. Every step.", and "value, instantly." does the same
+   under "creates" — both pairs want .94 of the font size, so .9 met them by 3px
+   at 1024 and 5.6 at 1920. It is a ratio, so no width was safe. Same .95 the
+   worth heading needed, for the same reason. */
 #act1 .run-say{position:absolute;left:6.3vw;top:auto;bottom:var(--hero-bottom);width:73.28vw;z-index:6;
   font-size:clamp(2.2rem,7.29vw,8.75rem);font-weight:400;
-  line-height:.9;letter-spacing:-.03em;color:#fff}
+  line-height:.95;letter-spacing:-.03em;color:#fff}
 
 
 /* ACT 2 */
@@ -295,8 +305,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* Figma 3214-2823: same panel and same measure, copy top-anchored at 569/1080 */
 /* 400, not the 300 .display carries — the same weight the hero and the run's copy were
    given, so the three big statements on the page match. */
+/* .95, not the .9 this was drawn at. "data worth?" sets its d, t and h under the
+   y of "How much is your", and that pair's ink wants .94 of the font size — so
+   .9 met by 4-8px at every width the wide rule covers. A ratio, so no size was
+   safe. .95 is the tightest that clears, and it clears the phone's own three-line
+   break too, whose worst pair ("is your data" over "worth?") wants the same .94. */
 #worth .worth{position:absolute;left:6.3vw;bottom:12.31vh;text-align:left;width:57.92vw;z-index:6;
-  font-size:clamp(2.2rem,7.29vw,8.75rem);font-weight:400;line-height:.9;letter-spacing:-.03em;color:#fff}
+  font-size:clamp(2.2rem,7.29vw,8.75rem);font-weight:400;line-height:.95;letter-spacing:-.03em;color:#fff}
 /* the phone break is the default-hidden one; see the max-width:760px block
    for the swap and for why two markups exist at all */
 #worth .worth-phone{display:none}
@@ -406,7 +421,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    exactly, on every breakpoint. */
 .solution-preview #solStateA,
 .solution-preview #solStateB{left:5.99vw;top:30.8vh}
-.solution-preview .sol-headline{font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2.2rem,6.25vw,7.5rem);line-height:.99;letter-spacing:-.03em;color:#E3E3E3}
+/* 1.03, not the .99 this was drawn at. "and earn $25." puts a $ under the
+   descenders of "request your data," and the $ in Titillium rises above the cap
+   height, so that pair's own ink wants 1.02 of the font size — 91.8px against
+   the 89.1 that .99 gives at 90 — and the two met by 2.7px. It is a ratio, so
+   .99 could never clear it at any size. 1.03 is the tightest that does, with a
+   hair over. The plan card and its button are placed off this block's measured
+   height, so they follow it down on their own. */
+.solution-preview .sol-headline{font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2.2rem,6.25vw,7.5rem);line-height:1.03;letter-spacing:-.03em;color:#E3E3E3}
 /* The descender of the g in "Introducing" and "Savings" was being cut off.
    Titillium's font box is 124px where line-height .99 gives an 81px line box, so the
    glyphs overhang their own line by 21.5px at the bottom — and .ln masks at the padding
@@ -908,7 +930,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      and that is 35 against the frame's 44. The colour is the page's own bone,
      which is #F3F2EE — the same off-white the frame sets on the block, and
      which the base rule misses by using #E3E3E3. */
-  .solution-preview .sol-headline{line-height:1.0182;letter-spacing:-.0172em;color:var(--bone)}
+  /* 1.03 rather than the frame's 44.8 on 44, which is 1.0182: that is under the
+     1.02 of ink "and earn $25." needs beneath "request your data," and the two
+     met by a tenth of a pixel. Half a pixel looser than drawn, and the copy
+     block still sits inside the 212 the frame fixes it at. */
+  .solution-preview .sol-headline{line-height:1.03;letter-spacing:-.0172em;color:var(--bone)}
   .solution-preview .sol-body{max-width:min(87.69vw,377px);margin-top:24px;
     font-size:16px;line-height:1.5469;letter-spacing:-.01465em;color:var(--bone)}
   /* 32 between the copy and the card, off a copy block the frame fixes at 212 —
