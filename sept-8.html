@@ -704,10 +704,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .solution-preview .biz-ben{position:static;transform:none;width:auto;aspect-ratio:auto;container-type:normal}
   .solution-preview .biz-ben-title{position:static;width:auto;max-width:428px;padding:0 min(6.2vw,27px);
     font-size:min(11.28vw,44px);line-height:1.0182;letter-spacing:-.0172em}
-  .solution-preview .biz-ben-cols{position:static;height:auto;max-width:428px;margin-top:min(8vw,34px);
-    display:flex;flex-direction:column;gap:20px;padding:0 min(6.2vw,27px);overflow:visible}
+  /* Asked for: these three run full bleed on the phone. So no side padding and
+     no radius — the gutter and the rounded corners are what were holding them
+     off the edges. The heading above them keeps its own 27, so the images break
+     out of the column the copy sits in, which is the point.
+     430 rather than the 428 the copy blocks take: that is the widest phone, and
+     full bleed means the screen's own width up to it. Over that they hold, like
+     everything else in this block — a 760-wide card would stand 1529 tall on
+     this aspect, which is neither a phone nor full bleed any more. */
+  .solution-preview .biz-ben-cols{position:static;height:auto;max-width:430px;margin-top:min(8vw,34px);
+    display:flex;flex-direction:column;gap:20px;padding:0;overflow:visible}
   .solution-preview .biz-ben-col{position:relative;flex:0 0 auto;left:auto;width:100%;height:auto;
-    aspect-ratio:347/698;border-radius:16px;opacity:1}
+    aspect-ratio:347/698;border-radius:0;opacity:1}
   .solution-preview .biz-ben-window,.solution-preview .biz-ben-glow{display:none}
   .solution-preview .biz-ben-copy{top:70.92%;bottom:0;height:auto;padding:24px;background:rgba(0,0,0,.8)}
   /* the board's leading here is 38.64 on 24, but its title is the same
@@ -1114,11 +1122,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <section class="disclosures" aria-label="Disclosures">
     <h2>DISCLOSURES</h2>
     <p>1. The Data Savings Plan is not a security, deposit account, savings account, or investment product of any kind. It has not been registered with, and is not endorsed or approved by, the U.S. Securities and Exchange Commission (SEC), any state securities regulator, or any banking regulator. DrumWave Inc. is not a bank, broker-dealer, or investment adviser, and does not provide investment, financial, or tax advice.</p>
-    <p>2. Upon completing the required actions described in the Offer Activation Terms, DrumWave will pay you a fixed amount of $25.00. It is not payment for a data sale or license to any specific company; it compensates you for completing the required steps.</p>
-    <p>3. Separately from it, any additional amounts you may earn arise solely from other Offers you may receive while enrolled in the Plan. These are subject to your prior authorization for each specific use, and there is no promise, guarantee, or expectation of a fixed, increasing, or predetermined return from those Offers. The amount you actually receive from this separate component depends on demand from companies during the Plan&rsquo;s term; it may be lower than any amount shown or estimated, and may be zero.</p>
-    <p>4. Therefore, any estimate, chart, simulation, or illustration of value shown on this website is hypothetical and for illustrative purposes only. It does not represent any actual participant, does not constitute a projection or forecast, and is not a promise or guarantee of any future amount. The methodology and assumptions underlying the illustrations presented herein are available upon written request to DrumWave, using the details below.</p>
-    <p>5. This service is not directed and/or available to individuals under 18, and DrumWave does not knowingly collect personal information from individuals under 18. If you believe an individual under 18 has provided us with personal information, contact us using the information below.</p>
-    <p>6. Read DrumWave&rsquo;s dWallet Terms, Terms and Conditions of Use of the Data Savings Plan, Offer Activation Terms, and Privacy Policy before enrolling.</p>
+    <!-- Figma 4093:64458 replaces the six paragraphs this carried with two. What
+         came out: the $25 payment terms, the no-guarantee note on additional
+         Offers, the hypothetical-illustration note, and the under-18 notice; and
+         what was the sixth is now the shorter line below. The type is unchanged
+         because the node's is already what this had — 18 on 1.34 in #666, on the
+         164 left margin and 1464 measure of the 1920 frame, which are the 8.54vw
+         and 76.25vw the rule already carries. -->
+    <p>2. Read any applicable Terms before enrolling.</p>
     <p class="disc-contact">Questions: <a href="mailto:support@drumwave.com">support@drumwave.com</a><span class="disc-dot">.</span></p>
   </section>
 </section>
