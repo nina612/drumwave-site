@@ -103,8 +103,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .nav-menu-panel{display:none}
 /* same reasoning as .nav-menu-panel above, for the backdrop behind it */
 .nav-menu-backdrop{display:none}
-/* device chrome from the phone artboard; hidden until the phone breakpoint */
-.status-bar{display:none}
 @media (max-width:1000px){
   /* Straight to the hamburger here — no in-between tier that trims the nav
      down to just the logo and CTA. Same pill dimensions and menu system as
@@ -607,17 +605,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    on a 1920 frame, so the columns are placed rather than proportioned */
 /* Figma 3157-69719 — measured off the 1924x400 frame: the logo at x171 y78, the
    columns at 946 and 1345, the copyright at y200, the social row at y275.
-   The design paints the ground with a clipped 140-vector artwork, which is not
-   something to reproduce as vectors. These two ellipses are a numeric fit to its
-   render: 1.1 rms per channel over 330 samples, and every bottom-row check within
-   three. Each ends on its own hue at zero alpha rather than on `transparent`, which
-   is rgba(0,0,0,0) and would drag the midpoint through black. Teal is listed first
-   because the first background layer paints on top. */
+   The ground is flat --ink, asked for. It used to carry the frame's artwork as
+   two fitted radial ellipses, a teal and a navy rising from below the footer —
+   a numeric fit to the design's render, within 1.1 rms per channel. Both are
+   gone, on this page and on the other, so the footer ends on the same black the
+   rest of the page sits on. */
 .site-footer{position:relative;z-index:2;display:grid;grid-template-columns:40.27vw 20.74vw 1fr;gap:0;padding:4.06vw 8.9vw 2.34vw;
-  background:
-    radial-gradient(36.3% 94.7% at 68.4% 134.1%, rgba(4,88,68,.626), rgba(4,88,68,0)),
-    radial-gradient(39.9% 97.1% at 39.6% 116.2%, rgba(9,47,81,.927), rgba(9,47,81,0)),
-    var(--ink)}
+  background:var(--ink)}
 .site-footer .foot-social{display:flex;align-items:center;gap:.89vw;margin-top:27px}
 .site-footer .foot-social a{display:block;opacity:1;transition:opacity .25s}
 .site-footer .foot-social a:hover{opacity:.65}
@@ -686,34 +680,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   /* the nudge in the base rule goes: it corrects this block's leading against
      .run-say's, and the two now share one */
   #act1 .hero-h{bottom:var(--hero-bottom)}
-  /* --- status bar, ported from sept-8's phone artboard: 54 tall with a 21
-     top inset, device chrome rather than part of the site. --- */
-  .status-bar{display:flex;align-items:center;position:fixed;left:0;right:0;top:0;z-index:60;
-    height:54px;padding:21px 16px 0;
-    font-family:-apple-system,'SF Pro Text','Helvetica Neue',system-ui,sans-serif}
-  /* Three ratioed tracks rather than flex:1 either side of the island. Grown boxes
-     split unevenly here — the time took 172 and the levels only their content's 80,
-     which put the icons 16px past the right padding. 117 + 124 + 117 is exactly the
-     358 of content the bar has at 390, so the icons land where the artboard has
-     them and cannot overflow — but as fixed pixels that was only ever true at
-     exactly 390. flex-basis:0 with those same three numbers as grow weights holds
-     the 117:124:117 ratio at any phone width instead of a width tuned for one. */
-  .sb-time{flex:117 0 0;text-align:center;font-size:17px;font-weight:590;line-height:22px;color:#fff}
-  .sb-island{flex:124 0 0;height:10px}
-  .sb-levels{flex:117 0 0;display:flex;gap:7px;align-items:center;justify-content:center}
-  .sb-levels img{display:block}
-  .sb-levels img:nth-child(1){width:19.2px;height:12.226px}
-  .sb-levels img:nth-child(2){width:17.142px;height:12.328px}
-  .sb-levels img:nth-child(3){width:27.328px;height:13px}
-
   /* --- nav: the hamburger/panel/backdrop system itself now lives in the
-     1000px block above (no separate tablet tier); down here it only needs to
-     sit 78px from the top instead of 12, to clear the status bar above it. */
-  /* The bar and the phone chrome hold their place while the run is on screen —
-     it is pinned, so scrolling through it would otherwise take them straight off
-     the top on the first gesture — and leave once it is behind the reader.
-     .chrome-away is put on the body by the run's own pin, so what they answer to
-     is the run ending rather than a scroll distance. */
+     1000px block above (no separate tablet tier); down here it only sets its
+     top. 24, the gutter the rest of this page keeps — it was 78 to clear the
+     device chrome that used to sit above it, and that is gone. The nav is
+     position:fixed in the base rule, so this is all it takes to hold it in
+     place: it no longer fades or slides once the run is behind the reader. */
   /* The tap photograph is 16:9 and a phone crops it to a strip a quarter of its
      width. Centred, that strip lands on the sweater and leaves the wallet off
      to the right of it — the one thing the frame is here to show. 75% brings
@@ -744,11 +716,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      widest it goes instead of starting tighter and easing out to it. */
   #ages .frame[data-age="0"] img,
   #ages .frame[data-age="36"] img{transform:none !important}
-  .nav{top:78px;transition:opacity .3s ease, transform .3s ease}
-  .status-bar{transition:opacity .3s ease}
-  body.chrome-away .nav{opacity:0;pointer-events:none;
-    transform:translateX(-50%) translateY(-24px)}
-  body.chrome-away .status-bar{opacity:0}
+  .nav{top:24px}
 
   /* Figma 3870:45302 runs one headline size across the phone page — 44 on the
      frame's 390, against the 32-35 these clamps were bottoming out at. Capped
@@ -826,7 +794,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      scaled to vh so it stays the drawn spacing on a real phone, which is
      shorter than the frame. The extra over 214 is room for the drag line,
      which the frame doesn't carry. */
-  .age-scene .num-wrap{left:15px;bottom:232px}
+  /* 214 now, not 232: the 18 over it was the room the drag line needed, and
+     4045:23023 does not carry that line — so this is the frame's own number.
+     That frame closes on it exactly: 767 above the figure, its own 99 of line,
+     and the 214 makes the 1080. */
+  .age-scene .num-wrap{left:15px;bottom:214px}
   /* the frame's 100px is drawn against "$150"; 23vw is the most that still
      fits "$209,763", the figure this actually reaches at 70, inside the
      margins. It reaches the design's 100 as soon as the screen is wide
@@ -836,12 +808,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      and the readout, at the top right, ran into the nav pill */
   .age-scene .stage-tag{display:none}
   .age-scene .age-skip{display:none}
-  /* the same 15px margin the figure above it uses, and 42 off the bottom */
+  /* the same 15px margin the figure above it uses, and 42 off the bottom —
+     which on the frame's 387 makes the block the 357 it draws, and puts its
+     bottom on the frame's 1036.7 of 1080. */
   .age-scene .ctl{left:15px;right:15px;bottom:42px}
-  /* out of the block's flow, in the gap the frame leaves between the figure and
-     the caption. In flow it added its own row to a bottom-anchored block, which
-     pushed the caption up until it all but touched the figure. */
-  .age-scene .ctl .hint{display:flex;position:absolute;left:0;right:0;bottom:100%;margin:0 0 14px}
+  /* the ruler's last tick lands at 352.27 of that 357, not on its right edge;
+     the hairline under it does run the full width, as it does on the frame */
+  .age-scene .track .ticks{right:1.325%}
+  /* the drag line is off here: 4045:23023 is the phone frame for this screen
+     and it carries the caption, the ruler and the two labels, nothing else.
+     Taking it out is also what returns the figure to the frame's 214 below —
+     see .age-scene .num-wrap above. The base rule's display:none does the work,
+     so the mobile rule that turned it on is simply gone; #ageDragHint stays in
+     the markup because the first-drag reveal still targets it, and tweening the
+     opacity of something display:none costs nothing. */
   .age-scene .ctl-cap br{display:block}
   .age-scene .ctl .ages span:not(:first-child):not(:last-child){display:none}
   /* asked for: no blue cast behind these three on the phone — 3870:45302 sets
@@ -993,15 +973,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      is drawn over. It is device chrome, not part of the site, so it is
      decorative: phones only, aria-hidden, and it renders above the real one
      on an actual handset. -->
-<div class="status-bar" aria-hidden="true">
-  <span class="sb-time">9:41</span>
-  <span class="sb-island"></span>
-  <span class="sb-levels">
-    <img src="assets/img/sept8-sb-cellular.svg" alt="" width="19" height="12">
-    <img src="assets/img/sept8-sb-wifi.svg" alt="" width="17" height="12">
-    <img src="assets/img/sept8-sb-battery.svg" alt="" width="27" height="13">
-  </span>
-</div>
 
 <!-- ACT 1 : YOUR LIFE CREATES DATA -->
 <section class="act" id="act1" aria-label="Your life creates data">
@@ -1964,15 +1935,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
               delay:.08, ease:'power2.inOut'}
       });
     }
-    // One screen of scroll per statement, and never more than one statement per
-    // gesture. A flick carries well past a single screen: progress ran on to the
-    // third statement, which started playing, before the snap pulled back to the
-    // second — so "Own and save your data" arrived on its own after "Every tap"
-    // without the reader asking for it. Both the snap and what plays are taken
-    // from the statement being rested on rather than from raw progress, so a
-    // gesture can only ever move to the one either side of it.
+    // Two screens of scroll per statement, and nothing but the reader's own
+    // position deciding which one is up. Distance is what stops a gesture
+    // crossing two statements — a phone flick runs about 900px and a statement
+    // is 1688 — and it is the only thing doing that job now; see the trigger
+    // below for the snap that used to and why it had to go.
     let seg = -1, segTween = null;
-    const stepP = 1 / phraseSegs.length;
     // The three statements, in the order they are spoken. They already share one
     // resting place (all three sit on --hero-bottom), so moving them is a matter
     // of carrying one away from it while the next comes to it.
@@ -2027,27 +1995,31 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // with state — see the snap below for why that matters.
       trigger:'#act1', start:'top top', end:'+=' + (phraseSegs.length * 200) + '%',
       pin:true,
-      // Snap to the nearest statement boundary, and nothing more. This used to
-      // answer with a point one step from the statement it believed the reader
-      // was resting on, which made it a second account of where they were — and
-      // when the two accounts disagreed, as a restored scroll or a remeasured
-      // pin was enough to make them, it moved the page to reconcile them. Every
-      // snap then armed the next, so the run walked itself through the
-      // statements and "Own and save your data" arrived with nobody touching
-      // the page. Quantising the reader's own position cannot do that: land on
-      // a boundary and the answer is the boundary you are on.
-      // directional:false is the half of "nearest" that GSAP does not give you by
-      // default: left on, it answers with the next boundary the reader was heading
-      // towards rather than the one they came to rest beside, so a firm flick out
-      // of the first statement arrives at the third. Off, the answer is a plain
-      // function of position, and crossing a statement takes the two screens the
-      // pin is now long enough to require.
-      snap:{snapTo:stepP, directional:false, duration:{min:.2, max:.5}, delay:.05, ease:'power2.inOut'},
+      // NO SNAP. Asked for, twice, and it is the only way to keep the promise:
+      // the statements change on the reader's scroll and on nothing else.
+      //
+      // Every version of a snap here broke that, the last one like this. A
+      // statement is two screens, 1688px, so its midpoint is 844 in — and an
+      // ordinary phone flick is about 900. Come to rest 900 past a boundary and
+      // the nearest boundary is the NEXT one, 788 ahead, so the snap took the
+      // reader there: they stopped scrolling in "Every tap. Every step." and
+      // then the page moved on its own and "Own and save your data" arrived.
+      // Which is exactly the complaint, and it was the snap doing it — thirty
+      // scrollTo calls carrying the page from 2587 to 3376 after the flick had
+      // already ended.
+      //
+      // There is nothing left to replace it with. Directional snapping reads
+      // the reader's heading and so runs ahead of them; nearest rounds forward
+      // from over half a zone; and a stateful one walks. Without any of it the
+      // statement is a pure function of scroll position, which is the whole of
+      // what was asked. Resting between two statements costs nothing here: the
+      // phone branch swaps them whole rather than scrubbing, so a statement
+      // simply holds for as long as the reader stays in its zone.
+      //
+      // The two-screen zone stays, and now earns its keep on its own: at 1688 a
+      // 900px flick cannot cross a whole statement, so nothing is skipped even
+      // with nothing quantising the landing.
       onUpdate: self => play(segOf(self.progress)),
-      // the bar and the phone chrome stay with the reader for as long as the run
-      // is on screen, and leave only once it is behind them
-      onLeave:     () => document.body.classList.add('chrome-away'),
-      onEnterBack: () => document.body.classList.remove('chrome-away'),
       // start > 1 for the same reason the run's other triggers test it: this
       // section starts at the very top of the page, so leaving backwards fires
       // once during setup, at scroll 0 — which killed the first statement's
@@ -2072,7 +2044,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       .add('(min-width: 761px)', () => { const t = buildRunPin(false); return () => t.kill(); })
       .add('(max-width: 760px)',  () => { const t = buildRunPin(true);
         return () => { t.kill();
-          document.body.classList.remove('chrome-away');
           // the statements are carried by hand here; hand them back
           gsap.set(['#act1 .hero-h', '#sayA', '#sayB'], {clearProps:'transform,opacity'});
         }; });
