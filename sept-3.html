@@ -773,18 +773,31 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .faq-br,.closing-br{display:inline}
   /* 3870:45302 keeps the phone page on a 24-25 margin throughout; these were
      on 31-33, which read as a wider gutter than anything the frame draws */
-  .how-steps{grid-template-columns:1fr;gap:8vw;padding:8vw 6.15vw 0}
+  /* 48 between "How does a Data Savings Plan work?" and the first card, asked
+     for. It is the padding rather than a margin on the title because the title
+     carries no bottom padding of its own, so this gap is the whole distance
+     from the bottom of its last line box to the top of the card. Held in px,
+     not the 8vw (31 at 390) it was: the number is a spacing, not a proportion.
+     The 6.15vw sides are the 24 gutter the rest of the phone page keeps, which
+     is also what makes the card exactly the 342 its image is drawn at. */
+  .how-steps{grid-template-columns:1fr;gap:8vw;padding:48px 6.15vw 0}
   .how-title{padding-left:7.2vw}
-  .step-card{width:100%}
-  /* 1.458vw is only 5-6px at phone widths — barely a gap between the card
-     and its eyebrow/heading/body. A fixed 20px reads as an actual gap
-     regardless of viewport width. */
-  .step-copy{margin-top:20px;gap:8px}
-  /* Figma 3870:45302 sets the step copy a size up from what was here: the
-     eyebrow 16 on its .1em, the heading 26, the body 16 on 22 of leading. */
+  /* Figma 4045:23202 — the card is 443 tall on the 342 the gutter leaves, where
+     the base rule's 380/442 made it 395 and cropped 48px off an image whose
+     glass panel is drawn into it. 20.06 flat, too: the base radius is a pair of
+     percentages, which on this box is an 18 x 20 ellipse rather than the round
+     corner the frame draws. */
+  .step-card{width:100%;aspect-ratio:342/443;border-radius:20.06px}
+  /* the frame's 28 under the card and 12 between the three lines of copy; the
+     1.458vw and .625vw of the base rule are 5-6px at phone widths, barely a
+     gap at all. */
+  .step-copy{margin-top:28px;gap:12px}
+  /* 4045:23202 sets these: the eyebrow 16 on its .1em, the heading 28 on
+     -.03em, the body 16 on 1.4. It supersedes 3870:45302, which had the
+     heading at 26 and the body on 22 of leading. */
   .step-eyebrow{font-size:16px}
-  .step-h{font-size:26px}
-  .step-body{font-size:16px;line-height:1.375}
+  .step-h{font-size:28px;letter-spacing:-.03em}
+  .step-body{font-size:16px;line-height:1.4}
   .site-footer{grid-template-columns:1fr;gap:32px;padding-bottom:9vw}
   .brand{top:16px;left:16px}
   /* a tag has no width of its own — it fills whatever room its left offset leaves,
@@ -1127,7 +1140,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       </div>
     </div>
 
-    <a class="sol-cta" href="https://personal.drumwave.com/offers/cab925e5-2230-45fb-824f-3d20f757f0c7">Open a Data Savings Account</a>
+    <a class="sol-cta" href="https://personal.drumwave.com/offers/cab925e5-2230-45fb-824f-3d20f757f0c7">View offer details</a>
 
     <div class="sol-card">
       <div class="sol-card-glow" aria-hidden="true"><img src="assets/img/dsp-card-glow.svg" alt=""></div>
