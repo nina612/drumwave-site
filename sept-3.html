@@ -819,13 +819,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .solution-preview #solStateA,
   .solution-preview #solStateB{top:20vh;left:6.4vw}
   .solution-preview .sol-body{max-width:87.2vw;margin-top:1.4em}
-  .solution-preview .sol-cta{left:8vw;top:auto;bottom:22vh}
-  /* asked for: 32 between the copy and the card. Anchored from the top of the
-     screen rather than the bottom so the gap doesn't move with viewport
-     height — 20vh is where the state starts and 181.5 is the height of the
-     headline and body stacked, both of which are set in px. On the frame's
-     390 that lands the card exactly 32 under the last line. */
-  .solution-preview .sol-card{right:auto;left:6.4vw;top:calc(20vh + 213.5px);bottom:auto;width:87.2vw}
+  /* 32 between the copy and the card. Anchored from the top of the screen
+     rather than the bottom so the gap doesn't move with viewport height —
+     20vh is where the state starts and 181.5 is the height of the headline
+     and body stacked, both of which are set in px. On the frame's 390 that
+     lands the card exactly 32 under the last line.
+     --sol-card-h is that width through the card's own 617/386.076, which is
+     the one thing here CSS cannot work out for itself: the button below reads
+     both of these, so the two are said once rather than twice. */
+  .solution-preview{--sol-card-top:calc(20vh + 213.5px);--sol-card-h:54.57vw}
+  .solution-preview .sol-card{right:auto;left:6.4vw;bottom:auto;
+    top:var(--sol-card-top);width:87.2vw}
+  /* The button hangs off the card, not off the bottom of the screen. It was
+     bottom:22vh while the card was top-anchored, and .solution-preview is not
+     as tall as the viewport on a phone — so the two closed on each other as
+     the window grew and the button ended up over the card. Measured at 950
+     tall it was 43 inside it. Off the card there is 24 between them at every
+     height. */
+  .solution-preview .sol-cta{left:6.4vw;bottom:auto;
+    top:calc(var(--sol-card-top) + var(--sol-card-h) + 24px)}
   /* the vw paddings and gaps are a few pixels at this width, so set them in their own terms */
   .closing{padding-top:0}
   /* 88 rather than 84: the frame sets the line under the heading in two, and at
