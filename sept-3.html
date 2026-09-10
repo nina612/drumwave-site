@@ -974,8 +974,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      the window grew and the button ended up over the card. Measured at 950
      tall it was 43 inside it. Off the card there is 24 between them at every
      height. */
+  /* ...and a hard floor under all of that arithmetic. #solution carries
+     overflow:hidden and is exactly one viewport tall, so this button is not
+     merely below the fold when it runs long — it is cut off by the section's
+     own edge. Every number above depends on my reading of how tall the screen
+     is, and if that reading is wrong anywhere the button disappears. 100% here
+     is the section itself, which is the thing doing the clipping, so hanging
+     the button off that instead cannot be wrong about it: 62 is the button's
+     38 and 24 clear of the edge. On every size I can measure the natural
+     position is already inside this, so it never engages — it is there for the
+     screen I have not thought of. */
   .solution-preview .sol-cta{left:min(6.15vw,26px);bottom:auto;
-    top:calc(var(--sol-card-top) + var(--sol-card-h) + 24px)}
+    top:min(calc(var(--sol-card-top) + var(--sol-card-h) + 24px), calc(100% - 62px))}
   /* --- SAVE YOUR DATA. GROW ITS VALUE. on the phone: Figma 4045:23128 ---
      the vw paddings and gaps are a few pixels at this width, so set them in
      their own terms */
