@@ -809,7 +809,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      not the 8vw (31 at 390) it was: the number is a spacing, not a proportion.
      The 6.15vw sides are the 24 gutter the rest of the phone page keeps, which
      is also what makes the card exactly the 342 its image is drawn at. */
-  .how-steps{grid-template-columns:1fr;gap:min(8vw,34px);padding:48px min(6.15vw,26px) 0;
+  /* 80 between one step and the next, against the 28 that sits between a card
+     and its own copy. It was min(8vw,34px) — 31 at 390 — which is the same gap
+     as the 28 to within three pixels, so every block of copy sat equidistant
+     between the image above it and the image below and nothing said which one
+     it belonged to. Asked for, and it is only ever proximity that answers it:
+     the gap that separates has to be plainly bigger than the gap that joins.
+     80 is nearly three times the 28, which reads at a glance. */
+  .how-steps{grid-template-columns:1fr;gap:80px;padding:48px min(6.15vw,26px) 0;
     max-width:428px}
   .how-title{padding-left:min(7.2vw,31px)}
   /* Figma 4045:23202 — the card is 443 tall on the 342 the gutter leaves, where
