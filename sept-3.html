@@ -2262,9 +2262,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       segTween = chain;
     };
     const trig = ScrollTrigger.create({
-      // Two screens a statement, not one. That is what keeps an ordinary flick
-      // from crossing two of them, and it does it with distance rather than
-      // with state — see the snap below for why that matters.
       // 160vh a statement, where it has been 200, then 130, then 100.
       //
       // Shortening it to 100 was a mistake, and it caused both of the things
@@ -2293,30 +2290,42 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // same dial, which is what made every earlier round of this a trade.
       trigger:'#act1', start:'top top', end:'+=' + Math.round(W_TOT * 160) + '%',
       pin:true,
-      // NO SNAP. Asked for, twice, and it is the only way to keep the promise:
-      // the statements change on the reader's scroll and on nothing else.
+      // The snap is back, asked for after the trade was put plainly. It had been
+      // refused three times before, and for a good reason each time - so this is
+      // not the same snap, and the difference is the whole of why it is allowed
+      // back.
       //
-      // Every version of a snap here broke that, the last one like this. A
-      // statement is two screens, 1688px, so its midpoint is 844 in — and an
-      // ordinary phone flick is about 900. Come to rest 900 past a boundary and
-      // the nearest boundary is the NEXT one, 788 ahead, so the snap took the
-      // reader there: they stopped scrolling in "Every tap. Every step." and
-      // then the page moved on its own and "Own and save your data" arrived.
-      // Which is exactly the complaint, and it was the snap doing it — thirty
-      // scrollTo calls carrying the page from 2587 to 3376 after the flick had
-      // already ended.
+      // What went wrong before: it was DIRECTIONAL. Directional snapping reads
+      // the heading and takes the next point in that direction, so a reader who
+      // came to rest inside a statement was carried forward to the following
+      // one - measured once as thirty scrollTo calls walking the page from 2587
+      // to 3376 after the flick had already finished. That is a page moving
+      // somewhere the reader had not gone, which is the thing that keeps being
+      // refused, and rightly.
       //
-      // There is nothing left to replace it with. Directional snapping reads
-      // the reader's heading and so runs ahead of them; nearest rounds forward
-      // from over half a zone; and a stateful one walks. Without any of it the
-      // statement is a pure function of scroll position, which is the whole of
-      // what was asked. Resting between two statements costs nothing here: the
-      // phone branch swaps them whole rather than scrubbing, so a statement
-      // simply holds for as long as the reader stays in its zone.
+      // This one is nearest-point, and the points are the statements' own
+      // resting places - the frames where one is whole and the next has not
+      // started. So the snap can only ever finish a movement the reader began,
+      // never begin one. The furthest it can carry anyone is half a zone: 650px
+      // to the statement they are already most of the way to, or 650 back to the
+      // one they barely left. It cannot reach a statement they were not already
+      // standing in.
       //
-      // The two-screen zone stays, and now earns its keep on its own: at 1688 a
-      // 900px flick cannot cross a whole statement, so nothing is skipped even
-      // with nothing quantising the landing.
+      // inertia is left on, which is what makes a real flick behave: GSAP snaps
+      // from where the throw would have landed, not from where the finger left,
+      // so a hard swipe that clearly means "next" lands on next and a small
+      // nudge settles back. Short, too - a fifth of a second to half a second -
+      // so it reads as the page settling under the thumb rather than travelling.
+      snap: {
+        // 0, .4, .8, 1 - the openings of the three statements and the end of the
+        // run. Off SEG_W rather than typed, so changing the weights cannot leave
+        // the snap pointing at frames that no longer exist.
+        snapTo: SEG_W.map((_, k) => SEG_W.slice(0, k).reduce((a, b) => a + b, 0) / W_TOT).concat([1]),
+        directional: false,
+        duration: {min:.2, max:.5},
+        delay: .06,
+        ease: 'power2.inOut'
+      },
       onUpdate: self => { renderPhrases(self.progress); play(shown); },
       // start > 1 for the same reason the run's other triggers test it: this
       // section starts at the very top of the page, so leaving backwards fires
