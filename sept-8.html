@@ -170,6 +170,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .act{position:relative;height:100vh;height:100svh;overflow:hidden;background:var(--ink)}
 .act-layer{position:absolute;inset:0;overflow:hidden}
 .frame{position:absolute;inset:0;opacity:0;will-change:opacity,transform}
+/* picture wraps the phone-only <source> swap on the run's frames; it is not the
+   thing being sized — the img inside still is — but picture defaults to inline
+   and would otherwise leave a baseline sliver under each photograph. Same rule
+   the step cards already needed. */
+.frame picture{display:block;width:100%;height:100%}
 .frame img{width:100%;height:100%;object-fit:cover}
 #act1 > .frame::after{content:none}
 /* sept-8: the run now holds one headline over thirteen photographs, and several of
@@ -616,13 +621,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      far back towards the machine as the strip goes while still holding her
      face clear of its right edge — the group head and the portafilter stay in
      at the left, so it is her at the machine rather than one or the other */
-  #act1 .frame[data-i="0"]  img{object-position:64% 50%}  /* her face, machine still in */
-  #act1 .frame[data-i="1"]  img{object-position:6% 50%}   /* the man signalling */
-  #act1 .frame[data-i="4"]  img{object-position:55% 50%}  /* the installer */
-  #act1 .frame[data-i="5"]  img{object-position:78% 50%}  /* the container in the air */
-  #act1 .frame[data-i="7"]  img{object-position:25% 50%}  /* the loader, over his crates */
-  #act1 .frame[data-i="8"]  img{object-position:70% 50%}  /* the shop worker */
-  #act1 .frame[data-i="11"] img{object-position:75% 50%}  /* the developer */
+  /* The per-frame crops that used to sit here — her face at 64%, the man
+     signalling at 6%, the installer 55%, the container 78%, the loader 25%, the
+     shop worker 70%, the developer 75% — are cut into the -phone files
+     themselves now, at exactly those positions. Nothing left to position: the
+     phone source is already the phone's own shape, so cover has no width to
+     spare and centring is the whole of it. */
 
   /* --- hero: one photo, the headline low and left. Measured off the phone
      frame: 24 either side of a 342 measure, 91 up from the bottom, and 44 on
@@ -857,18 +861,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
        then 3819:69030/3801:60531 (the trading floor and the developer).
        The headline stands over every one of them, so there is no second copy layer
        and no second act — the frames all live here and cut on a single beat. -->
-  <div class="frame on" data-i="0"><img src="assets/img/sept8-run-01.jpg" alt="A barista pulling a shot at an espresso machine in a cafe" width="1199" height="823"></div>
-  <div class="frame" data-i="1"><img src="assets/img/sept8-run-02.jpg" alt="Ground crew signalling as an airliner passes low overhead at sunset" width="1920" height="1080"></div>
-  <div class="frame" data-i="2"><img src="assets/img/sept8-run-03.jpg" alt="A chef finishing a dish with fresh herbs in a restaurant kitchen" width="1920" height="1080"></div>
-  <div class="frame" data-i="3"><img src="assets/img/sept8-run-04.jpg" alt="An articulated lorry on a highway at golden hour" width="1920" height="1080"></div>
-  <div class="frame" data-i="4"><img src="assets/img/sept8-run-05.jpg" alt="An installer fixing a solar panel on a roof under a clear sky" width="1920" height="1080"></div>
-  <div class="frame" data-i="5"><img src="assets/img/sept8-run-06.jpg" alt="Shipping containers stacked at a port, one lifted by a crane" width="1920" height="1080"></div>
-  <div class="frame" data-i="6"><img src="assets/img/sept8-run-07.jpg" alt="A woman packing a parcel into a cardboard box" width="1920" height="1080"></div>
-  <div class="frame" data-i="7"><img src="assets/img/sept8-run-08.jpg" alt="A worker loading crates of drinks from a pallet" width="1920" height="1080"></div>
-  <div class="frame" data-i="8"><img src="assets/img/sept8-run-09.jpg" alt="A shop worker restocking shelves in a personal care aisle" width="1920" height="1080"></div>
-  <div class="frame" data-i="9"><img src="assets/img/sept8-run-10.jpg" alt="A grocer placing boxes on a shelf in a food hall" width="1920" height="1080"></div>
-  <div class="frame" data-i="10"><img src="assets/img/sept8-run-11.jpg" alt="A film crew working in front of a large LED volume wall" width="1920" height="1080"></div>
-  <div class="frame" data-i="11"><img src="assets/img/sept8-run-13.jpg" alt="A developer working at a code editor in a modern office" width="1448" height="1086"></div>
+  <div class="frame on" data-i="0"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-01-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-01.jpg" alt="A barista pulling a shot at an espresso machine in a cafe" width="1199" height="823"></picture></div>
+  <div class="frame" data-i="1"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-02-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-02.jpg" alt="Ground crew signalling as an airliner passes low overhead at sunset" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="2"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-03-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-03.jpg" alt="A chef finishing a dish with fresh herbs in a restaurant kitchen" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="3"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-04-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-04.jpg" alt="An articulated lorry on a highway at golden hour" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="4"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-05-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-05.jpg" alt="An installer fixing a solar panel on a roof under a clear sky" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="5"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-06-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-06.jpg" alt="Shipping containers stacked at a port, one lifted by a crane" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="6"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-07-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-07.jpg" alt="A woman packing a parcel into a cardboard box" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="7"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-08-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-08.jpg" alt="A worker loading crates of drinks from a pallet" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="8"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-09-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-09.jpg" alt="A shop worker restocking shelves in a personal care aisle" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="9"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-10-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-10.jpg" alt="A grocer placing boxes on a shelf in a food hall" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="10"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-11-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-11.jpg" alt="A film crew working in front of a large LED volume wall" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="11"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-13-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-13.jpg" alt="A developer working at a code editor in a modern office" width="1448" height="1086"></picture></div>
   <div class="photo-veil" aria-hidden="true"></div>
 
   <h1 class="hero-h display xl">
