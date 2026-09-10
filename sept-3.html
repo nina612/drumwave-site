@@ -2162,8 +2162,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // lands (see the !next branch below), so its share of the pin is scroll with
     // the copy nailed in place — measured at 1108px, a screen and a third of
     // pushing against a still page, which is what "stuck" means. It only needs
-    // enough to read as a beat before the pin lets go: .45 of a statement, 475px.
-    const SEG_W = [1, 1, .45];
+    // enough to read as a beat before the pin lets go.
+    //
+    // Half a statement, 650px, and it is deliberately the most generous of the
+    // three. This is where a flick that reaches the last statement has to come
+    // to rest: at .32 there were 402px left in front of it, less than iOS
+    // momentum carries, so the reader arrived and the page went on out of the
+    // pin without them - "own and save starts scrolling down the page by
+    // itself". 650 gives that momentum somewhere to land. It is the one hold on
+    // the page where the copy does not move, but the photographs do cross
+    // underneath it, so it reads as a held statement rather than a dead screen -
+    // the same shape as the business hero, which has never been complained of.
+    const SEG_W = [1, 1, .5];
     const W_TOT = SEG_W.reduce((a, b) => a + b, 0);
     // progress across the whole pin -> which statement, and how far into it
     const segAt = pr => {
@@ -2255,19 +2265,33 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // Two screens a statement, not one. That is what keeps an ordinary flick
       // from crossing two of them, and it does it with distance rather than
       // with state — see the snap below for why that matters.
-      // One screen a statement. It was 200 (the copy moved .35px for every px
-      // scrolled, which reads as dragging), then 130 (.46), and it was still
-      // slow: at 130 a statement cost 1056px of thumb to travel 487. At 100 it
-      // is .60, half again what it was, and the whole run is 1990px instead of
-      // 2590 - two thirds of a screen less to get through it.
-      // It cannot go much below this without breaking the one job this length
-      // has done since the snap came out, which is that no gesture may pass a
-      // statement unseen. From rest at a boundary an ordinary phone flick of
-      // about 900px lands 88px into the next zone; the statement it just
-      // crossed arrived at 487px, on screen and whole, and the one after it
-      // does not arrive until 1299. So a flick moves the reader on by one
-      // statement, never two.
-      trigger:'#act1', start:'top top', end:'+=' + Math.round(W_TOT * 100) + '%',
+      // 160vh a statement, where it has been 200, then 130, then 100.
+      //
+      // Shortening it to 100 was a mistake, and it caused both of the things
+      // reported straight afterwards. A hard flick on iOS carries two to three
+      // thousand pixels of momentum after the finger leaves, and the whole run
+      // was 1989 - so one hard swipe crossed all three statements, and a flick
+      // that arrived on the last one kept going past the end of the pin on its
+      // own, which is what "own and save starts scrolling down the page by
+      // itself" is. Nothing on this page moves the reader: there is no snap on
+      // a phone and nothing calls scrollTo. It was their own momentum arriving
+      // somewhere with too little left in front of it.
+      //
+      // Length is the only lever left for that. A snap is what would guarantee
+      // the reader lands on a beat however hard they flick, and it moves the
+      // page on its own, which has been refused three times now and is refused
+      // again in this same report. normalizeScroll is the other answer and it
+      // broke the pinning outright when it was tried (see the note by
+      // SCROLL_RUN). So: distance.
+      //
+      // The reason 160 does not bring back "too slow" is that the handover
+      // above no longer spends the whole zone on the outgoing statement. It is
+      // gone in half of it, so its speed is set by OUT_BY and not by this
+      // number: at 130 the copy moved .46px for every px of thumb and that was
+      // the too-slow complaint; at 160 it moves .75, half again as fast, in a
+      // pin half again as long. Resistance and responsiveness are no longer the
+      // same dial, which is what made every earlier round of this a trade.
+      trigger:'#act1', start:'top top', end:'+=' + Math.round(W_TOT * 160) + '%',
       pin:true,
       // NO SNAP. Asked for, twice, and it is the only way to keep the promise:
       // the statements change on the reader's scroll and on nothing else.
