@@ -2195,42 +2195,70 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     addEventListener('orientationchange', remeasureTravel);
 
     const BANDS = phraseEl.length;
-    // set further down, once the gesture window exists; until then nothing is
-    // driving and only the very first render is allowed through
+    // set further down, once the gesture window exists
     let isDriving = () => false;
-    const EDGE = .1;                 // a tenth of a band of margin at each boundary
-    let lastT = 0;                   // where the copy was last actually put
+    let stepSpent = () => false;
+    let spendStep = () => {};
+
+    // --- WHICH STATEMENT IS UP, AND WHY IT IS NOT A FUNCTION OF SCROLL POSITION ---
+    //
+    // Fifth report of the same thing, so this stops being a threshold problem and
+    // becomes a design one. Every version until now decided the statement from
+    // WHERE the scroll was: bands of the pin, and whichever band the scroll
+    // landed in won. That is unfixable on iOS by tuning, because the browser
+    // moves the scroll on its own - the address bar collapsing and expanding
+    // shifts it about ninety pixels with no finger involved - and any rule that
+    // reads the position will eventually read one the reader did not choose.
+    // Gating on the gesture narrowed the window; it did not close it, and it had
+    // a hole of its own (below).
+    //
+    // The statement is now decided by HOW FAR THE READER HAS DRAGGED, not by
+    // where the page ended up. An anchor is kept at the scroll position where the
+    // current statement was established. While the reader is driving, distance
+    // from that anchor accumulates, and passing STEP in either direction moves
+    // one statement and re-anchors. A scroll that arrives when the reader is NOT
+    // driving does not move the statement and cannot: it simply moves the anchor
+    // to wherever the browser has put us. The address bar can shove the page as
+    // often as it likes; each shove is absorbed into the anchor and no word
+    // moves.
+    //
+    // The two ends of the pin are the exception, and they are not negotiable:
+    // at the very top the first statement is up and at the very bottom the last
+    // one is, whatever the drag history says, so entering and leaving the run is
+    // always consistent.
+    // ONE SWIPE, ONE STATEMENT. This is the other half of "it goes off by
+    // itself", and it is the half the reader was describing when they said the
+    // second statement leaves on its own after they swipe on the first.
+    //
+    // A swipe is not the moment the finger leaves. iOS keeps sending scroll for
+    // a second or more afterwards, and a hard one carries two to three thousand
+    // pixels. Accumulating distance across all of it meant a single swipe could
+    // pass the threshold twice: the first crossing brought "Every tap" in while
+    // the finger was still moving, the second carried it straight back out while
+    // the reader sat and watched. From their side, one swipe and then the page
+    // continuing on its own - which is exactly what it was.
+    //
+    // So a gesture may spend one step and no more. The allowance is restored
+    // when a NEW gesture starts - a finger going down, or a wheel after the
+    // window has closed - and never by the momentum of the one just spent. It
+    // also means a hard flick can no longer skip a statement, which was the
+    // other complaint about this screen.
+    const STEP = () => (trig.end - trig.start) / BANDS * .5;
+    let anchorY = 0;
+    const step = (to) => { bandIdx = to; anchorY = window.scrollY; spendStep(); showBand(to, false); };
     const renderPhrases = pr => {
-      const t = clamp01(pr) * BANDS;
-      const first = bandIdx < 0;
-      if(first){ bandIdx = Math.min(BANDS - 1, Math.floor(t)); lastT = t; showBand(bandIdx, true); return; }
-      // Only the reader may change a statement. Anything else that moves the
-      // scroll is read and ignored - see the note below the trigger.
-      if(!isDriving()){
-        // The one exception, and it is not a wobble: a jump of more than a band
-        // and a half that the reader did not make - tapping the iOS status bar
-        // to go to the top, an anchor, a restored scroll position. Ignoring one
-        // of those would leave the wrong statement on a screen it does not
-        // belong to. Re-synced with no animation, so it is a correction rather
-        // than a move. An address bar is ninety pixels; a band is 731. Nothing
-        // a toolbar does comes close to this.
-        if(Math.abs(t - lastT) > 1.5){
-          bandIdx = Math.min(BANDS - 1, Math.floor(t));
-          lastT = t;
-          showBand(bandIdx, true);
-        }
-        return;
-      }
-      // and it has to be a clear crossing of the boundary, not a hover on the
-      // line: forward means past the end of this band plus the margin, back
-      // means below the start of it minus the margin.
-      let i = bandIdx;
-      if(t > bandIdx + 1 + EDGE)  i = Math.min(BANDS - 1, Math.floor(t));
-      else if(t < bandIdx - EDGE) i = Math.max(0, Math.floor(t));
-      lastT = t;
-      if(i === bandIdx) return;
-      bandIdx = i;
-      showBand(i, false);
+      const y = window.scrollY;
+      if(bandIdx < 0){ bandIdx = 0; anchorY = y; showBand(0, true); return; }
+      // the two ends of the pin are not negotiable
+      if(pr <= .001){ anchorY = y; if(bandIdx !== 0){ bandIdx = 0; showBand(0, false); } return; }
+      if(pr >= .999){ anchorY = y; const L = BANDS - 1;
+                      if(bandIdx !== L){ bandIdx = L; showBand(L, false); } return; }
+      // a scroll the reader did not make moves the anchor and nothing else
+      if(!isDriving()){ anchorY = y; return; }
+      if(stepSpent()) { return; }               // this swipe has had its statement
+      const d = y - anchorY;
+      if(d > STEP() && bandIdx < BANDS - 1)      step(bandIdx + 1);
+      else if(d < -STEP() && bandIdx > 0)        step(bandIdx - 1);
     };
     const play = i => {
       if(i === seg) return;
@@ -2287,7 +2315,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // the too-slow complaint; at 160 it moves .75, half again as fast, in a
       // pin half again as long. Resistance and responsiveness are no longer the
       // same dial, which is what made every earlier round of this a trade.
-      trigger:'#act1', start:'top top', end:'+=' + (phraseEl.length * 90) + '%',
+      // 140vh a statement, not 90. With the one-swipe-one-statement latch above,
+      // this number no longer sets the pace - the reader gets one statement per
+      // swipe whatever it is. What it sets is whether an ordinary swipe can
+      // reach the END of the pin, and that matters because the last statement is
+      // forced there: at the bottom of the run the last one must be up whatever
+      // the swipe history says, or the reader could leave having never seen it.
+      // At 90 the whole pin was 2192px and one hard swipe covered it, so the
+      // latch would allow one change and then the end-forcing would make a
+      // second - which is precisely "I swipe on your life creates data and every
+      // tap goes off by itself". At 140 the pin is 3411 and an ordinary swipe
+      // lands well inside it.
+      trigger:'#act1', start:'top top', end:'+=' + (phraseEl.length * 140) + '%',
       pin:true,
       // The snap is back, asked for after the trade was put plainly. It had been
       // refused three times before, and for a good reason each time - so this is
@@ -2362,19 +2401,28 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // line cannot flip the statement back and forth.
     let driving   = false;  // the reader is mid-gesture, momentum included
     let fingerDown = false;
+    let spent     = false;  // this gesture has already had its statement
     let quietT = 0;
-    const openWindow = () => { driving = true; };
-    const onTouchStart = () => { fingerDown = true; openWindow(); };
-    const onTouchEnd   = () => { fingerDown = false; };
-    const onWheel      = () => openWindow();
-    const onKey        = e => {
-      if(/^(Arrow|Page|Home|End)/.test(e.key) || e.key === ' ' || e.key === 'Spacebar') openWindow();
-    };
-    const onScroll = () => {
-      if(!driving) return;
+    // A new gesture is a finger going down, or a wheel arriving after the window
+    // has closed. Momentum from the gesture just spent is not a new gesture, and
+    // that distinction is the whole of the one-swipe-one-statement rule.
+    const openWindow = () => { if(!driving) spent = false; driving = true; };
+    // Every one of these schedules the close as well as the open. The version
+    // before this only scheduled it from a scroll event, so a touch that never
+    // scrolled - a tap, a long press, a finger resting on the screen - left the
+    // window open for good, and from then on every shove the address bar gave
+    // the page was treated as the reader's own.
+    const closeSoon = () => {
       clearTimeout(quietT);
       quietT = setTimeout(() => { if(!fingerDown) driving = false; }, 220);
     };
+    const onTouchStart = () => { fingerDown = true; spent = false; driving = true; closeSoon(); };
+    const onTouchEnd   = () => { fingerDown = false; closeSoon(); };
+    const onWheel      = () => { openWindow(); closeSoon(); };
+    const onKey        = e => {
+      if(/^(Arrow|Page|Home|End)/.test(e.key) || e.key === ' ' || e.key === 'Spacebar'){ openWindow(); closeSoon(); }
+    };
+    const onScroll = () => { if(driving) closeSoon(); };
     addEventListener('touchstart',  onTouchStart, {passive:true});
     addEventListener('touchend',    onTouchEnd,   {passive:true});
     addEventListener('touchcancel', onTouchEnd,   {passive:true});
@@ -2382,6 +2430,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     addEventListener('keydown',     onKey,        {passive:true});
     addEventListener('scroll',      onScroll,     {passive:true});
     isDriving = () => driving;
+    stepSpent = () => spent;
+    spendStep = () => { spent = true; };
     trig._dropSnap = () => {
       clearTimeout(quietT);
       removeEventListener('touchstart',  onTouchStart);
