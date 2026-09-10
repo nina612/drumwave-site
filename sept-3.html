@@ -2115,24 +2115,47 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // 60, which is where the board leaves the outgoing statement as a ghost.
     const travel = () => window.innerHeight * .6;
 
-    // --- how a statement hands over, all of it measured in the reader's own
-    // scroll rather than in seconds. Asked for: the statement being read should
-    // move with the thumb, immediately and one-to-one, and the next should snap
-    // into frame near the end. So the outgoing is a pure function of position —
-    // no tween, nothing that can run ahead of the reader or continue after they
-    // stop — and the only timed thing left in the handover is the snap itself,
-    // which is the one part that is supposed to move faster than the thumb. ---
-    // The ride now runs the whole zone, and the fade nearly all of it. They used
-    // to finish at .85 and .78, which left the last 253px of every statement's
-    // scroll with nothing moving on it at all: the outgoing had stopped, and the
-    // incoming had arrived back at .6. Scrolling through that reads as the thing
-    // being stuck. Ending both at the boundary means every pixel of scroll moves
-    // something.
-    const RIDE_BY   = 1;            // the outgoing travels right up to the handover
-    const FADE_FROM = .18,          // and fades across nearly all of it, so it is
-          FADE_TO   = .92;          // still faintly up the screen when the next lands
-    const SNAP_AT   = .6;           // where the next statement arrives
+    // --- how a statement hands over: two pure functions of the reader's scroll
+    // position, and nothing else. ---
+    //
+    // The bounce on the way back up was this. The outgoing statement was scroll
+    // linked, so it reversed perfectly. The incoming one was a TIMED tween fired
+    // once when the zone passed .6 — and scrolling back across .6 did not play
+    // that tween backwards, it killed it and set the statement to opacity 0 on
+    // the spot. Forwards, a quarter-second glide in. Backwards, a cut. Two
+    // different animations for the same stretch of scroll, which is exactly what
+    // "bounces up and down when going backwards" is: the reader rocks over the
+    // threshold and gets a glide one way and a jump the other, from a tween that
+    // is also still running while they scroll and fighting them for the same
+    // property.
+    //
+    // Neither one is timed now. Both are read straight off the position, so the
+    // whole handover is the same shape in both directions and reverses exactly:
+    // scroll back a pixel and you get back the frame you had a pixel ago.
+    //
+    // And they no longer share a speed, which is what was asked for. The
+    // statement being read is gone in half the zone — it has been read, and
+    // getting it out of the way quickly is the point. The one arriving takes the
+    // remaining two thirds and eases into place, so it comes to rest under the
+    // reader rather than snapping past them.
+    const OUT_BY    = .5;           // the statement being read has left by here
+    const OUT_FADE  = [.12, .5];    // and has faded across nearly all of that
+    const IN_FROM   = .22;          // the next one starts up here and is not home
+    const IN_RISE   = .34;          // until the boundary, from .34 of the travel
+                                    // below its resting place
+    // The arriving statement is legible well before it has finished travelling:
+    // its opacity is done by half the zone while its glide runs to the end. The
+    // two were on one curve first, and because the outgoing has to be gone by .5
+    // - it is off the top of the screen by then - that left a stretch around .35
+    // where the strongest copy on screen was 42% opaque and the screen read as
+    // briefly empty. Fading in ahead of the glide puts the crossover at 53%
+    // instead, so there is always a statement to look at, and the movement is
+    // still the slow one that was asked for.
+    const IN_OP_BY  = .5;
     const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
+    // Ease out both ways: quick off the mark, settling as it arrives. Applied to
+    // position rather than to time, so it stays reversible.
+    const ease = p => 1 - Math.pow(1 - p, 2.2);
     // The three statements do not want the same amount of scroll. The first two
     // ride out of frame as the reader scrolls, so every pixel of theirs moves
     // something. The last one has nothing to hand over to and rests where it
@@ -2151,21 +2174,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         x -= SEG_W[k];
       }
     };
-    let armed = -1, snapTween = null;
-    // Which statement is actually on screen — meaning at rest and readable, not
-    // riding out and not still arriving. The photographs follow this rather than
-    // the zone, asked for: a statement's set of photographs should only start
-    // once its own words are already up. The two used to part company for the
-    // last 40% of every zone, because the copy hands over at SNAP_AT and the
-    // zone does not turn over until the boundary — so "Every tap. Every step."
-    // sat on screen over the hero's photographs from .62 all the way to 1.0,
-    // and "Own and save your data." over the tap set from 1.62 to 2.0.
+    // Which statement is actually on screen — meaning readable, not still on its
+    // way in. The photographs follow this rather than the zone, asked for: a
+    // statement's set of photographs should only start once its own words are
+    // already up.
     let shown = 0;
     const renderPhrases = pr => {
       const n = phraseSegs.length;
       const [i, u] = segAt(pr), d = travel();
-      // only ever two statements in play; anything else is put away
-      phraseEl.forEach((el, k) => { if(k !== i && k !== i + 1) gsap.set(el, {opacity:0}); });
+      // Only ever two statements in play; anything else is put away — and put
+      // away somewhere definite rather than left wherever it was last written.
+      // Clearing the opacity alone left one parked at its resting place going
+      // down and .34 of the travel below it coming back up: invisible both
+      // times, but it meant the frame still depended on how the reader got
+      // there. Everything on this screen is now a function of position and of
+      // nothing else, which is what makes the run reverse exactly.
+      phraseEl.forEach((el, k) => {
+        if(k === i || k === i + 1) return;
+        gsap.set(el, {opacity:0, y: k < i ? -travel() : travel() * IN_RISE});
+      });
       const next = phraseEl[i + 1];
       if(!next){
         // the last statement holds where it rests. The ride is there to clear
@@ -2177,42 +2204,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         if(shown !== i){ shown = i; play(shown); }
         return;
       }
-      // the one being read, straight off the scroll with nothing in between
-      gsap.set(phraseEl[i], {y: -d * clamp01(u / RIDE_BY),
-        opacity: 1 - clamp01((u - FADE_FROM) / (FADE_TO - FADE_FROM))});
-      if(u >= SNAP_AT){
-        // fire once on the way through, and leave it resting where it lands —
-        // which is exactly where the next zone wants it, so crossing the
-        // boundary shows no seam
-        if(armed !== i + 1){
-          armed = i + 1;
-          if(snapTween) snapTween.kill();
-          const arriving = Math.min(n - 1, i + 1);
-          snapTween = gsap.fromTo(next, {y: d * .34, opacity:0},
-            {y:0, opacity:1, duration:.26, ease:'power3.out', overwrite:true,
-             // on completion, not on firing: the photographs wait until the copy
-             // has actually landed, which is what "already on the screen" means.
-             // It has to be said here as well as from onUpdate — the reader can
-             // come to rest exactly on the handover, and then no further scroll
-             // arrives to carry the change.
-             onComplete: () => { shown = arriving; play(shown); }});
-        }
-      } else {
-        // below the handover the next statement is away, and said every frame
-        // rather than only on the way back out of it: these start at full
-        // opacity in the stylesheet, so a version that only cleared what it had
-        // itself armed left the next statement sitting on top of the one being
-        // read from the moment the run opened.
-        if(armed === i + 1){
-          armed = -1;
-          if(snapTween) snapTween.kill();
-          snapTween = null;
-        }
-        gsap.set(next, {y:0, opacity:0});
-        // scrolled back below the handover, so the statement on screen is this
-        // one again and its photographs come back with it
-        if(shown !== i){ shown = i; play(shown); }
-      }
+      // the one being read: away quickly, straight off the scroll
+      gsap.set(phraseEl[i], {y: -d * ease(clamp01(u / OUT_BY)),
+        opacity: 1 - clamp01((u - OUT_FADE[0]) / (OUT_FADE[1] - OUT_FADE[0]))});
+      // the one arriving: the rest of the zone, easing into its place. Written
+      // every frame in both directions - these start at full opacity in the
+      // stylesheet, so anything that only wrote it on the way past left the next
+      // statement sitting on top of the one being read from the moment the run
+      // opened.
+      const p = clamp01((u - IN_FROM) / (1 - IN_FROM));
+      gsap.set(next, {y: d * IN_RISE * (1 - ease(p)),
+        opacity: ease(clamp01((u - IN_FROM) / (IN_OP_BY - IN_FROM)))});
+      // The photographs wait for the words. At .75 of the arrival the incoming
+      // statement is 95% opaque and seven pixels from home, which is what
+      // "already on the screen" means; below that the statement on screen is
+      // still the one being read, and its photographs stay with it. Said from
+      // the position rather than from the end of a tween, so coming to rest
+      // exactly on the handover resolves the same way as scrolling through it.
+      const arrived = p >= .75 ? Math.min(n - 1, i + 1) : i;
+      if(shown !== arrived){ shown = arrived; play(shown); }
     };
     const play = i => {
       if(i === seg) return;
