@@ -2441,40 +2441,91 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // section, sitting after the plan screen rather than right against the age track —
   // it rises into view on ordinary scroll instead, the way the FAQ and footer below
   // do (see rise(), under ACT 7). The pin is just the age-scrub itself now.
-  const ageBaseTotal = AGES.length*59;
+  // THE TIMELINE RUNS ITSELF, AND THE READER CHOOSES. Asked for.
+  //
+  // It used to be pinned with a scrub over 590% of the viewport: the only way
+  // out of this section was to scroll all seventy years of it, and the drag was
+  // a scroll in disguise — the handle moved the page, and the pin turned that
+  // back into an age. So the reader had no choice at all; both roads were the
+  // same road, and it was long.
+  //
+  // Nothing is pinned now. The section is one screen like any other, so it can
+  // simply be scrolled past. The years play on their own clock when it arrives.
+  // And the handle sets the age directly rather than through the scrollbar, so
+  // taking hold of it is a real alternative rather than another way of doing the
+  // same thing — the first touch stops the clock and leaves the reader driving.
   let ageDragging = false;
-  const ageST = ScrollTrigger.create({
-    trigger:'#ages', start:'top top', end:'+=' + ageBaseTotal + '%', pin:true, scrub:true,
-    onUpdate(self){
-      if(!ageDragging) renderAge(AGE_MIN + self.progress*(AGE_MAX-AGE_MIN));
-    }
+  let ageTaken    = false;      // the reader has taken the handle
+  const ageProxy  = {v: AGE_MIN};
+  const AGE_RUN   = 6;          // seconds for the whole seventy years
+  const ageAuto = gsap.to(ageProxy, {
+    v: AGE_MAX, duration: AGE_RUN, ease: 'none', paused: true,
+    onUpdate: () => { if(!ageDragging && !ageTaken) renderAge(ageProxy.v); }
   });
-  // Figma 3898:98620/3361:82763 — past the pin in one jump rather than
-  // dragging or scrubbing through all 70 years first. Instant, not smooth:
-  // this section is scrub-pinned, and a smooth scroll fights that the whole
-  // way rather than landing cleanly, the same reason ageScrollToT above it
-  // jumps outright instead of easing.
+  // Armed on the way out, spent on the way in — so the years play once per visit
+  // rather than once per callback. onEnter can fire more than once for reasons the
+  // reader had nothing to do with: come to rest exactly on the boundary and it
+  // re-fires as the scroll settles, and every one of those was starting the count
+  // again from nothing. The figure sat on 0 and looked broken, which is the
+  // opposite of auto-animating.
+  let ageArmed = true;
+  const ageFromTop = () => {
+    if(!ageArmed) return;
+    ageArmed = false;
+    ageTaken = false; ageDragging = false;
+    ageProxy.v = AGE_MIN; renderAge(AGE_MIN);
+    ageAuto.invalidate().pause(0);
+    // reduced motion: show the end rather than animate seventy years to it
+    if(RM){ ageProxy.v = AGE_MAX; renderAge(AGE_MAX); } else ageAuto.play();
+  };
+  const ageST = ScrollTrigger.create({
+    // The count starts as this screen becomes the reader's view, not when it
+    // first appears at the bottom: at 40% down the years were already running
+    // while two fifths of the section was still below the fold, so by the time
+    // it could be read the figure was a third spent.
+    // 5% and not 'top top', though, and the 5% is the whole point. A trigger is
+    // not active AT its own start — measured: isActive is false at exactly the
+    // start and true one pixel past it — and "scroll until the screen fills,
+    // then stop" comes to rest on exactly that pixel. Resting there, onEnter
+    // never fired and the figure sat on 0 indefinitely, which is precisely the
+    // stuck-looking thing this change was meant to remove. Starting 5% earlier
+    // puts that natural resting place safely inside the range; it costs 42px of
+    // scroll, about a fifth of a second, so the reader still meets it at 2.
+    trigger:'#ages', start:'top 5%', end:'bottom top',
+    onEnter:     () => ageFromTop(),
+    // coming back up to it gives it again from nothing, the same way the run and
+    // the question screen do; scrolling on stops the clock where it stands
+    onEnterBack: () => ageFromTop(),
+    // leaving is what re-arms it, in either direction
+    onLeave:     () => { ageAuto.pause(); ageArmed = true; },
+    onLeaveBack: () => { ageAuto.pause(); ageArmed = true; ageTaken = false; renderAge(AGE_MIN); }
+  });
+  // Figma 3898:98620/3361:82763 — past the screen in one jump rather than
+  // watching all seventy years first. There is no pin to fight any more, so
+  // this is simply the bottom of a one-screen section.
   $('#ageSkip').addEventListener('click', () => {
-    window.scrollTo(0, ageST.end + 1);
+    const sec = document.querySelector('#ages');
+    window.scrollTo(0, sec.offsetTop + sec.offsetHeight);
   });
 
-  // Drag: the handle scrolls the page, so scroll and drag share one source of truth
+  // Drag: the handle owns the age directly. It used to move the scrollbar and let
+  // the pin translate that back, which is why dragging and scrolling could not be
+  // told apart. Taking hold of it now stops the clock and keeps it stopped for as
+  // long as the reader is on this screen.
   function ageTFromEvent(e){
     const r = ageTrack.getBoundingClientRect();
     return clamp((e.clientX - r.left)/r.width, 0, 1);
   }
-  function ageScrollToT(t){
-    window.scrollTo(0, ageST.start + t*(ageST.end - ageST.start));
-  }
+  const ageTake = () => { ageTaken = true; ageAuto.pause(); };
   let ageHinted = false;
   ageTrack.addEventListener('pointerdown', e => {
-    ageDragging = true; ageTrack.setPointerCapture(e.pointerId);
-    const t = ageTFromEvent(e); renderAge(AGE_MIN + t*(AGE_MAX-AGE_MIN)); ageScrollToT(t);
+    ageDragging = true; ageTake(); ageTrack.setPointerCapture(e.pointerId);
+    renderAge(AGE_MIN + ageTFromEvent(e)*(AGE_MAX-AGE_MIN));
     if(!ageHinted){ ageHinted = true; gsap.to('#ageDragHint', {opacity:.5, duration:.6}); }
   });
   ageTrack.addEventListener('pointermove', e => {
     if(!ageDragging) return;
-    const t = ageTFromEvent(e); renderAge(AGE_MIN + t*(AGE_MAX-AGE_MIN)); ageScrollToT(t);
+    renderAge(AGE_MIN + ageTFromEvent(e)*(AGE_MAX-AGE_MIN));
   });
   const ageEndDrag = () => { ageDragging = false; };
   ageTrack.addEventListener('pointerup', ageEndDrag);
@@ -2487,8 +2538,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     else return;
     e.preventDefault();
     na = clamp(na, AGE_MIN, AGE_MAX);
+    ageTake();
     renderAge(na);
-    ageScrollToT((na - AGE_MIN)/(AGE_MAX - AGE_MIN));
   });
 
 
