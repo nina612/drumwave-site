@@ -643,8 +643,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      rather than a proportion of a height we do not have. */
   #act1 .hero-wide{display:none}
   #act1 .hero-phone{display:block}
-  #act1 .hero-h{left:min(6.15vw,26px);bottom:91px;top:auto;max-width:min(87.69vw,377px);
-    font-size:min(11.28vw,44px);line-height:1.0182;letter-spacing:-.0172em}
+  /* Asked for: the same type as personal's opening copy — 56 on 1.16 with
+     -.02em, the three values that rule carries verbatim, in place of the 44 on
+     44.8 this had. The four lines still hold at it: "Empower your" is the
+     longest and comes to 330 of the 342 the measure gives, so the break is
+     still the frame's four rather than a wrap.
+     And 64 up rather than 91, asked for too — closer to the bottom edge. It
+     needed to come down anyway: bottom-anchored copy grows upward, so going
+     from 44 to 56 made this block 81px taller and pushed its first line that
+     much further up the screen, which is the drifting-above. 64 puts the block
+     at 520 on an 844 screen against the 493 it would have sat at on the old 91,
+     and still well clear of the nav at 92. */
+  #act1 .hero-h{left:min(6.15vw,26px);bottom:64px;top:auto;max-width:min(87.69vw,377px);
+    font-size:min(14.36vw,56px);line-height:1.16;letter-spacing:-.02em}
 
   /* --- the plan framings stop being one screen and become three --- */
   #solution{height:auto !important;min-height:0}
