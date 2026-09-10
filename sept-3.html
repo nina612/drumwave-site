@@ -361,7 +361,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    instrument at two sizes: a caption, a 5px tick ruler over a hairline, then
    the milestone row. Only the sizes and the phone's extras differ, so the
    design lives here and the 760px block below only says what changes. */
-.age-scene .ctl{position:absolute;left:5.156vw;right:5.156vw;bottom:8vh;z-index:7;touch-action:none;user-select:none}
+.age-scene .ctl{position:absolute;left:5.156vw;right:5.156vw;bottom:8vh;z-index:7;user-select:none}
+/* touch-action is decided by the whole ancestor chain, not by the element the
+   finger lands on - so `none` here applied to the caption and the 0/70 labels
+   as well as the ruler, and made a 345x116 block across the lower half of a
+   phone screen that would not scroll the page at all. Thumbs live there. It
+   belongs on the ruler alone, and even there only as pan-y: vertical is the
+   page's to scroll, sideways is the handle's to follow. */
 /* the drag pair is the phone's alone — the desktop frame doesn't carry it */
 .age-scene .ctl .hint{display:none;justify-content:space-between;margin-bottom:14px}
 .age-scene .ctl .hint b{font-weight:500;color:var(--bone)}
@@ -375,7 +381,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    stays 44 so it is still a real touch target. The spare 26 hangs below the
    hairline, where it would otherwise push the labels a full row further down
    than the design has them, so it is taken back off the bottom. */
-.age-scene .track{position:relative;height:44px;margin-bottom:-26px;cursor:grab}
+.age-scene .track{position:relative;height:44px;margin-bottom:-26px;cursor:grab;touch-action:pan-y}
 .age-scene .track:active{cursor:grabbing}
 .age-scene .track .rail{position:absolute;left:0;right:0;top:17px;bottom:auto;height:1px;background:#999;transform:none}
 /* Asked for back: the cobalt bar and its glowing dot, over the hairline rather
@@ -2506,8 +2512,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     ageTaken = false; ageDragging = false;
     ageProxy.v = AGE_MIN; renderAge(AGE_MIN);
     ageAuto.invalidate().pause(0);
-    // reduced motion: show the end rather than animate seventy years to it
-    if(RM){ ageProxy.v = AGE_MAX; renderAge(AGE_MAX); } else ageAuto.play();
+    // Reduced motion used to jump straight to the answer. A figure counting up is
+    // not motion across the screen, and on a phone with Reduce Motion switched on
+    // - which plenty are - landing on $209,763 with nothing having happened is
+    // exactly what "it will not autoplay" looks like. The years still run, in a
+    // quarter of the time.
+    ageAuto.timeScale(RM ? 4 : 1).play();
   };
   const ageST = ScrollTrigger.create({
     // The count starts as this screen becomes the reader's view, not when it
@@ -2549,24 +2559,47 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   }
   const ageTake = () => { ageTaken = true; ageAuto.pause(); };
   let ageHinted = false;
-  ageTrack.addEventListener('pointerdown', e => {
+  // the age first, the capture after it and inside a guard: capture is the one
+  // call here that can throw (it does whenever the pointer is not one the browser
+  // is tracking), and taking hold of the handle has to set the age whether or not
+  // the browser will follow the finger off the track afterwards.
+  const ageGrab = (e, t) => {
     ageDragging = true; ageTake();
-    // the age first, the capture after it and inside a guard: capture is the one
-    // call in this handler that can throw (it does whenever the pointer is not one
-    // the browser is tracking), and taking hold of the handle has to set the age
-    // whether or not the browser will follow the finger off the track afterwards.
-    renderAge(AGE_MIN + ageTFromEvent(e)*(AGE_MAX-AGE_MIN));
+    renderAge(AGE_MIN + t*(AGE_MAX-AGE_MIN));
     try { ageTrack.setPointerCapture(e.pointerId); } catch(_){}
     if(!ageHinted){ ageHinted = true; gsap.to('#ageDragHint', {opacity:.5, duration:.6}); }
+  };
+  // A finger that lands on the ruler has not said yet whether it means to drag the
+  // handle or to scroll the page: the ruler is full width and sits where a thumb
+  // rests. Committing on the touch itself meant every scroll that began there
+  // stopped the clock and threw the age to wherever the thumb happened to be,
+  // which is what "it will not autoplay" looked like. So a touch is held pending
+  // until it moves, and only a move that is decidedly sideways takes the handle.
+  // A mouse has no such ambiguity and still commits at once.
+  let agePend = null;
+  ageTrack.addEventListener('pointerdown', e => {
+    if(e.pointerType === 'mouse'){ ageGrab(e, ageTFromEvent(e)); return; }
+    agePend = {id:e.pointerId, x:e.clientX, y:e.clientY};
   });
   ageTrack.addEventListener('pointermove', e => {
-    if(!ageDragging) return;
-    renderAge(AGE_MIN + ageTFromEvent(e)*(AGE_MAX-AGE_MIN));
+    if(ageDragging){ renderAge(AGE_MIN + ageTFromEvent(e)*(AGE_MAX-AGE_MIN)); return; }
+    if(!agePend || e.pointerId !== agePend.id) return;
+    const dx = e.clientX - agePend.x, dy = e.clientY - agePend.y;
+    if(Math.abs(dx) > 6 && Math.abs(dx) > Math.abs(dy)){ agePend = null; ageGrab(e, ageTFromEvent(e)); }
+    else if(Math.abs(dy) > 6) agePend = null;   // it was a scroll; let it go
   });
   // A finger that leaves the screen outside the track still ends the drag: the
   // capture above means the events keep arriving here, and releasing it puts the
   // element back to ordinary hit testing for the next touch.
   const ageEndDrag = e => {
+    // a touch that landed and lifted without going anywhere is a tap on the ruler,
+    // and a tap on a ruler means that year. pointercancel is not that - it is the
+    // browser telling us it has taken the gesture for a scroll - so it only counts
+    // on a real pointerup.
+    if(agePend && e && e.type === 'pointerup' && e.pointerId === agePend.id){
+      ageTake(); renderAge(AGE_MIN + ageTFromEvent(e)*(AGE_MAX-AGE_MIN));
+    }
+    agePend = null;
     ageDragging = false;
     if(e && e.pointerId != null){ try { ageTrack.releasePointerCapture(e.pointerId); } catch(_){} }
   };
