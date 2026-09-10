@@ -314,7 +314,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    the caption at the head of that picker instead. */
 .age-scene .num-wrap{position:absolute;left:5.156vw;bottom:23.24vh;z-index:5;pointer-events:none}
 .age-scene .num-wrap .lab{display:none}
-.age-scene .bignum{color:#fff;font-size:min(15.625vw,300px);letter-spacing:-.03em;line-height:.99;font-variant-numeric:tabular-nums}
+/* 200 rather than the 300 .display carries — asked for. The weight is already
+   in the family this page loads, so it needs nothing else. */
+.age-scene .bignum{color:#fff;font-weight:200;font-size:min(15.625vw,300px);letter-spacing:-.03em;line-height:.99;font-variant-numeric:tabular-nums}
 .age-scene .stage-tag{position:absolute;right:5.2vw;top:6.2vh;text-align:right;z-index:6}
 .age-scene .stage-tag .age{font-size:min(6.997vw,134.343px);letter-spacing:-.05em;line-height:.99;color:#fff;font-variant-numeric:tabular-nums}
 /* the two stack flush: at line-height .99 the age's box ends exactly where the
@@ -340,12 +342,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .age-scene .track{position:relative;height:44px;margin-bottom:-26px;cursor:grab}
 .age-scene .track:active{cursor:grabbing}
 .age-scene .track .rail{position:absolute;left:0;right:0;top:17px;bottom:auto;height:1px;background:#999;transform:none}
-/* the cobalt progress bar and its glowing dot aren't in this design. The handle
-   stays in the DOM rather than going away with the fill: pointerdown listens on
-   the track, but the drag still reads the handle's offset. */
-.age-scene .track .fill{display:none}
-.age-scene .track .handle{position:absolute;top:50%;left:0;width:18px;height:18px;border-radius:50%;
-  background:var(--cobalt);transform:translate(-50%,-50%);opacity:0}
+/* Asked for back: the cobalt bar and its glowing dot, over the hairline rather
+   than through the middle of the track the way they sat before the ruler. Both
+   are already driven — renderAge sets the bar's width and the dot's offset from
+   the age — so they only had to be shown again and moved onto the rail's 17. */
+.age-scene .track .fill{position:absolute;left:0;top:17px;bottom:auto;height:1px;
+  background:var(--cobalt);transform:none;width:0}
+.age-scene .track .handle{position:absolute;top:17px;left:0;width:18px;height:18px;border-radius:50%;
+  background:var(--cobalt);transform:translate(-50%,-50%);opacity:1;
+  box-shadow:0 0 0 6px rgba(31,59,255,.18)}
 .age-scene .track .ticks{position:absolute;left:0;right:0;top:0;bottom:auto;transform:none;
   display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
 .age-scene .track .ticks i{display:block;width:1px;height:5px;background:#999;opacity:1;transform:none}

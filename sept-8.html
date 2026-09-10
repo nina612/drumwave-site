@@ -625,7 +625,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   #act1 .frame[data-i="7"]  img{object-position:25% 50%}  /* the loader, over his crates */
   #act1 .frame[data-i="8"]  img{object-position:70% 50%}  /* the shop worker */
   #act1 .frame[data-i="11"] img{object-position:75% 50%}  /* the developer */
-  #act1 .frame[data-i="12"] img{object-position:30% 50%}  /* the trader on the phone */
 
   /* --- hero: one photo, the headline low and left --- */
   #act1 .hero-h{left:7.7vw;bottom:5.6vh;top:auto;max-width:87vw;
@@ -835,7 +834,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <div class="frame" data-i="9"><img src="assets/img/sept8-run-10.jpg" alt="A grocer placing boxes on a shelf in a food hall" loading="lazy"></div>
   <div class="frame" data-i="10"><img src="assets/img/sept8-run-11.jpg" alt="A film crew working in front of a large LED volume wall" loading="lazy"></div>
   <div class="frame" data-i="11"><img src="assets/img/sept8-run-13.jpg" alt="A developer working at a code editor in a modern office" loading="lazy"></div>
-  <div class="frame" data-i="12"><img src="assets/img/sept8-run-12.jpg" alt="A trader on the phone surrounded by market data screens on a stock exchange floor" loading="lazy"></div>
   <div class="photo-veil" aria-hidden="true"></div>
 
   <h1 class="hero-h display xl">
@@ -1337,7 +1335,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // the opener gets the same span and the same flat cut, and the reader lands on one
   // stop per photograph.
   const HERO = 2.6, SPAN = 1.6;
-  const RUN_FRAMES = 13;
+  // twelve since the trading floor came out, which is three whole cycles of
+  // four on the phone rather than the odd held frame the thirteenth left over
+  const RUN_FRAMES = 12;
   // Asked for on phones: the run goes in fours rather than a span a frame — one
   // image easing out of a slight push and holding 1.5s, then three going by at
   // a fifth of a second each, the four repeated to the end of the set. Thirteen
