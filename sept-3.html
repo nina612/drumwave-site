@@ -2534,12 +2534,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   let ageDragging = false;
   let ageTaken    = false;      // the reader has taken the handle
   const ageProxy  = {v: AGE_MIN};
-  // Seconds for the whole seventy years. Six read as hurried - the figure was
-  // through a decade before the eye had settled on it. Eight is a third longer
-  // and still short of the time a reader spends on a screen they have just
-  // arrived at, and nothing is pinned here, so a longer count costs no one any
-  // scrolling: the reader leaves whenever they like and the clock stops with them.
-  const AGE_RUN   = 8;
+  // Seconds for the whole seventy years. Six read as hurried, eight still did,
+  // so twelve - 5.8 years a second where it started at 11.7, half the pace.
+  // A longer count costs no one any scrolling, which is what makes this a free
+  // dial: nothing is pinned on this screen, so the length of the count is not
+  // the length of the section. The reader leaves whenever they like and the
+  // clock stops with them. What it does cost is the far end - a reader who
+  // gives the screen five seconds now sees the figure reach about thirty rather
+  // than the whole seventy - so this is as slow as it goes before most people
+  // stop seeing where it lands.
+  const AGE_RUN   = 12;
   const ageAuto = gsap.to(ageProxy, {
     v: AGE_MAX, duration: AGE_RUN, ease: 'none', paused: true,
     onUpdate: () => { if(!ageDragging && !ageTaken) renderAge(ageProxy.v); }
