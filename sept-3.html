@@ -2195,12 +2195,42 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     addEventListener('orientationchange', remeasureTravel);
 
     const BANDS = phraseEl.length;
+    // set further down, once the gesture window exists; until then nothing is
+    // driving and only the very first render is allowed through
+    let isDriving = () => false;
+    const EDGE = .1;                 // a tenth of a band of margin at each boundary
+    let lastT = 0;                   // where the copy was last actually put
     const renderPhrases = pr => {
-      const i = Math.min(BANDS - 1, Math.floor(clamp01(pr) * BANDS));
-      if(i === bandIdx) return;
+      const t = clamp01(pr) * BANDS;
       const first = bandIdx < 0;
+      if(first){ bandIdx = Math.min(BANDS - 1, Math.floor(t)); lastT = t; showBand(bandIdx, true); return; }
+      // Only the reader may change a statement. Anything else that moves the
+      // scroll is read and ignored - see the note below the trigger.
+      if(!isDriving()){
+        // The one exception, and it is not a wobble: a jump of more than a band
+        // and a half that the reader did not make - tapping the iOS status bar
+        // to go to the top, an anchor, a restored scroll position. Ignoring one
+        // of those would leave the wrong statement on a screen it does not
+        // belong to. Re-synced with no animation, so it is a correction rather
+        // than a move. An address bar is ninety pixels; a band is 731. Nothing
+        // a toolbar does comes close to this.
+        if(Math.abs(t - lastT) > 1.5){
+          bandIdx = Math.min(BANDS - 1, Math.floor(t));
+          lastT = t;
+          showBand(bandIdx, true);
+        }
+        return;
+      }
+      // and it has to be a clear crossing of the boundary, not a hover on the
+      // line: forward means past the end of this band plus the margin, back
+      // means below the start of it minus the margin.
+      let i = bandIdx;
+      if(t > bandIdx + 1 + EDGE)  i = Math.min(BANDS - 1, Math.floor(t));
+      else if(t < bandIdx - EDGE) i = Math.max(0, Math.floor(t));
+      lastT = t;
+      if(i === bandIdx) return;
       bandIdx = i;
-      showBand(i, first);
+      showBand(i, false);
     };
     const play = i => {
       if(i === seg) return;
@@ -2301,87 +2331,59 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       }
     });
 
-    // --- THE SNAP, AND WHY IT IS NOT GSAP'S ---
+    // --- NOTHING HERE MOVES THE PAGE, AND NOTHING BUT A GESTURE CHANGES A WORD ---
     //
-    // Reported: "every tap. every step. every choice" moves on its own - it goes
-    // up, then back down, with nobody touching the screen.
+    // The snap is gone. Not reconfigured, gone: there is no window.scrollTo in
+    // this run any more and no tween that touches the scroll position. It was
+    // asked back for and then reported four times in a row as the page moving on
+    // its own, which is what a snap is - it finishes a gesture by moving the page
+    // after the finger has left, and on iOS every one of those moves can shift
+    // the address bar, which shifts the scroll again, which gives the snap
+    // something new to settle. That is the "up and down without me touching it".
     //
-    // That is an oscillation, and it is what a snap does on a phone when it
-    // cannot tell the reader's scrolling from the browser's. On iOS the address
-    // bar collapses and expands as the page moves; each time it does, the
-    // viewport changes height, the document changes with it and the scroll
-    // position shifts - with no finger involved. A snap sees a scroll it did not
-    // expect, waits its delay, and settles the page onto the nearest point. That
-    // settle moves the page, which moves the address bar, which shifts the scroll
-    // again. Up, then back down, on repeat. It is also why every earlier attempt
-    // at a snap here had to be taken out, and it is invisible in a desktop
-    // browser at a phone-sized viewport, because there is no address bar to
-    // collapse - which is why the measurements said it was fine.
+    // Bands alone are not enough either, and this is the part I kept missing. A
+    // statement changes when the progress crosses a band boundary - and the
+    // address bar changes the scroll position by about ninety pixels with no
+    // finger involved. Come to rest anywhere near a boundary and that ninety
+    // pixels crosses it, the statement changes, the bar moves back, it crosses
+    // back, and the words go up and down on their own for as long as Safari
+    // keeps changing its mind.
     //
-    // GSAP's snap has no way to ask "did the reader do this?", so the snap is
-    // built here instead, and it is armed by the gesture rather than by the
-    // scroll. A touch, a wheel or a scrolling key arms it; nothing else can. A
-    // scroll that arrives without one of those - the address bar, a reflow, a
-    // late image - is left exactly where it is. It stays in place until the
-    // reader scrolls, which is what was asked for.
-    // The band starts, plus the end of the run. A reader let go anywhere already
-    // sees a whole statement - that is what the bands are for - so this is not
-    // there to make the frame readable. It is there so that one gesture is one
-    // statement: settling on a band start means the next gesture has a whole
-    // band in front of it rather than whatever was left of the last one.
-    const snapPts = () => {
-      const pts = [];
-      for(let k = 0; k < BANDS; k++) pts.push(k / BANDS);
-      pts.push(1);
-      return pts.map(p => Math.round(trig.start + (trig.end - trig.start) * p));
-    };
-    let gesture  = false;   // the reader has done something since the last settle
-    let touching = false;   // and their finger is still down
-    let snapping = false;   // this code is moving the page, so ignore its own scrolls
-    let settleT = 0, snapT = null;
-    const proxy = {y:0};
-
-    const doSnap = () => {
-      if(!trig.isActive) return;
-      const y = Math.round(window.scrollY);
-      let best = null;
-      for(const p of snapPts()) if(best === null || Math.abs(p - y) < Math.abs(best - y)) best = p;
-      if(best === null || Math.abs(best - y) < 2) return;
-      snapping = true;
-      if(snapT) snapT.kill();
-      proxy.y = y;
-      snapT = gsap.to(proxy, {
-        y: best, overwrite: true, ease: 'power2.inOut',
-        duration: Math.min(.5, Math.max(.2, Math.abs(best - y) / 1400)),
-        onUpdate: () => window.scrollTo(0, Math.round(proxy.y)),
-        onComplete: () => { snapping = false; snapT = null; }
-      });
-    };
-    // 140ms of stillness, and only once the finger is off: a slow drag keeps
-    // pushing this back rather than being snapped out from under the thumb.
-    const scheduleSettle = () => {
-      clearTimeout(settleT);
-      settleT = setTimeout(() => {
-        if(touching) return;          // still held; the lift will schedule again
-        gesture = false;              // one settle per gesture, so it cannot walk
-        doSnap();
-      }, 140);
-    };
-    const onTouchStart = () => { touching = true; gesture = true; };
-    const onTouchEnd   = () => { touching = false; if(gesture) scheduleSettle(); };
-    const onWheel      = () => { gesture = true; };
+    // So the band is only allowed to change while the reader is actually
+    // driving. A touch, a wheel or a scrolling key opens that window; it stays
+    // open through the whole gesture including the momentum after the finger
+    // lifts, and closes 220ms after the scrolling goes quiet with nothing held
+    // down. Any scroll arriving outside that window - the address bar, a reflow,
+    // a late image, anything at all - is read and ignored. The words stay
+    // exactly where they are.
+    //
+    // And a margin on top of that: the boundary has to be passed by a tenth of a
+    // band before it counts, so even inside a real gesture a jitter around the
+    // line cannot flip the statement back and forth.
+    let driving   = false;  // the reader is mid-gesture, momentum included
+    let fingerDown = false;
+    let quietT = 0;
+    const openWindow = () => { driving = true; };
+    const onTouchStart = () => { fingerDown = true; openWindow(); };
+    const onTouchEnd   = () => { fingerDown = false; };
+    const onWheel      = () => openWindow();
     const onKey        = e => {
-      if(/^(Arrow|Page|Home|End)/.test(e.key) || e.key === ' ' || e.key === 'Spacebar') gesture = true;
+      if(/^(Arrow|Page|Home|End)/.test(e.key) || e.key === ' ' || e.key === 'Spacebar') openWindow();
     };
-    const onScroll = () => { if(snapping || !gesture) return; scheduleSettle(); };
+    const onScroll = () => {
+      if(!driving) return;
+      clearTimeout(quietT);
+      quietT = setTimeout(() => { if(!fingerDown) driving = false; }, 220);
+    };
     addEventListener('touchstart',  onTouchStart, {passive:true});
     addEventListener('touchend',    onTouchEnd,   {passive:true});
     addEventListener('touchcancel', onTouchEnd,   {passive:true});
     addEventListener('wheel',       onWheel,      {passive:true});
     addEventListener('keydown',     onKey,        {passive:true});
     addEventListener('scroll',      onScroll,     {passive:true});
+    isDriving = () => driving;
     trig._dropSnap = () => {
-      clearTimeout(settleT); if(snapT) snapT.kill();
+      clearTimeout(quietT);
       removeEventListener('touchstart',  onTouchStart);
       removeEventListener('touchend',    onTouchEnd);
       removeEventListener('touchcancel', onTouchEnd);
