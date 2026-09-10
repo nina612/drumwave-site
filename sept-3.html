@@ -2638,25 +2638,31 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     v: AGE_MAX, duration: AGE_RUN, ease: 'none', paused: true,
     onUpdate: () => { if(!ageDragging && !ageTaken) renderAge(ageProxy.v); }
   });
-  // Armed on the way out, spent on the way in — so the years play once per visit
-  // rather than once per callback. onEnter can fire more than once for reasons the
-  // reader had nothing to do with: come to rest exactly on the boundary and it
-  // re-fires as the scroll settles, and every one of those was starting the count
-  // again from nothing. The figure sat on 0 and looked broken, which is the
-  // opposite of auto-animating.
-  let ageArmed = true;
-  const ageFromTop = () => {
-    if(!ageArmed) return;
-    ageArmed = false;
-    ageTaken = false; ageDragging = false;
-    ageProxy.v = AGE_MIN; renderAge(AGE_MIN);
-    ageAuto.invalidate().pause(0);
-    // Reduced motion used to jump straight to the answer. A figure counting up is
-    // not motion across the screen, and on a phone with Reduce Motion switched on
-    // - which plenty are - landing on $209,763 with nothing having happened is
-    // exactly what "it will not autoplay" looks like. The years still run, in a
-    // quarter of the time.
-    ageAuto.timeScale(RM ? 4 : 1).play();
+  // Once for the page, not once for every arrival at the section. It used to
+  // start the seventy years again from nothing every time the screen came back
+  // into view, so scrolling up a little and back down - which is a thing people
+  // do constantly - replayed a count the reader had already watched. Asked for:
+  // once it has run, it stays where it got to.
+  //
+  // Three states, and only the first of them starts anything. It has never run:
+  // begin at nothing and play. It began and was interrupted by the reader
+  // scrolling away: carry on from where it stopped, rather than from zero. It
+  // finished, or the reader took the handle: leave the figure alone entirely.
+  let ageStarted = false;
+  const ageEnter = () => {
+    if(ageTaken) return;                  // theirs now; the clock does not take it back
+    if(ageAuto.progress() >= 1) return;   // already run its course; it stays at the end
+    if(!ageStarted){
+      ageStarted = true;
+      ageProxy.v = AGE_MIN; renderAge(AGE_MIN);
+      // Reduced motion used to jump straight to the answer. A figure counting up
+      // is not motion across the screen, and on a phone with Reduce Motion
+      // switched on - which plenty are - landing on $209,763 with nothing having
+      // happened is exactly what "it will not autoplay" looks like. The years
+      // still run, in a quarter of the time.
+      ageAuto.invalidate().pause(0).timeScale(RM ? 4 : 1);
+    }
+    ageAuto.play();
   };
   const ageST = ScrollTrigger.create({
     // The count starts as this screen becomes the reader's view, not when it
@@ -2672,13 +2678,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // puts that natural resting place safely inside the range; it costs 42px of
     // scroll, about a fifth of a second, so the reader still meets it at 2.
     trigger:'#ages', start:'top 5%', end:'bottom top',
-    onEnter:     () => ageFromTop(),
-    // coming back up to it gives it again from nothing, the same way the run and
-    // the question screen do; scrolling on stops the clock where it stands
-    onEnterBack: () => ageFromTop(),
-    // leaving is what re-arms it, in either direction
-    onLeave:     () => { ageAuto.pause(); ageArmed = true; },
-    onLeaveBack: () => { ageAuto.pause(); ageArmed = true; ageTaken = false; renderAge(AGE_MIN); }
+    onEnter:     ageEnter,
+    onEnterBack: ageEnter,
+    // Leaving only stops the clock. It used to re-arm the whole thing and, going
+    // up, put the figure back to nothing as well - which is what made a small
+    // scroll upward wipe the count and start it over. Nothing is reset here now;
+    // the figure keeps whatever it had, and coming back either resumes it or
+    // leaves it, per ageEnter above.
+    onLeave:     () => ageAuto.pause(),
+    onLeaveBack: () => ageAuto.pause()
   });
   // Figma 3898:98620/3361:82763 — past the screen in one jump rather than
   // watching all seventy years first. There is no pin to fight any more, so
