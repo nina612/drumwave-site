@@ -644,14 +644,21 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .faq-row .faq-q{white-space:normal}
 }
 @media (max-width:760px){
-  /* Asked for: the run's copy sits exactly where sept-8's does on a phone —
-     7.7vw in, 5.6vh up, on its 10.3vw type. All three statements share this
-     one resting place, so the bottom is said once here and .hero-h and
-     .run-say both hang from it. It replaces the 128-up-from-844 this took off
-     3898:98620, which put the copy a good deal higher than the other page. */
-  #act1{--hero-bottom:5.6vh}
+  /* Measured off the phone frame and asked for again since: the run's copy sits
+     24 in and 128 up from the bottom of the 390x844 artboard — 6.15vw and
+     15.17vh, the same 128 the base rule's note above records. It replaces the
+     7.7vw/5.6vh this briefly took from sept-8, which sat the copy some 80px
+     lower than the frame draws it. All three statements share the one resting
+     place, so the bottom is said once here and .hero-h and .run-say both hang
+     from it.
+     The right edge the frame also marks — 73 in, a 293 measure — is not set:
+     every line in these statements is its own <span class="ln">, so the box
+     only decides where a line would wrap, and at 293 the longer ones do. The
+     measure below stays wide enough that each line is the line it was written
+     as, which is invisible against the frame and the point of the 73. */
+  #act1{--hero-bottom:15.17vh}
   #act1 .hero-h,
-  #act1 .run-say{left:7.7vw;
+  #act1 .run-say{left:6.15vw;
     font-size:clamp(2.1rem,10.3vw,2.7rem);line-height:1.16;letter-spacing:-.02em}
   #act1 .hero-h{max-width:87vw}
   /* a definite width, not auto: every statement inside this one is absolutely
@@ -748,9 +755,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      rather than left on vw: the frame is drawn at 390 and 11.28vw would reach
      86 by the time this breakpoint hands over at 760. */
   .solution-preview .sol-headline,
+  #worth .worth,
   .how-title,
   .faq-title,
   .closing-h{font-size:min(11.28vw,44px)}
+  /* #worth was the one headline left out of that run, at the 2.2rem its clamp
+     bottoms out at. Its own frame settles it: 628 above the block and 81 below
+     leaves 135 for three lines, which is this 44 on the 44.8 leading the
+     introducing screen sets — at the .9 it had, three lines came to 95 and the
+     block began 40px lower than the frame draws it. */
+  #worth .worth{line-height:1.0182}
   /* the frame sets these on ~45 of leading, and gives this one the tracking
      the rest of its headlines carry — the wide rule leaves it at normal */
   .how-title,
@@ -777,7 +791,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      so on a narrow screen one placed well left grows until it meets the edge.
      Bottom-anchored like the desktop rule, not top:38vh — that top value left
      most of the 100vh pinned screen empty underneath the line. */
-  #worth .worth{left:5vw;bottom:12.31vh;width:90vw}
+  /* 23 in and 81 up from the bottom of the 390x844 frame: 5.9vw and 9.6vh. The
+     12.31vh here was the desktop frame's own number carried down, which on a
+     phone is 104 rather than 81. The 88.5vw measure is the frame's 345 (23 left,
+     22 right); as with the run's statements it only governs wrapping, and all
+     three of these lines are far inside it. */
+  #worth .worth{left:5.9vw;bottom:9.6vh;width:88.5vw}
   /* Figma 3898:98612 — the phone break, three short lines instead of the
      desktop's two */
   #worth .worth-wide{display:none}
@@ -821,30 +840,50 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .solution-preview .sol-glow,
   .closing .frame-glow{display:none}
   .sol-how::before,.sol-how::after{content:none}
-  .solution-preview .sol-state{left:6.4vw;max-width:87.2vw}
-  /* the desktop rule above is an id selector, so it outranks .sol-state's 8vw/20vh
-     here unless said again at the same specificity */
+  /* --- INTRODUCING / OPEN AN ACCOUNT, on the phone: Figma 4045:23135 and
+     4045:23167, two states of one screen. Both draw the same stack on a 390
+     artboard, so every number below is that frame's, in its own terms:
+       copy block   342 wide, centred, so 24 either side
+       headline     44/44.8, tracking -0.7569
+       gap          24
+       body         16/24.75, tracking -0.2344
+       gap          32 under a block the frame fixes at 212
+       card         329.605 x 206.244, centred, so 30.2 either side
+       glow         5 under the card, 390.505 x 71.584
+     The card's own proportions and the glow hanging off it are already right
+     in the base rules — the card is 617/386.076 there, the same 1.598, and the
+     glow is a percentage of it — so the two only need their widths here. */
+  .solution-preview .sol-state{left:6.15vw;max-width:87.69vw}
+  /* the desktop rule above is an id selector, so it outranks .sol-state's
+     placement here unless said again at the same specificity */
   .solution-preview #solStateA,
-  .solution-preview #solStateB{top:20vh;left:6.4vw}
-  .solution-preview .sol-body{max-width:87.2vw;margin-top:1.4em}
-  /* 32 between the copy and the card. Anchored from the top of the screen
-     rather than the bottom so the gap doesn't move with viewport height —
-     20vh is where the state starts and 181.5 is the height of the headline
-     and body stacked, both of which are set in px. On the frame's 390 that
-     lands the card exactly 32 under the last line.
-     --sol-card-h is that width through the card's own 617/386.076, which is
-     the one thing here CSS cannot work out for itself: the button below reads
-     both of these, so the two are said once rather than twice. */
-  .solution-preview{--sol-card-top:calc(20vh + 213.5px);--sol-card-h:54.57vw}
-  .solution-preview .sol-card{right:auto;left:6.4vw;bottom:auto;
-    top:var(--sol-card-top);width:87.2vw}
+  .solution-preview #solStateB{top:20vh;left:6.15vw}
+  /* 44 flat, not the base clamp: its 2.2rem floor is what a 390 screen gets,
+     and that is 35 against the frame's 44. The colour is the page's own bone,
+     which is #F3F2EE — the same off-white the frame sets on the block, and
+     which the base rule misses by using #E3E3E3. */
+  .solution-preview .sol-headline{line-height:1.0182;letter-spacing:-.0172em;color:var(--bone)}
+  .solution-preview .sol-body{max-width:87.69vw;margin-top:24px;
+    font-size:16px;line-height:1.5469;letter-spacing:-.01465em;color:var(--bone)}
+  /* 32 between the copy and the card, off a copy block the frame fixes at 212 —
+     so 244 from the top of the state to the top of the card. Anchored from the
+     top of the screen rather than the bottom so the gap cannot move with
+     viewport height: 20vh is where the state starts and the 244 is px, as the
+     frame has it. (The copy itself only fills 188 of the 212 at three lines of
+     body; the frame leaves the rest as slack above the card, and so does this.)
+     --sol-card-h is the card's width through its own 617/386.076, which is the
+     one thing here CSS cannot work out for itself: the button below reads both
+     of these, so the two are said once rather than twice. */
+  .solution-preview{--sol-card-top:calc(20vh + 244px);--sol-card-h:52.88vw}
+  .solution-preview .sol-card{right:auto;left:7.74vw;bottom:auto;
+    top:var(--sol-card-top);width:84.51vw}
   /* The button hangs off the card, not off the bottom of the screen. It was
      bottom:22vh while the card was top-anchored, and .solution-preview is not
      as tall as the viewport on a phone — so the two closed on each other as
      the window grew and the button ended up over the card. Measured at 950
      tall it was 43 inside it. Off the card there is 24 between them at every
      height. */
-  .solution-preview .sol-cta{left:6.4vw;bottom:auto;
+  .solution-preview .sol-cta{left:6.15vw;bottom:auto;
     top:calc(var(--sol-card-top) + var(--sol-card-h) + 24px)}
   /* the vw paddings and gaps are a few pixels at this width, so set them in their own terms */
   .closing{padding-top:0}
