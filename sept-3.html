@@ -1945,30 +1945,75 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // resting place (all three sit on --hero-bottom), so moving them is a matter
     // of carrying one away from it while the next comes to it.
     const phraseEl = ['#act1 .hero-h', '#sayA', '#sayB'].map(s => $(s));
-    // far enough that the one leaving is still on screen, and well up it, as the
-    // one arriving reaches its place
-    const travel = () => window.innerHeight * .38;
+    // The whole travel of a statement: from its resting place at the bottom to
+    // clear off the top. The copy sits 128 up with a box around 140 tall, so its
+    // top edge starts near 576 of 844 — .6 of the height carries it to roughly
+    // 60, which is where the board leaves the outgoing statement as a ghost.
+    const travel = () => window.innerHeight * .6;
+
+    // --- how a statement hands over, all of it measured in the reader's own
+    // scroll rather than in seconds. Asked for: the statement being read should
+    // move with the thumb, immediately and one-to-one, and the next should snap
+    // into frame near the end. So the outgoing is a pure function of position —
+    // no tween, nothing that can run ahead of the reader or continue after they
+    // stop — and the only timed thing left in the handover is the snap itself,
+    // which is the one part that is supposed to move faster than the thumb. ---
+    const RIDE_BY   = .85;          // the outgoing has finished its travel by here
+    const FADE_FROM = .18,          // and fades across this window, so it is still
+          FADE_TO   = .78;          // faintly up the screen when the next lands
+    const SNAP_AT   = .6;           // where the next statement arrives
+    const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
+    let armed = -1, snapTween = null;
+    const renderPhrases = pr => {
+      const n = phraseSegs.length;
+      const t = Math.min(n - 1e-6, Math.max(0, pr) * n);
+      const i = Math.floor(t), u = t - i, d = travel();
+      // only ever two statements in play; anything else is put away
+      phraseEl.forEach((el, k) => { if(k !== i && k !== i + 1) gsap.set(el, {opacity:0}); });
+      const next = phraseEl[i + 1];
+      if(!next){
+        // the last statement holds where it rests. The ride is there to clear
+        // the screen for whatever comes next, and after this one nothing does —
+        // riding it out left the reader on a photograph with no copy on it for
+        // the last stretch of the pin. The pin releasing is what carries this
+        // one away, and the section takes it with it.
+        gsap.set(phraseEl[i], {y:0, opacity:1});
+        return;
+      }
+      // the one being read, straight off the scroll with nothing in between
+      gsap.set(phraseEl[i], {y: -d * clamp01(u / RIDE_BY),
+        opacity: 1 - clamp01((u - FADE_FROM) / (FADE_TO - FADE_FROM))});
+      if(u >= SNAP_AT){
+        // fire once on the way through, and leave it resting where it lands —
+        // which is exactly where the next zone wants it, so crossing the
+        // boundary shows no seam
+        if(armed !== i + 1){
+          armed = i + 1;
+          if(snapTween) snapTween.kill();
+          snapTween = gsap.fromTo(next, {y: d * .34, opacity:0},
+            {y:0, opacity:1, duration:.26, ease:'power3.out', overwrite:true});
+        }
+      } else {
+        // below the handover the next statement is away, and said every frame
+        // rather than only on the way back out of it: these start at full
+        // opacity in the stylesheet, so a version that only cleared what it had
+        // itself armed left the next statement sitting on top of the one being
+        // read from the moment the run opened.
+        if(armed === i + 1){
+          armed = -1;
+          if(snapTween) snapTween.kill();
+          snapTween = null;
+        }
+        gsap.set(next, {y:0, opacity:0});
+      }
+    };
     const play = i => {
       if(i === seg) return;
-      const from = seg;
       seg = i;
       if(segTween) segTween.kill();
-      // The statements move through the screen rather than clearing their masks
-      // in place: the one being left rides out the way the reader is going and
-      // the one arriving comes from the other side. One after the other, never
-      // together — asked for. A timeline rather than two loose tweens is what
-      // sequences them, so the outgoing has reached nothing before the incoming
-      // starts from nothing and there is no moment with two statements up.
-      if(from < 0){
-        phraseEl.forEach((el, k) => gsap.set(el, {y:0, opacity: k === i ? 1 : 0}));
-      } else {
-        const d = travel(), fwd = i > from;
-        gsap.timeline()
-          .to(phraseEl[from], {y: fwd ? -d : d, opacity:0,
-            duration:.28, ease:'power2.in', overwrite:true})
-          .fromTo(phraseEl[i], {y: fwd ? d : -d, opacity:0},
-            {y:0, opacity:1, duration:.34, ease:'power2.out', overwrite:true});
-      }
+      // The statements themselves are not moved from here any more — they are
+      // rendered from the scroll position, see renderPhrases above. This is
+      // only the photographs now.
       // A chain that walks tl1's playhead photograph by photograph, each leg
       // given the time that photograph is meant to be on screen rather than the
       // span it was authored at — those run from 1 unit to 7.5 and would read
@@ -2019,7 +2064,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // The two-screen zone stays, and now earns its keep on its own: at 1688 a
       // 900px flick cannot cross a whole statement, so nothing is skipped even
       // with nothing quantising the landing.
-      onUpdate: self => play(segOf(self.progress)),
+      onUpdate: self => { renderPhrases(self.progress); play(segOf(self.progress)); },
       // start > 1 for the same reason the run's other triggers test it: this
       // section starts at the very top of the page, so leaving backwards fires
       // once during setup, at scroll 0 — which killed the first statement's
@@ -2032,6 +2077,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         resetRun();
       }
     });
+    renderPhrases(trig.progress);
     play(segOf(trig.progress));
     return trig;
   };
