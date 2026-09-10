@@ -653,38 +653,29 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      measure below stays wide enough that each line is the line it was written
      as, which is invisible against the frame and the point of the 73. */
   #act1{--hero-bottom:15.17vh}
+  /* 56 on all three statements, asked for. On vw so a narrower phone keeps the
+     line structure rather than the pixels, reaching the 56 at the 390 the page
+     is drawn on. It replaces two sizes — a 10.3vw headline and an 8.5vw pair of
+     statements — which is why it is now said once here for all of them. */
   #act1 .hero-h,
   #act1 .run-say{left:6.15vw;
-    font-size:clamp(2.1rem,10.3vw,2.7rem);line-height:1.16;letter-spacing:-.02em}
+    font-size:min(14.36vw,56px);line-height:1.16;letter-spacing:-.02em}
   #act1 .hero-h{max-width:87vw}
   /* a definite width, not auto: every statement inside this one is absolutely
      positioned and takes its width from it, so shrink-to-fit left them a few
      characters wide and every line wrapped three and four times over */
   #act1 .run-say{width:87vw;max-width:none}
-  /* The run's own statements are longer than the headline and do not fit this
-     measure at the headline's size — "Own and save your data." wants 381 of
-     the 326 there is, so it broke, and "Every tap. Every step." dropped a lone
-     "step." onto a line of its own. 8.5vw fits the longest of them whole, so
-     each line of a statement is the line it was written as. The headline keeps
-     sept-8's size, which its own shorter lines fit at. */
-  #act1 .run-say{font-size:clamp(1.75rem,8.5vw,2.25rem)}
-  /* Asked for: 56 on the first two statements. On vw so a narrower phone keeps
-     the same line structure rather than the same pixels, reaching the 56 at the
-     390 the page is drawn on.
-     It re-breaks the second statement, and to the board's own phrasing: at 56
-     none of its three written lines fits the measure — "Every tap. Every step."
-     alone wants 481 of the 339 there is — and wrapping where it must gives
-     "Every tap." / "Every step." / "Every choice" / "creates value," /
-     "instantly.", which is the four-and-five-line setting the animation board
-     draws, with "Every tap." and "Every step." on lines of their own. So the
-     lines are left to find that themselves rather than being re-marked in the
-     markup.
-     Five lines on 1.16 is 325 tall against the 716 the screen has above the
-     128 these rest on, so it still sits clear, and the ride carries its top
-     from 391 to well off the screen. Only #sayA: the third statement was not
-     part of the ask and keeps the 8.5vw above. */
-  #act1 .hero-h,
-  #act1 #sayA{font-size:min(14.36vw,56px)}
+  /* 56 re-breaks the statements, and only the second one needs saying in the
+     markup. "Own and save your data." does not fit the 339 measure either — it
+     wants 553 — but it wraps in two clean halves, "Own and save" / "your data.",
+     and "Grow its value." still holds one line, so three rows and no orphan.
+     The second statement could not be left to wrap: each .ln is a block and
+     words cannot reflow between them, so "Every choice creates" broke after
+     "choice" and left "creates" alone with "value," orphaned under it. Its five
+     lines are in the markup instead, on the animation board's own phrasing.
+     Five lines on 1.16 is 325 tall against the 716 the screen has above the 128
+     these rest on, so it sits clear, and the ride carries its top from 391 to
+     well off the screen. */
   #act1 #sayA .ln:not(.say-phone){display:none}
   #act1 .say-phone{display:block}
   /* Asked for: on a phone the statements travel the screen as one another
@@ -744,15 +735,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      rather than left on vw: the frame is drawn at 390 and 11.28vw would reach
      86 by the time this breakpoint hands over at 760. */
   .solution-preview .sol-headline,
-  #worth .worth,
   .how-title,
   .faq-title{font-size:min(11.28vw,44px)}
-  /* #worth was the one headline left out of that run, at the 2.2rem its clamp
-     bottoms out at. Its own frame settles it: 628 above the block and 81 below
-     leaves 135 for three lines, which is this 44 on the 44.8 leading the
-     introducing screen sets — at the .9 it had, three lines came to 95 and the
-     block began 40px lower than the frame draws it. */
-  #worth .worth{line-height:1.0182}
+  /* 56, asked for, which takes this one past the run of 44s the rest of the
+     phone page keeps — same expression as the run's statements so the two big
+     voices on the page are the same size. Its three written lines still hold at
+     it: the widest, "is your data", wants 255 of the 345 it has.
+     The leading stays the 1.0182 its own frame gave it. That frame had it at 44
+     — 628 above the block and 81 below leaves 135 for three lines — so at 56
+     the block is 171 rather than 135 and, still 81 up from the bottom, it now
+     starts at 592 instead of the drawn 628. The size is the number that was
+     asked for; the 81 it rests on is untouched. */
+  #worth .worth{font-size:min(14.36vw,56px);line-height:1.0182}
   /* the frame sets these on ~45 of leading, and gives this one the tracking
      the rest of its headlines carry — the wide rule leaves it at normal */
   .how-title,
