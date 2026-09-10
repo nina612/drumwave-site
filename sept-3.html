@@ -638,8 +638,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      3898:98620, which put the copy a good deal higher than the other page. */
   #act1{--hero-bottom:5.6vh}
   #act1 .hero-h,
-  #act1 .run-say{left:7.7vw;width:auto;max-width:87vw;
-    font-size:clamp(2.1rem,10.3vw,2.7rem);line-height:1.02;letter-spacing:-.02em}
+  #act1 .run-say{left:7.7vw;
+    font-size:clamp(2.1rem,10.3vw,2.7rem);line-height:1.16;letter-spacing:-.02em}
+  #act1 .hero-h{max-width:87vw}
+  /* a definite width, not auto: every statement inside this one is absolutely
+     positioned and takes its width from it, so shrink-to-fit left them a few
+     characters wide and every line wrapped three and four times over */
+  #act1 .run-say{width:87vw;max-width:none}
+  /* The run's own statements are longer than the headline and do not fit this
+     measure at the headline's size — "Own and save your data." wants 381 of
+     the 326 there is, so it broke, and "Every tap. Every step." dropped a lone
+     "step." onto a line of its own. 8.5vw fits the longest of them whole, so
+     each line of a statement is the line it was written as. The headline keeps
+     sept-8's size, which its own shorter lines fit at. */
+  #act1 .run-say{font-size:clamp(1.75rem,8.5vw,2.25rem)}
   /* Asked for: on a phone the statements travel the screen as one another
      arrives — the outgoing one rides up and away while the next comes up from
      below — rather than each line clearing its own mask in place. So the masks
