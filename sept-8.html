@@ -654,8 +654,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      much further up the screen, which is the drifting-above. 64 puts the block
      at 520 on an 844 screen against the 493 it would have sat at on the old 91,
      and still well clear of the nav at 92. */
-  #act1 .hero-h{left:min(6.15vw,26px);bottom:64px;top:auto;max-width:min(87.69vw,377px);
-    font-size:min(14.36vw,56px);line-height:1.16;letter-spacing:-.02em}
+  #act1 .hero-h{left:min(6.15vw,26px);top:auto;max-width:min(87.69vw,377px);
+    font-size:min(14.36vw,56px);line-height:1.16;letter-spacing:-.02em;
+    /* Asked for: this first line starts where personal's does. Personal rests
+       15.17vh up on two lines; this copy is the same type but four lines, so to
+       begin at the same height it has to sit lower by exactly the two extra —
+       15.17vh less 2.32em, which is that rule's inset minus two of these lines.
+       Floored at 24, because below 856px of screen the sum goes negative and
+       four lines simply cannot start where two do: at 844 it wants -2, at 812
+       -7, at 667 -29. Over 856 the two align exactly; under it this holds as low
+       as it can and the first line comes as close as the screen allows —
+       26px above personal's at 844, against the 66 it was. */
+    bottom:max(24px, calc(15.17vh - 2.32em))}
 
   /* --- the plan framings stop being one screen and become three --- */
   #solution{height:auto !important;min-height:0}
