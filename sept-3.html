@@ -2140,9 +2140,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // reader rather than snapping past them.
     const OUT_BY    = .5;           // the statement being read has left by here
     const OUT_FADE  = [.12, .5];    // and has faded across nearly all of that
-    const IN_FROM   = .22;          // the next one starts up here and is not home
-    const IN_RISE   = .34;          // until the boundary, from .34 of the travel
-                                    // below its resting place
+    const IN_FROM   = .22;          // the next one starts up here, is home by
+    const IN_TO     = .7;           // here, and comes from .34 of the travel
+    const IN_RISE   = .34;          // below its resting place
+    // IN_TO was the boundary itself, which meant the arriving statement was
+    // still creeping into place at the very moment the snap finished carrying
+    // the reader there - it settled exactly as they landed, which is what
+    // "takes too long to settle" is. Finishing at .7 puts it whole and still
+    // for the last third of the travel, so it has come to rest before the
+    // reader does rather than at the same time.
     // The arriving statement is legible well before it has finished travelling:
     // its opacity is done by half the zone while its glide runs to the end. The
     // two were on one curve first, and because the outgoing has to be gone by .5
@@ -2151,7 +2157,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // briefly empty. Fading in ahead of the glide puts the crossover at 53%
     // instead, so there is always a statement to look at, and the movement is
     // still the slow one that was asked for.
-    const IN_OP_BY  = .5;
+    const IN_OP_BY  = .45;
     const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
     // Ease out both ways: quick off the mark, settling as it arrives. Applied to
     // position rather than to time, so it stays reversible.
@@ -2222,7 +2228,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // stylesheet, so anything that only wrote it on the way past left the next
       // statement sitting on top of the one being read from the moment the run
       // opened.
-      const p = clamp01((u - IN_FROM) / (1 - IN_FROM));
+      const p = clamp01((u - IN_FROM) / (IN_TO - IN_FROM));
       gsap.set(next, {y: d * IN_RISE * (1 - ease(p)),
         opacity: ease(clamp01((u - IN_FROM) / (IN_OP_BY - IN_FROM)))});
       // The photographs wait for the words. At .75 of the arrival the incoming
@@ -2274,12 +2280,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // a phone and nothing calls scrollTo. It was their own momentum arriving
       // somewhere with too little left in front of it.
       //
-      // Length is the only lever left for that. A snap is what would guarantee
-      // the reader lands on a beat however hard they flick, and it moves the
-      // page on its own, which has been refused three times now and is refused
-      // again in this same report. normalizeScroll is the other answer and it
-      // broke the pinning outright when it was tried (see the note by
-      // SCROLL_RUN). So: distance.
+      // At the time, length was the only lever for that: a snap was refused and
+      // normalizeScroll had broken the pinning outright when it was tried (see
+      // the note by SCROLL_RUN). The snap below is now allowed, and catching
+      // momentum is precisely its job - so the pin no longer has to be long
+      // enough to outlast a throw, and 160 has come back down to 110. Fewer
+      // scrolls to change a statement, which is what was asked, and the snap
+      // rather than the distance is what stops a hard flick crossing the lot.
       //
       // The reason 160 does not bring back "too slow" is that the handover
       // above no longer spends the whole zone on the outgoing statement. It is
@@ -2288,7 +2295,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // the too-slow complaint; at 160 it moves .75, half again as fast, in a
       // pin half again as long. Resistance and responsiveness are no longer the
       // same dial, which is what made every earlier round of this a trade.
-      trigger:'#act1', start:'top top', end:'+=' + Math.round(W_TOT * 160) + '%',
+      trigger:'#act1', start:'top top', end:'+=' + Math.round(W_TOT * 110) + '%',
       pin:true,
       // The snap is back, asked for after the trade was put plainly. It had been
       // refused three times before, and for a good reason each time - so this is
