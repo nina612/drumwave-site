@@ -857,18 +857,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
        then 3819:69030/3801:60531 (the trading floor and the developer).
        The headline stands over every one of them, so there is no second copy layer
        and no second act — the frames all live here and cut on a single beat. -->
-  <div class="frame on" data-i="0"><img src="assets/img/sept8-run-01.jpg" alt="A barista pulling a shot at an espresso machine in a cafe"></div>
-  <div class="frame" data-i="1"><img src="assets/img/sept8-run-02.jpg" alt="Ground crew signalling as an airliner passes low overhead at sunset" loading="lazy"></div>
-  <div class="frame" data-i="2"><img src="assets/img/sept8-run-03.jpg" alt="A chef finishing a dish with fresh herbs in a restaurant kitchen" loading="lazy"></div>
-  <div class="frame" data-i="3"><img src="assets/img/sept8-run-04.jpg" alt="An articulated lorry on a highway at golden hour" loading="lazy"></div>
-  <div class="frame" data-i="4"><img src="assets/img/sept8-run-05.jpg" alt="An installer fixing a solar panel on a roof under a clear sky" loading="lazy"></div>
-  <div class="frame" data-i="5"><img src="assets/img/sept8-run-06.jpg" alt="Shipping containers stacked at a port, one lifted by a crane" loading="lazy"></div>
-  <div class="frame" data-i="6"><img src="assets/img/sept8-run-07.jpg" alt="A woman packing a parcel into a cardboard box" loading="lazy"></div>
-  <div class="frame" data-i="7"><img src="assets/img/sept8-run-08.jpg" alt="A worker loading crates of drinks from a pallet" loading="lazy"></div>
-  <div class="frame" data-i="8"><img src="assets/img/sept8-run-09.jpg" alt="A shop worker restocking shelves in a personal care aisle" loading="lazy"></div>
-  <div class="frame" data-i="9"><img src="assets/img/sept8-run-10.jpg" alt="A grocer placing boxes on a shelf in a food hall" loading="lazy"></div>
-  <div class="frame" data-i="10"><img src="assets/img/sept8-run-11.jpg" alt="A film crew working in front of a large LED volume wall" loading="lazy"></div>
-  <div class="frame" data-i="11"><img src="assets/img/sept8-run-13.jpg" alt="A developer working at a code editor in a modern office" loading="lazy"></div>
+  <div class="frame on" data-i="0"><img src="assets/img/sept8-run-01.jpg" alt="A barista pulling a shot at an espresso machine in a cafe" width="1199" height="823"></div>
+  <div class="frame" data-i="1"><img src="assets/img/sept8-run-02.jpg" alt="Ground crew signalling as an airliner passes low overhead at sunset" width="1920" height="1080"></div>
+  <div class="frame" data-i="2"><img src="assets/img/sept8-run-03.jpg" alt="A chef finishing a dish with fresh herbs in a restaurant kitchen" width="1920" height="1080"></div>
+  <div class="frame" data-i="3"><img src="assets/img/sept8-run-04.jpg" alt="An articulated lorry on a highway at golden hour" width="1920" height="1080"></div>
+  <div class="frame" data-i="4"><img src="assets/img/sept8-run-05.jpg" alt="An installer fixing a solar panel on a roof under a clear sky" width="1920" height="1080"></div>
+  <div class="frame" data-i="5"><img src="assets/img/sept8-run-06.jpg" alt="Shipping containers stacked at a port, one lifted by a crane" width="1920" height="1080"></div>
+  <div class="frame" data-i="6"><img src="assets/img/sept8-run-07.jpg" alt="A woman packing a parcel into a cardboard box" width="1920" height="1080"></div>
+  <div class="frame" data-i="7"><img src="assets/img/sept8-run-08.jpg" alt="A worker loading crates of drinks from a pallet" width="1920" height="1080"></div>
+  <div class="frame" data-i="8"><img src="assets/img/sept8-run-09.jpg" alt="A shop worker restocking shelves in a personal care aisle" width="1920" height="1080"></div>
+  <div class="frame" data-i="9"><img src="assets/img/sept8-run-10.jpg" alt="A grocer placing boxes on a shelf in a food hall" width="1920" height="1080"></div>
+  <div class="frame" data-i="10"><img src="assets/img/sept8-run-11.jpg" alt="A film crew working in front of a large LED volume wall" width="1920" height="1080"></div>
+  <div class="frame" data-i="11"><img src="assets/img/sept8-run-13.jpg" alt="A developer working at a code editor in a modern office" width="1448" height="1086"></div>
   <div class="photo-veil" aria-hidden="true"></div>
 
   <h1 class="hero-h display xl">
@@ -1722,7 +1722,30 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // scrubbed, the scroll position owns the playhead: hand it over rather than
     // starting a clock that would then fight it
     if(SCROLL_RUN) ScrollTrigger.update();
-    else tl1.play();     // the landing screen is already in view, so nothing enters it
+    // The phone waits for its photographs before it starts.
+    //
+    // The run gives most of its frames a fifth of a second — that is the
+    // asked-for rhythm, one held image then three going by — and it used to
+    // start the moment `load` fired. Eleven of the twelve frames were
+    // loading="lazy", and lazy images do not hold `load` back, so the run began
+    // cycling through photographs that had not arrived. On a phone, over a
+    // phone's connection, that is the glitching: frames with nothing in them,
+    // and the previous image left standing where the next one should be.
+    //
+    // They are eager now, so `load` has their bytes. But fetched is not
+    // painted: decoding a 1920x1080 JPEG on demand can easily miss a 200ms
+    // slot, and there are twelve of them. decode() is the one thing that says
+    // "this will paint without stalling", so the run waits on all twelve.
+    //
+    // Raced against 3s so a decode that never settles cannot leave the opening
+    // screen frozen — better a run that starts rough than one that never runs.
+    else {
+      const shots = $$('#act1 .frame img');
+      const ready = Promise.all(shots.map(im =>
+        (im.decode ? im.decode() : Promise.resolve()).catch(() => {})));
+      const cap = new Promise(res => setTimeout(res, 3000));
+      Promise.race([ready, cap]).then(() => tl1.play());
+    }
   });
 })();
 </script>
