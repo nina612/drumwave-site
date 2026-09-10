@@ -2323,16 +2323,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // so a hard swipe that clearly means "next" lands on next and a small
       // nudge settles back. Short, too - a fifth of a second to half a second -
       // so it reads as the page settling under the thumb rather than travelling.
-      snap: {
-        // 0, .4, .8, 1 - the openings of the three statements and the end of the
-        // run. Off SEG_W rather than typed, so changing the weights cannot leave
-        // the snap pointing at frames that no longer exist.
-        snapTo: SEG_W.map((_, k) => SEG_W.slice(0, k).reduce((a, b) => a + b, 0) / W_TOT).concat([1]),
-        directional: false,
-        duration: {min:.2, max:.5},
-        delay: .06,
-        ease: 'power2.inOut'
-      },
+      // No snap in the trigger's own config - see the gesture-gated one built
+      // below it, and the note there for why GSAP's cannot be used here.
       onUpdate: self => { renderPhrases(self.progress); play(shown); },
       // start > 1 for the same reason the run's other triggers test it: this
       // section starts at the very top of the page, so leaving backwards fires
@@ -2346,6 +2338,88 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         resetRun();
       }
     });
+
+    // --- THE SNAP, AND WHY IT IS NOT GSAP'S ---
+    //
+    // Reported: "every tap. every step. every choice" moves on its own - it goes
+    // up, then back down, with nobody touching the screen.
+    //
+    // That is an oscillation, and it is what a snap does on a phone when it
+    // cannot tell the reader's scrolling from the browser's. On iOS the address
+    // bar collapses and expands as the page moves; each time it does, the
+    // viewport changes height, the document changes with it and the scroll
+    // position shifts - with no finger involved. A snap sees a scroll it did not
+    // expect, waits its delay, and settles the page onto the nearest point. That
+    // settle moves the page, which moves the address bar, which shifts the scroll
+    // again. Up, then back down, on repeat. It is also why every earlier attempt
+    // at a snap here had to be taken out, and it is invisible in a desktop
+    // browser at a phone-sized viewport, because there is no address bar to
+    // collapse - which is why the measurements said it was fine.
+    //
+    // GSAP's snap has no way to ask "did the reader do this?", so the snap is
+    // built here instead, and it is armed by the gesture rather than by the
+    // scroll. A touch, a wheel or a scrolling key arms it; nothing else can. A
+    // scroll that arrives without one of those - the address bar, a reflow, a
+    // late image - is left exactly where it is. It stays in place until the
+    // reader scrolls, which is what was asked for.
+    const snapPts = () => SEG_W
+      .map((_, k) => SEG_W.slice(0, k).reduce((a, b) => a + b, 0) / W_TOT).concat([1])
+      .map(p => Math.round(trig.start + (trig.end - trig.start) * p));
+    let gesture  = false;   // the reader has done something since the last settle
+    let touching = false;   // and their finger is still down
+    let snapping = false;   // this code is moving the page, so ignore its own scrolls
+    let settleT = 0, snapT = null;
+    const proxy = {y:0};
+
+    const doSnap = () => {
+      if(!trig.isActive) return;
+      const y = Math.round(window.scrollY);
+      let best = null;
+      for(const p of snapPts()) if(best === null || Math.abs(p - y) < Math.abs(best - y)) best = p;
+      if(best === null || Math.abs(best - y) < 2) return;
+      snapping = true;
+      if(snapT) snapT.kill();
+      proxy.y = y;
+      snapT = gsap.to(proxy, {
+        y: best, overwrite: true, ease: 'power2.inOut',
+        duration: Math.min(.5, Math.max(.2, Math.abs(best - y) / 1400)),
+        onUpdate: () => window.scrollTo(0, Math.round(proxy.y)),
+        onComplete: () => { snapping = false; snapT = null; }
+      });
+    };
+    // 140ms of stillness, and only once the finger is off: a slow drag keeps
+    // pushing this back rather than being snapped out from under the thumb.
+    const scheduleSettle = () => {
+      clearTimeout(settleT);
+      settleT = setTimeout(() => {
+        if(touching) return;          // still held; the lift will schedule again
+        gesture = false;              // one settle per gesture, so it cannot walk
+        doSnap();
+      }, 140);
+    };
+    const onTouchStart = () => { touching = true; gesture = true; };
+    const onTouchEnd   = () => { touching = false; if(gesture) scheduleSettle(); };
+    const onWheel      = () => { gesture = true; };
+    const onKey        = e => {
+      if(/^(Arrow|Page|Home|End)/.test(e.key) || e.key === ' ' || e.key === 'Spacebar') gesture = true;
+    };
+    const onScroll = () => { if(snapping || !gesture) return; scheduleSettle(); };
+    addEventListener('touchstart',  onTouchStart, {passive:true});
+    addEventListener('touchend',    onTouchEnd,   {passive:true});
+    addEventListener('touchcancel', onTouchEnd,   {passive:true});
+    addEventListener('wheel',       onWheel,      {passive:true});
+    addEventListener('keydown',     onKey,        {passive:true});
+    addEventListener('scroll',      onScroll,     {passive:true});
+    trig._dropSnap = () => {
+      clearTimeout(settleT); if(snapT) snapT.kill();
+      removeEventListener('touchstart',  onTouchStart);
+      removeEventListener('touchend',    onTouchEnd);
+      removeEventListener('touchcancel', onTouchEnd);
+      removeEventListener('wheel',       onWheel);
+      removeEventListener('keydown',     onKey);
+      removeEventListener('scroll',      onScroll);
+    };
+
     renderPhrases(trig.progress);
     play(shown);
     return trig;
@@ -2358,7 +2432,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     gsap.matchMedia()
       .add('(min-width: 761px)', () => { const t = buildRunPin(false); return () => t.kill(); })
       .add('(max-width: 760px)',  () => { const t = buildRunPin(true);
-        return () => { t.kill();
+        return () => { if(t._dropSnap) t._dropSnap(); t.kill();
           // the statements are carried by hand here; hand them back
           gsap.set(['#act1 .hero-h', '#sayA', '#sayB'], {clearProps:'transform,opacity'});
         }; });
