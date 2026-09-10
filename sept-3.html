@@ -947,8 +947,27 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      one thing here CSS cannot work out for itself: the button below reads both
      of these, so the two are said once rather than twice. */
   .solution-preview{--sol-card-top:calc(20vh + 244px);--sol-card-h:min(52.88vw,227px)}
+  /* The card's width comes off its height rather than being capped separately:
+     617/386.076 is 1.598, so one number cannot drift from the other, and the
+     button below — which is placed from --sol-card-h — cannot end up measuring
+     from a card of a different size. */
   .solution-preview .sol-card{right:auto;left:min(7.74vw,33px);bottom:auto;
-    top:var(--sol-card-top);width:min(84.51vw,363px)}
+    top:var(--sol-card-top);width:calc(var(--sol-card-h) * 1.598)}
+  /* ...and on a phone the screen is shorter than 100vh says it is. The address
+     bar is showing most of the time, and vh does not count it: a 667 phone
+     shows about 575. This stack — 20vh down, then 244 of copy, then the card,
+     24, and the button — came to 627 at that height, so the button was cut off
+     by the bottom edge. svh is the height with the bar there, so both the offset
+     above the card and the card itself are measured against it, and the card
+     gives up whatever height the button needs. The 244 gap gives a little too,
+     capped at 33svh, so a short screen loses some of the gap rather than all of
+     it off the card. Nothing changes on a normal phone: at 730 of svh the
+     min()s still land on the drawn 244 and 227. */
+  @supports (height:100svh){
+    .solution-preview{
+      --sol-card-top:calc(20svh + min(244px, 33svh));
+      --sol-card-h:min(52.88vw, 227px, calc(80svh - min(244px, 33svh) - 86px))}
+  }
   /* The button hangs off the card, not off the bottom of the screen. It was
      bottom:22vh while the card was top-anchored, and .solution-preview is not
      as tall as the viewport on a phone — so the two closed on each other as
@@ -2071,9 +2090,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // no tween, nothing that can run ahead of the reader or continue after they
     // stop — and the only timed thing left in the handover is the snap itself,
     // which is the one part that is supposed to move faster than the thumb. ---
-    const RIDE_BY   = .85;          // the outgoing has finished its travel by here
-    const FADE_FROM = .18,          // and fades across this window, so it is still
-          FADE_TO   = .78;          // faintly up the screen when the next lands
+    // The ride now runs the whole zone, and the fade nearly all of it. They used
+    // to finish at .85 and .78, which left the last 253px of every statement's
+    // scroll with nothing moving on it at all: the outgoing had stopped, and the
+    // incoming had arrived back at .6. Scrolling through that reads as the thing
+    // being stuck. Ending both at the boundary means every pixel of scroll moves
+    // something.
+    const RIDE_BY   = 1;            // the outgoing travels right up to the handover
+    const FADE_FROM = .18,          // and fades across nearly all of it, so it is
+          FADE_TO   = .92;          // still faintly up the screen when the next lands
     const SNAP_AT   = .6;           // where the next statement arrives
     const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
     let armed = -1, snapTween = null;
@@ -2171,7 +2196,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // Two screens a statement, not one. That is what keeps an ordinary flick
       // from crossing two of them, and it does it with distance rather than
       // with state — see the snap below for why that matters.
-      trigger:'#act1', start:'top top', end:'+=' + (phraseSegs.length * 200) + '%',
+      // 130% a statement, not 200. Two screens of scroll to move one statement
+      // was the complaint: the copy travelled .35px for every px scrolled, which
+      // reads as dragging. At 130 it is .46, and the run is 3.9 screens rather
+      // than 6. Still far enough that a gesture cannot pass a whole statement
+      // unseen — a flick is about 900px against a 1097px zone — which is the
+      // job this length has done since the snap came out.
+      trigger:'#act1', start:'top top', end:'+=' + (phraseSegs.length * 130) + '%',
       pin:true,
       // NO SNAP. Asked for, twice, and it is the only way to keep the promise:
       // the statements change on the reader's scroll and on nothing else.
@@ -2256,10 +2287,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     resetWorth();
     tl5.play();
   }
+  // Asked for: this screen was arriving too slowly and showing black while it did.
+  // It pins the moment its top reaches the top of the viewport, and the copy used
+  // to start .15 in and take .55 with .1 of stagger — so the last line did not
+  // land until .90s, and the reader spent all of it scrolling against a pinned,
+  // empty screen. Starting it earlier is not available: the copy sits 9.6vh off
+  // the bottom of a full-height section, so it is only on screen once the section
+  // has filled the viewport, which is the same instant the pin begins. Faster is
+  // the only lever — no offset, .28 a line on .05 of stagger, last line landing
+  // at .38 rather than .90, and the glow with them at .45 instead of .75.
   tl5.fromTo('#worth .time-glow-q', {opacity:0},
-    {opacity:.32, duration:.75, ease:'power1.inOut', immediateRender:false}, 0);
+    {opacity:.32, duration:.45, ease:'power1.inOut', immediateRender:false}, 0);
   tl5.fromTo(worthLn, {yPercent:-118},
-    {yPercent:0, duration:.55, stagger:.1, ease:'back.out(1.5)', immediateRender:false}, 0.15);
+    {yPercent:0, duration:.28, stagger:.05, ease:'back.out(1.5)', immediateRender:false}, 0);
 
   // These three were paced as scrub distances, so at 1x they would each run for
   // nine or ten seconds on their own. Speed them up to land around five, and
