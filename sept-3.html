@@ -2550,17 +2550,29 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   const ageTake = () => { ageTaken = true; ageAuto.pause(); };
   let ageHinted = false;
   ageTrack.addEventListener('pointerdown', e => {
-    ageDragging = true; ageTake(); ageTrack.setPointerCapture(e.pointerId);
+    ageDragging = true; ageTake();
+    // the age first, the capture after it and inside a guard: capture is the one
+    // call in this handler that can throw (it does whenever the pointer is not one
+    // the browser is tracking), and taking hold of the handle has to set the age
+    // whether or not the browser will follow the finger off the track afterwards.
     renderAge(AGE_MIN + ageTFromEvent(e)*(AGE_MAX-AGE_MIN));
+    try { ageTrack.setPointerCapture(e.pointerId); } catch(_){}
     if(!ageHinted){ ageHinted = true; gsap.to('#ageDragHint', {opacity:.5, duration:.6}); }
   });
   ageTrack.addEventListener('pointermove', e => {
     if(!ageDragging) return;
     renderAge(AGE_MIN + ageTFromEvent(e)*(AGE_MAX-AGE_MIN));
   });
-  const ageEndDrag = () => { ageDragging = false; };
+  // A finger that leaves the screen outside the track still ends the drag: the
+  // capture above means the events keep arriving here, and releasing it puts the
+  // element back to ordinary hit testing for the next touch.
+  const ageEndDrag = e => {
+    ageDragging = false;
+    if(e && e.pointerId != null){ try { ageTrack.releasePointerCapture(e.pointerId); } catch(_){} }
+  };
   ageTrack.addEventListener('pointerup', ageEndDrag);
   ageTrack.addEventListener('pointercancel', ageEndDrag);
+  ageTrack.addEventListener('lostpointercapture', ageEndDrag);
   ageTrack.addEventListener('keydown', e => {
     const step = e.shiftKey ? 5 : 1;
     let na = ageCurrent;
