@@ -322,6 +322,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* the two stack flush: at line-height .99 the age's box ends exactly where the
    design starts the caption */
 .age-scene .stage-tag .cap{margin-top:0;font-weight:600;font-size:16px;line-height:.99;letter-spacing:.1em;color:#fff;opacity:1}
+/* The readout keeps the frame's 6.2vh only while the nav leaves it room. The
+   nav is min(1200px,94vw) centred, so its right end reaches further into the
+   corner the narrower the window gets, while this sits a fixed 5.2vw in — the
+   two meet below about 1593px, and at 1440 the "69" of the last age sat on top
+   of the account button. Under the nav from there down: 12 of top offset, 84 of
+   pill and 16 clear of it. At the 1920 the frame is drawn at there is 260px
+   between them and the drawn position stands. */
+@media (max-width:1600px){
+  .age-scene .stage-tag{top:112px}
+}
 
 /* AGE PICKER — Figma 3361:82763 (desktop) and 3898:98620 (phone) draw the same
    instrument at two sizes: a caption, a 5px tick ruler over a hairline, then
@@ -819,9 +829,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      margins. It reaches the design's 100 as soon as the screen is wide
      enough to hold that figure at it. */
   .age-scene .bignum{font-size:min(23vw,100px)}
-  /* the age readout and the skip control are off-canvas in the phone frame —
-     and the readout, at the top right, ran into the nav pill */
-  .age-scene .stage-tag{display:none}
+  /* The age readout, asked for on the phone too. It was off here for two
+     reasons: the phone frame does not draw it, and at the top right it ran into
+     the nav pill. The pill is the answer to the second — it is 68 tall at 24
+     from the top, so 108 puts this 16 clear of it — and the first means the
+     size is derived rather than measured: the frame sets the readout at 134.343
+     against a 300 figure, .448 of it, so against this breakpoint's own
+     min(23vw,100px) figure that is min(10.3vw,45px). The label does not follow
+     that ratio — .119 of 45 would be 5px — and takes 12, which keeps it
+     subordinate to the number the way the frame has it while staying legible.
+     15 in, the gutter the figure and the picker below both use, rather than the
+     wide screen's 5.2vw.
+     The skip control stays off: it is off-canvas in the frame and was not part
+     of the ask. */
+  .age-scene .stage-tag{right:15px;top:108px}
+  .age-scene .stage-tag .age{font-size:min(10.3vw,45px)}
+  .age-scene .stage-tag .cap{font-size:12px}
   .age-scene .age-skip{display:none}
   /* the same 15px margin the figure above it uses, and 42 off the bottom —
      which on the frame's 387 makes the block the 357 it draws, and puts its
