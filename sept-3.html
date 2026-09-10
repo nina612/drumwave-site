@@ -2022,7 +2022,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     [ACT1_END + BABY, ACT1_END + FAMILY, tl1.duration()]            // baby, family
   ];
   const phraseSegs = phraseFrames.map(m => [m[0], m[m.length - 1]]);
-  const segOf = p => Math.min(phraseSegs.length - 1, Math.floor(p * phraseSegs.length));
+  // (no segOf any more: the phone drove the photographs off the zone the reader
+  //  was in, and they now follow the statement actually on screen instead —
+  //  see `shown` in buildRunPin.)
   // Asked for: a second on the photograph a statement opens on, a fifth on each
   // one after it. LEAD is how much of an opening photograph's stretch is taken
   // at half that second — enough to carry the copy's own entrance, which lives
@@ -2075,6 +2077,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const SNAP_AT   = .6;           // where the next statement arrives
     const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
     let armed = -1, snapTween = null;
+    // Which statement is actually on screen — meaning at rest and readable, not
+    // riding out and not still arriving. The photographs follow this rather than
+    // the zone, asked for: a statement's set of photographs should only start
+    // once its own words are already up. The two used to part company for the
+    // last 40% of every zone, because the copy hands over at SNAP_AT and the
+    // zone does not turn over until the boundary — so "Every tap. Every step."
+    // sat on screen over the hero's photographs from .62 all the way to 1.0,
+    // and "Own and save your data." over the tap set from 1.62 to 2.0.
+    let shown = 0;
     const renderPhrases = pr => {
       const n = phraseSegs.length;
       const t = Math.min(n - 1e-6, Math.max(0, pr) * n);
@@ -2089,6 +2100,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         // the last stretch of the pin. The pin releasing is what carries this
         // one away, and the section takes it with it.
         gsap.set(phraseEl[i], {y:0, opacity:1});
+        if(shown !== i){ shown = i; play(shown); }
         return;
       }
       // the one being read, straight off the scroll with nothing in between
@@ -2101,8 +2113,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         if(armed !== i + 1){
           armed = i + 1;
           if(snapTween) snapTween.kill();
+          const arriving = Math.min(n - 1, i + 1);
           snapTween = gsap.fromTo(next, {y: d * .34, opacity:0},
-            {y:0, opacity:1, duration:.26, ease:'power3.out', overwrite:true});
+            {y:0, opacity:1, duration:.26, ease:'power3.out', overwrite:true,
+             // on completion, not on firing: the photographs wait until the copy
+             // has actually landed, which is what "already on the screen" means.
+             // It has to be said here as well as from onUpdate — the reader can
+             // come to rest exactly on the handover, and then no further scroll
+             // arrives to carry the change.
+             onComplete: () => { shown = arriving; play(shown); }});
         }
       } else {
         // below the handover the next statement is away, and said every frame
@@ -2116,6 +2135,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
           snapTween = null;
         }
         gsap.set(next, {y:0, opacity:0});
+        // scrolled back below the handover, so the statement on screen is this
+        // one again and its photographs come back with it
+        if(shown !== i){ shown = i; play(shown); }
       }
     };
     const play = i => {
@@ -2175,7 +2197,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // The two-screen zone stays, and now earns its keep on its own: at 1688 a
       // 900px flick cannot cross a whole statement, so nothing is skipped even
       // with nothing quantising the landing.
-      onUpdate: self => { renderPhrases(self.progress); play(segOf(self.progress)); },
+      onUpdate: self => { renderPhrases(self.progress); play(shown); },
       // start > 1 for the same reason the run's other triggers test it: this
       // section starts at the very top of the page, so leaving backwards fires
       // once during setup, at scroll 0 — which killed the first statement's
@@ -2189,7 +2211,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       }
     });
     renderPhrases(trig.progress);
-    play(segOf(trig.progress));
+    play(shown);
     return trig;
   };
 
