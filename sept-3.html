@@ -300,6 +300,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* the phone break is the default-hidden one; see the max-width:760px block
    for the swap and for why two markups exist at all */
 #worth .worth-phone{display:none}
+/* and the same for the run's second statement, which the phone sets at 56 */
+#act1 .say-phone{display:none}
 /* these two headings take a phone-only break (3870:45302); the wide screen has
    the room to set each as one line */
 .faq-br,.closing-br{display:none}
@@ -666,6 +668,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      each line of a statement is the line it was written as. The headline keeps
      sept-8's size, which its own shorter lines fit at. */
   #act1 .run-say{font-size:clamp(1.75rem,8.5vw,2.25rem)}
+  /* Asked for: 56 on the first two statements. On vw so a narrower phone keeps
+     the same line structure rather than the same pixels, reaching the 56 at the
+     390 the page is drawn on.
+     It re-breaks the second statement, and to the board's own phrasing: at 56
+     none of its three written lines fits the measure — "Every tap. Every step."
+     alone wants 481 of the 339 there is — and wrapping where it must gives
+     "Every tap." / "Every step." / "Every choice" / "creates value," /
+     "instantly.", which is the four-and-five-line setting the animation board
+     draws, with "Every tap." and "Every step." on lines of their own. So the
+     lines are left to find that themselves rather than being re-marked in the
+     markup.
+     Five lines on 1.16 is 325 tall against the 716 the screen has above the
+     128 these rest on, so it still sits clear, and the ride carries its top
+     from 391 to well off the screen. Only #sayA: the third statement was not
+     part of the ask and keeps the 8.5vw above. */
+  #act1 .hero-h,
+  #act1 #sayA{font-size:min(14.36vw,56px)}
+  #act1 #sayA .ln:not(.say-phone){display:none}
+  #act1 .say-phone{display:block}
   /* Asked for: on a phone the statements travel the screen as one another
      arrives — the outgoing one rides up and away while the next comes up from
      below — rather than each line clearing its own mask in place. So the masks
@@ -1002,6 +1023,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       <span class="ln"><span>Every tap. Every step.</span></span>
       <span class="ln"><span>Every choice creates</span></span>
       <span class="ln"><span>value, instantly.</span></span>
+      <!-- 56 on the phone will not hold these three: the first alone wants 481
+           of the 339 there is. Its own five lines rather than a wrap, because
+           each .ln is a block and words cannot reflow between them — left to
+           wrap, "Every choice creates" broke after "choice" and left "creates"
+           on a line by itself with "value," orphaned under it. These are the
+           breaks the animation board draws. See the 760px block for the swap. -->
+      <span class="ln say-phone"><span>Every tap.</span></span>
+      <span class="ln say-phone"><span>Every step.</span></span>
+      <span class="ln say-phone"><span>Every choice</span></span>
+      <span class="ln say-phone"><span>creates value,</span></span>
+      <span class="ln say-phone"><span>instantly.</span></span>
     </div>
     <div class="say" id="sayB">
       <span class="ln"><span>Own and save your data.</span></span>
@@ -1718,7 +1750,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // "Every tap. Every step. Every choice creates value, instantly." arrives whole, on
   // the tap frame — no stagger, so the three lines rise together and read as one
   // statement rather than as a sentence being assembled a piece to a photograph.
-  const sayA = $$('#sayA .ln > span'), sayB = $$('#sayB .ln > span');
+  // :not(.say-phone) so this stays three elements whatever the breakpoint — the
+  // phone's five lines are in the markup too, and collecting all eight would
+  // spread the wide screen's .08 stagger across them. The phone never uses
+  // these transforms anyway: its rule sets them to none !important.
+  const sayA = $$('#sayA .ln:not(.say-phone) > span'), sayB = $$('#sayB .ln > span');
   // The same entrance "Own and save your data." gets, to the number: .7 long, .12 of
   // stagger between the lines, power1.out, and starting .5 after its own photograph
   // arrives rather than .12. It was .55 and power3.out with no stagger, which on a
