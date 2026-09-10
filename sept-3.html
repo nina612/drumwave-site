@@ -2245,13 +2245,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // Two screens a statement, not one. That is what keeps an ordinary flick
       // from crossing two of them, and it does it with distance rather than
       // with state — see the snap below for why that matters.
-      // 130% a statement, not 200. Two screens of scroll to move one statement
-      // was the complaint: the copy travelled .35px for every px scrolled, which
-      // reads as dragging. At 130 it is .46, and the run is 3.9 screens rather
-      // than 6. Still far enough that a gesture cannot pass a whole statement
-      // unseen — a flick is about 900px against a 1097px zone — which is the
-      // job this length has done since the snap came out.
-      trigger:'#act1', start:'top top', end:'+=' + Math.round(W_TOT * 130) + '%',
+      // One screen a statement. It was 200 (the copy moved .35px for every px
+      // scrolled, which reads as dragging), then 130 (.46), and it was still
+      // slow: at 130 a statement cost 1056px of thumb to travel 487. At 100 it
+      // is .60, half again what it was, and the whole run is 1990px instead of
+      // 2590 - two thirds of a screen less to get through it.
+      // It cannot go much below this without breaking the one job this length
+      // has done since the snap came out, which is that no gesture may pass a
+      // statement unseen. From rest at a boundary an ordinary phone flick of
+      // about 900px lands 88px into the next zone; the statement it just
+      // crossed arrived at 487px, on screen and whole, and the one after it
+      // does not arrive until 1299. So a flick moves the reader on by one
+      // statement, never two.
+      trigger:'#act1', start:'top top', end:'+=' + Math.round(W_TOT * 100) + '%',
       pin:true,
       // NO SNAP. Asked for, twice, and it is the only way to keep the promise:
       // the statements change on the reader's scroll and on nothing else.
