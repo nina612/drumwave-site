@@ -757,8 +757,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .solution-preview .sol-headline,
   #worth .worth,
   .how-title,
-  .faq-title,
-  .closing-h{font-size:min(11.28vw,44px)}
+  .faq-title{font-size:min(11.28vw,44px)}
   /* #worth was the one headline left out of that run, at the 2.2rem its clamp
      bottoms out at. Its own frame settles it: 628 above the block and 81 below
      leaves 135 for three lines, which is this 44 on the 44.8 leading the
@@ -898,15 +897,35 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      height. */
   .solution-preview .sol-cta{left:6.15vw;bottom:auto;
     top:calc(var(--sol-card-top) + var(--sol-card-h) + 24px)}
-  /* the vw paddings and gaps are a few pixels at this width, so set them in their own terms */
+  /* --- SAVE YOUR DATA. GROW ITS VALUE. on the phone: Figma 4045:23128 ---
+     the vw paddings and gaps are a few pixels at this width, so set them in
+     their own terms */
   .closing{padding-top:0}
   /* 88 rather than 84: the frame sets the line under the heading in two, and at
      84 the last word of the first one fell to a third */
   .closing-copy{width:88vw}
-  .closing-sub{margin-top:1.2em}
-  /* the frame's button is 216 x 50; at 16 on a line-height of 1 that is what
-     these paddings come to around this label */
-  .closing-cta{margin-top:12vw;padding:17px 33px;font-size:1rem}
+  /* 48, which is why this one is not in the run of 44s above — it is the only
+     headline on the phone page its frame draws bigger. On vw so a narrower
+     phone scales with it, reaching the 48 at the 390 it is drawn on. Tracking
+     is the frame's -0.7569 at that size, a good deal looser than the -.04em
+     the wide rule carries.
+     Leading is .9583, not the frame's 44.8 on 48. That ratio is .9333, and the
+     two lines' own ink wants 45.12 of it — the tail of "your data." reaching
+     the ascenders of "Grow its value." by a third of a pixel, which is the same
+     collision this element was raised off .93 for once already. .9583 is the
+     tightest that clears at every width this scales through, and it is 1.2px
+     off the frame over the pair. */
+  .closing-h{font-size:min(12.31vw,48px);line-height:.9583;letter-spacing:-.01577em;color:var(--bone)}
+  /* the frame's 20 under the heading, and its copy: Open Sans regular on 1.4,
+     in the flat #999 the step copy also uses rather than white held at .7,
+     which over this black comes out nearer #B5B5B5. Left-aligned, as drawn —
+     the frame centres the heading above it and leaves this ranged left. */
+  .closing-sub{margin-top:20px;font-weight:400;line-height:1.4;color:#999;opacity:1;text-align:left}
+  /* the frame's button is 216 x 50, and it gets there with 18 type inside 24
+     and 16 of padding — the 216 x 50 here was the same box reached with 16 type
+     and the padding opened up to 33 and 17 to fill it. 65 above it, not 12vw
+     (47 at 390). */
+  .closing-cta{margin-top:65px;padding:16px 24px;font-size:18px}
 }
 /* The 440px rule that used to hide the rule/wordmark here is gone: it existed
    because the nav carried its full CTA down to that width and the label
