@@ -2500,7 +2500,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   let ageDragging = false;
   let ageTaken    = false;      // the reader has taken the handle
   const ageProxy  = {v: AGE_MIN};
-  const AGE_RUN   = 6;          // seconds for the whole seventy years
+  // Seconds for the whole seventy years. Six read as hurried - the figure was
+  // through a decade before the eye had settled on it. Eight is a third longer
+  // and still short of the time a reader spends on a screen they have just
+  // arrived at, and nothing is pinned here, so a longer count costs no one any
+  // scrolling: the reader leaves whenever they like and the clock stops with them.
+  const AGE_RUN   = 8;
   const ageAuto = gsap.to(ageProxy, {
     v: AGE_MAX, duration: AGE_RUN, ease: 'none', paused: true,
     onUpdate: () => { if(!ageDragging && !ageTaken) renderAge(ageProxy.v); }
