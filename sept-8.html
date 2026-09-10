@@ -68,9 +68,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:50;
   /* Figma 3157-67646: 1200 x 84, padded 16 all round but 24 on the left where the
      logo sits, and a solid #8b8b8b hairline rather than a faded one */
-  width:min(1200px,94vw);height:84px;padding:16px 24px;
+  width:min(1200px,94vw);height:84px;padding:16px 16px 16px 24px;
   display:flex;align-items:center;gap:40px;
-  border:1px solid rgba(139,139,139,.3);border-radius:100px;
+  border:1px solid #8B8B8B;border-radius:100px;
   background:rgba(7,7,7,.7);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   font-family:'Titillium Web',system-ui,sans-serif;font-size:18px;line-height:1;
 }
@@ -98,9 +98,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   font-weight:400;line-height:24px;color:#fff;transition:background .25s,filter .25s;
 }
 .nav .pill:hover{background:rgba(243,242,238,.12)}
-/* the CTA is the split-button: 258 wide on a 56 radius, and the green ramp */
-.nav .pill.p{width:258px;border:1px solid transparent;border-radius:56px;font-weight:600;background-image:linear-gradient(142.86deg,#108B22 1.43%,#11CA51 106.43%)}
-.nav .pill.p:hover{filter:brightness(1.12)}
+/* the CTA carries the brand gradient rather than a flat fill.
+   No width: Figma 3157:67646 sizes this pill to its own label, and pinning it
+   to 258 was the one thing here that did not come off that node. It also has
+   to restate its gradient on hover — .nav .pill:hover above uses the
+   background shorthand, which resets background-image to none, so a rule that
+   only set filter left the gradient wiped and a flat grey fill in its place
+   for as long as the pointer was on it. */
+/* Asked for: the two bars are to be the same bar, and the only things allowed
+   to differ between them are which of Personal/Business is bold and whether
+   this pill is blue or green. Its label is not the same on the two pages, so
+   left to size itself it came out 259 here and 241 there — and because the
+   pill is anchored to the right edge, that 18px walked back through the whole
+   bar and moved the links, the divider and the Log in button with it. A shared
+   260 (the longer label's own width, plus a hair) pins every element in the bar
+   to the same x on both pages; the shorter label simply carries more slack
+   either side of it. */
+.nav .pill.p{width:260px;border:1px solid transparent;border-radius:56px;font-weight:600;background:linear-gradient(142.86deg,#108B22 1.43%,#11CA51 106.43%)}
+.nav .pill.p:hover{background:linear-gradient(142.86deg,#108B22 1.43%,#11CA51 106.43%);filter:brightness(1.12)}
 @media (max-width:1000px){
   /* Straight to the hamburger here — no in-between tier that trims the nav
      down to just the logo and CTA. Same pill dimensions and menu system as

@@ -94,7 +94,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 }
 .nav .pill:hover{background:rgba(243,242,238,.12)}
 /* the CTA carries the brand gradient rather than a flat fill */
-.nav .pill.p{border:1px solid transparent;border-radius:56px;font-weight:600;background:linear-gradient(138.73deg,#4B27FF 1.94%,#0091FF 100.59%)}
+/* Asked for: the two bars are to be the same bar, and the only things allowed
+   to differ between them are which of Personal/Business is bold and whether
+   this pill is blue or green. Its label is not the same on the two pages, so
+   left to size itself it came out 259 here and 241 there — and because the
+   pill is anchored to the right edge, that 18px walked back through the whole
+   bar and moved the links, the divider and the Log in button with it. A shared
+   260 (the longer label's own width, plus a hair) pins every element in the bar
+   to the same x on both pages; the shorter label simply carries more slack
+   either side of it. */
+.nav .pill.p{width:260px;border:1px solid transparent;border-radius:56px;font-weight:600;background:linear-gradient(138.73deg,#4B27FF 1.94%,#0091FF 100.59%)}
 .nav .pill.p:hover{background:linear-gradient(138.73deg,#4B27FF 1.94%,#0091FF 100.59%);filter:brightness(1.12)}
 .nav .nav-menu{display:none}
 /* hidden at every width by default; the 1000px block below is the only place
