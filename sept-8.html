@@ -468,7 +468,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .closing{position:absolute;inset:0;z-index:10;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:7.4vh;background:#070707;opacity:0;pointer-events:none}
 .closing-copy{width:94.59%;text-align:center}
 /* 120px: 6.25vw is 120/1920, so the cap is reached on the frame it was drawn on. */
-.closing-h{margin:0;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,6.25vw,7.5rem);line-height:.93;letter-spacing:-.04em;color:#fff}
+/* 1.0 rather than .93, for the same reason the sept-3 one carries: at .93 a
+   descender on the first line can reach the ascenders on the second. */
+.closing-h{margin:0;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,6.25vw,7.5rem);line-height:1;letter-spacing:-.04em;color:#fff}
 /* 28px, matching the plan screen's subtext. 1.458vw is 28/1920. */
 .closing-sub{margin:1.04vw 0 0;font-family:'Open Sans',sans-serif;font-weight:500;font-size:clamp(1rem,1.458vw,1.75rem);line-height:1.38;color:#fff;opacity:.7}
 .closing-cta{margin-top:3.38vw;pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;padding:.83vw 1.25vw;border-radius:100px;background:linear-gradient(133.78deg,#4B27FF 1.94%,#0091FF 100.59%);font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(.85rem,.94vw,1.125rem);line-height:1;color:#fff;white-space:nowrap;transition:filter .25s}
@@ -480,7 +482,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .faq{position:relative;z-index:2;display:flex;gap:80px;width:min(1200px,90vw);margin:0 auto;padding:7.19vw 0 6vw}
 .faq-head{flex:1;min-width:0}
 .faq-label{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(1rem,1.04vw,1.25rem);line-height:1.1;color:#fff}
-.faq-title{margin-top:20px;max-width:385px;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,3.33vw,4rem);line-height:.93;letter-spacing:-.04em;color:#fff}
+/* .98 rather than .93: over two lines the tail of "Questions?" reached the
+   ascenders of "We've got answers." beneath it, .6px short of the ink the
+   pair needs at the wide size. Same on sept-3. */
+.faq-title{margin-top:20px;max-width:385px;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,3.33vw,4rem);line-height:.98;letter-spacing:-.04em;color:#fff}
 .faq-list{display:flex;flex-direction:column;gap:12px;flex:none;width:626px;max-width:100%}
 .faq-row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:28px;border:1px solid rgba(237,240,242,.1);border-radius:16px;background:rgba(255,255,255,.05);box-shadow:0 4px 8px rgba(0,0,0,.02);transition:background .25s,border-color .25s}
 .faq-row:hover{background:rgba(255,255,255,.08);border-color:rgba(237,240,242,.2)}

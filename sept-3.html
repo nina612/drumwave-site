@@ -332,7 +332,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .age-scene .ctl .hint{display:none;justify-content:space-between;margin-bottom:14px}
 .age-scene .ctl .hint b{font-weight:500;color:var(--bone)}
 .age-scene .ctl-cap{margin:0 0 32px;font-family:'Open Sans',sans-serif;font-weight:600;font-size:16px;
-  line-height:.99;letter-spacing:.1em;text-transform:uppercase;color:#bababa}
+  /* 1.06, not the .99 this had: over two lines the descender of "generated" met
+     the caps beneath it — measured .2px short of the ink the pair needs */
+  line-height:1.06;letter-spacing:.1em;text-transform:uppercase;color:#bababa}
 /* one line on the desktop frame, two in the phone's narrower column */
 .age-scene .ctl-cap br{display:none}
 /* The ruler is 18px of the track (5px ticks, 12px gap, hairline) but the track
@@ -543,8 +545,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    opacity 0 over the age track until that pin's tail revealed it. */
 .closing{position:absolute;inset:0;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:7.4vh;background:#070707}
 .closing-copy{width:94.59%;text-align:center}
-/* 120px: 6.25vw is 120/1920, so the cap is reached on the frame it was drawn on. */
-.closing-h{margin:0;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,6.25vw,7.5rem);line-height:.93;letter-spacing:-.04em;color:#fff}
+/* 120px: 6.25vw is 120/1920, so the cap is reached on the frame it was drawn on.
+   Leading is 1.0 rather than the .93 it was: over two lines the tail of "your
+   data." reached the ascenders of "Grow its value." beneath it — .4px short of
+   the ink the pair needs at the phone size, and about a pixel at the wide one. */
+.closing-h{margin:0;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,6.25vw,7.5rem);line-height:1;letter-spacing:-.04em;color:#fff}
 /* 28px, matching the plan screen's subtext. 1.458vw is 28/1920. */
 .closing-sub{margin:1.04vw 0 0;font-family:'Open Sans',sans-serif;font-weight:500;font-size:clamp(1rem,1.458vw,1.75rem);line-height:1.38;color:#fff;opacity:.7}
 .closing-cta{margin-top:3.38vw;pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;padding:.83vw 1.25vw;border-radius:100px;background:linear-gradient(133.78deg,#4B27FF 1.94%,#0091FF 100.59%);font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(.85rem,.94vw,1.125rem);line-height:1;color:#fff;white-space:nowrap;transition:filter .25s}
@@ -556,7 +561,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .faq{position:relative;z-index:2;display:flex;gap:80px;width:min(1200px,90vw);margin:0 auto;padding:7.19vw 0 6vw}
 .faq-head{flex:1;min-width:0}
 .faq-label{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(1rem,1.04vw,1.25rem);line-height:1.1;color:#fff}
-.faq-title{margin-top:20px;max-width:385px;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,3.33vw,4rem);line-height:.93;letter-spacing:-.04em;color:#fff}
+/* .98 rather than .93: over two lines the tail of "Questions?" reached the
+   ascenders of "We've got answers." beneath it, .6px short of the ink the
+   pair needs at the wide size. */
+.faq-title{margin-top:20px;max-width:385px;font-family:'Titillium Web',sans-serif;font-weight:400;font-size:clamp(2rem,3.33vw,4rem);line-height:.98;letter-spacing:-.04em;color:#fff}
 .faq-list{display:flex;flex-direction:column;gap:12px;flex:none;width:626px;max-width:100%}
 .faq-row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:28px;border:1px solid rgba(237,240,242,.1);border-radius:16px;background:rgba(255,255,255,.05);box-shadow:0 4px 8px rgba(0,0,0,.02);transition:background .25s,border-color .25s}
 .faq-row:hover{background:rgba(255,255,255,.08);border-color:rgba(237,240,242,.2)}
@@ -2288,15 +2296,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // scroll, the least of the three, and it ENDED on the stop, so a nudge past began
     // dismantling it at once. It is now whole from 1.64 and does not start leaving
     // until 2.2, which puts the stop inside the plateau rather than at its edge.
-    tl.fromTo(solA, {yPercent:0}, {yPercent:-112, duration:.26, stagger:.05}, 1.15);
-    tl.fromTo('#solStateA .sol-body', {opacity:.7}, {opacity:0, duration:.2}, 1.15);
+    // Statement A is clear of the screen before B starts onto it. A left over
+    // .26 from 1.15 while B arrived from 1.25, so for .21 of a unit both were
+    // fully up and their lines crossed — measured 11px of overlap, and the two
+    // share one place on screen by design, so there was nowhere for it to hide.
+    // A now goes a little earlier and a little quicker, clearing at 1.36.
+    tl.fromTo(solA, {yPercent:0}, {yPercent:-112, duration:.22, stagger:.04}, 1.10);
+    tl.fromTo('#solStateA .sol-body', {opacity:.7}, {opacity:0, duration:.2}, 1.10);
     tl.fromTo('#solutionPreview .sol-glow-l', {opacity:.4}, {opacity:0, duration:.3, ease:'power1.inOut'}, 1.15);
     tl.fromTo('#solutionPreview .sol-glow-r', {opacity:.2}, {opacity:0, duration:.3, ease:'power1.inOut'}, 1.15);
     // The card used to ease up 3.33vh here, which is what gave it two different y
     // values across the two framings. It rests at the risen height now (see
     // .sol-card's top) and does not move between them at all.
-    tl.fromTo(solB, {yPercent:SOL_OUT}, {yPercent:0, duration:.3, stagger:.08, ease:'power3.out'}, 1.25);
-    tl.fromTo('#solutionPreview .sol-cta', {opacity:0, y:12}, {opacity:1, y:0, duration:.24, ease:'power2.out'}, 1.47);
+    tl.fromTo(solB, {yPercent:SOL_OUT}, {yPercent:0, duration:.3, stagger:.08, ease:'power3.out'}, 1.38);
+    tl.fromTo('#solutionPreview .sol-cta', {opacity:0, y:12}, {opacity:1, y:0, duration:.24, ease:'power2.out'}, 1.60);
 
     // 3 — how does a Data Savings Plan work. The card and the copy that framed it clear
     // out, and the four cards come up in their place. This is the beat that used to be a
