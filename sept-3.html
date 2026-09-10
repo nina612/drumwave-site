@@ -2118,6 +2118,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
           FADE_TO   = .92;          // still faintly up the screen when the next lands
     const SNAP_AT   = .6;           // where the next statement arrives
     const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
+    // The three statements do not want the same amount of scroll. The first two
+    // ride out of frame as the reader scrolls, so every pixel of theirs moves
+    // something. The last one has nothing to hand over to and rests where it
+    // lands (see the !next branch below), so its share of the pin is scroll with
+    // the copy nailed in place — measured at 1108px, a screen and a third of
+    // pushing against a still page, which is what "stuck" means. It only needs
+    // enough to read as a beat before the pin lets go: .45 of a statement, 475px.
+    const SEG_W = [1, 1, .45];
+    const W_TOT = SEG_W.reduce((a, b) => a + b, 0);
+    // progress across the whole pin -> which statement, and how far into it
+    const segAt = pr => {
+      let x = clamp01(pr) * W_TOT;
+      for(let k = 0; k < SEG_W.length; k++){
+        if(x < SEG_W[k] || k === SEG_W.length - 1)
+          return [k, Math.min(1 - 1e-6, Math.max(0, x / SEG_W[k]))];
+        x -= SEG_W[k];
+      }
+    };
     let armed = -1, snapTween = null;
     // Which statement is actually on screen — meaning at rest and readable, not
     // riding out and not still arriving. The photographs follow this rather than
@@ -2130,8 +2148,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     let shown = 0;
     const renderPhrases = pr => {
       const n = phraseSegs.length;
-      const t = Math.min(n - 1e-6, Math.max(0, pr) * n);
-      const i = Math.floor(t), u = t - i, d = travel();
+      const [i, u] = segAt(pr), d = travel();
       // only ever two statements in play; anything else is put away
       phraseEl.forEach((el, k) => { if(k !== i && k !== i + 1) gsap.set(el, {opacity:0}); });
       const next = phraseEl[i + 1];
@@ -2219,7 +2236,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // than 6. Still far enough that a gesture cannot pass a whole statement
       // unseen — a flick is about 900px against a 1097px zone — which is the
       // job this length has done since the snap came out.
-      trigger:'#act1', start:'top top', end:'+=' + (phraseSegs.length * 130) + '%',
+      trigger:'#act1', start:'top top', end:'+=' + Math.round(W_TOT * 130) + '%',
       pin:true,
       // NO SNAP. Asked for, twice, and it is the only way to keep the promise:
       // the statements change on the reader's scroll and on nothing else.
@@ -2292,7 +2309,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     defaults:{ease:'none'},
     paused:true,
     scrollTrigger:{
-      trigger:'#worth', start:'top top', end:'+=100%', pin:true,
+      // 45%, not 100. The copy is timed, not scrubbed: it plays on entry and is
+      // whole .38s in, whatever the reader does. A full screen of pin after that
+      // was 731px on a phone and 855px on a desktop of scrolling against a
+      // finished screen — the longest dead stretch on the page. This is the beat
+      // that lets the question land, and then the section moves on with the reader.
+      trigger:'#worth', start:'top top', end:'+=45%', pin:true,
       onEnter:      self => self.animation.play(),
       onEnterBack:  self => { if(self.animation.paused()) restartWorth(); },
       onLeave:      self => self.animation.pause(),
@@ -2669,7 +2691,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // and it sat directly between the cards and "How much is your data worth?" — the
     // single biggest reason that screen arrived late enough to scroll straight past.
     // The phone keeps its 1.0: its pin is 300% and its tail is proportionally smaller.
-    tl.to({}, {duration: withCards ? .4 : 1.0}, withCards ? 3.0 : 2.0);
+    // .25 on the phone where this was 1.0. The phone's last framing is whole at
+    // 1.84 and its pin is 300% — so 1.16 units, 942px, of pinned scroll ran past
+    // a screen that had finished changing. The pin below is now cut to match, so
+    // this is a beat on the plan screen rather than a screen of dead scroll.
+    tl.to({}, {duration: withCards ? .4 : .25}, withCards ? 3.0 : 2.0);
     return tl;
   };
 
@@ -2696,8 +2722,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     solHost.appendChild(solHowEl);
     fitSolHow();
     const tl = buildSolTl(false);
+    // 225%, not 300 — the timeline is 2.25 units now and a unit stays one screen,
+    // so the pin ends where the animation does instead of a screen after it.
     const trig = ScrollTrigger.create({trigger:'#solution', start:'top top',
-      end:'+=300%', pin:true, scrub:true, animation:tl});
+      end:'+=' + Math.round(tl.duration() * 100) + '%', pin:true, scrub:true, animation:tl});
     // the cards lift into view on the way past, the way every other block in the
     // scrolling part of the page does
     const lift = gsap.fromTo('#howHost .step', {opacity:0, y:28},
