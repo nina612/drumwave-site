@@ -2383,6 +2383,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     let snapping   = false;   // our own settle is moving the page
     let fromBand   = 0;       // the statement the current gesture began on
     let startedInside = false;// ...and whether the run was on screen when it did
+    let gestureY   = 0;       // the scroll position the gesture began at
     let quietT = 0, snapT = null;
     const proxy = {y:0};
 
@@ -2394,6 +2395,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // catch go straight through - which is what "I swipe and the whole thing
       // goes away" was.
       if(!startedInside || fingerDown) return;
+      // A SWIPE, NOT A TOUCH. The gesture has to have actually scrolled the page
+      // before anything settles it. Without this, a bare tap - a finger put down
+      // and lifted, a thumb resting on the glass, a tap on any part of the
+      // screen - opened the window, closed it 130ms later and settled: and a
+      // settle from a standstill mid-band slides the page to the next statement
+      // and changes the words. The reader touched nothing that was meant to
+      // scroll, and the page moved and the statement changed. That is the last
+      // of the "it moves by itself".
+      if(Math.abs(window.scrollY - gestureY) < 30) return;
       const y = window.scrollY, span = (trig.end - trig.start) / BANDS;
       let target = Math.round((y - trig.start) / span);
       // never more than one statement either side of where the swipe started
@@ -2439,6 +2449,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         // top of the run with the first statement up.
         fromBand      = trig.isActive ? bandIdx : -1;
         startedInside = trig.isActive || window.scrollY <= trig.start;
+        gestureY      = window.scrollY;   // where the gesture began, to tell a
+                                          // swipe from a touch that went nowhere
       }
       driving = true;
     };
