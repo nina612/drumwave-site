@@ -2195,45 +2195,34 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     addEventListener('orientationchange', remeasureTravel);
 
     const BANDS = phraseEl.length;
-    // set further down, once the gesture window exists
-    let isDriving = () => false;
 
-    // --- WHICH STATEMENT IS UP, AND WHY IT IS NOT A FUNCTION OF SCROLL POSITION ---
+    // --- WHICH STATEMENT IS UP ---
     //
-    // Fifth report of the same thing, so this stops being a threshold problem and
-    // becomes a design one. Every version until now decided the statement from
-    // WHERE the scroll was: bands of the pin, and whichever band the scroll
-    // landed in won. That is unfixable on iOS by tuning, because the browser
-    // moves the scroll on its own - the address bar collapsing and expanding
-    // shifts it about ninety pixels with no finger involved - and any rule that
-    // reads the position will eventually read one the reader did not choose.
-    // Gating on the gesture narrowed the window; it did not close it, and it had
-    // a hole of its own (below).
+    // The pin is three bands, one a statement, and the statement is whichever
+    // band the scroll is in. That is the whole rule. The reader scrolls up and
+    // down wherever they like, at whatever speed they like, and the words follow
+    // them. Nothing moves the page, nothing holds them anywhere, nothing waits
+    // on the photographs.
     //
-    // The statement is now decided by HOW FAR THE READER HAS DRAGGED, not by
-    // where the page ended up. An anchor is kept at the scroll position where the
-    // current statement was established. While the reader is driving, distance
-    // from that anchor accumulates, and passing STEP in either direction moves
-    // one statement and re-anchors. A scroll that arrives when the reader is NOT
-    // driving does not move the statement and cannot: it simply moves the anchor
-    // to wherever the browser has put us. The address bar can shove the page as
-    // often as it likes; each shove is absorbed into the anchor and no word
-    // moves.
+    // Everything that used to sit here - a snap, a gesture window, a
+    // one-step-per-swipe latch, a settle that pulled a hard flick back - was
+    // added to fix one report and caused the next. A settle that finishes a
+    // swipe is also a forced reverse when the reader meant to keep going; a
+    // gesture window that ignores scrolls it cannot attribute is also a
+    // statement that fails to change when it should. None of them are here now.
     //
-    // The pin is three bands, one a statement, and which band the scroll is in is
-    // which statement is up. Nothing cleverer than that. What makes it behave is
-    // the two rules below it: only the reader may change a statement, and a
-    // swipe may only ever carry them one statement.
-    const EDGE = .15;
+    // The one thing that is here is a margin, and it is the only defence the
+    // screen needs against the thing that actually caused "it moves by itself":
+    // iOS shifting the scroll about ninety pixels on its own when the address
+    // bar collapses. A boundary has to be passed by a quarter of a band - 142px
+    // at this size - before the statement changes, which is comfortably more
+    // than any toolbar moves. Rest anywhere, let Safari shuffle the page about,
+    // and the words stay put. No arithmetic about who caused the scroll, no
+    // window, no flag: just a margin wider than the wobble.
+    const EDGE = .25;
     const renderPhrases = pr => {
       const t = clamp01(pr) * BANDS;
       if(bandIdx < 0){ bandIdx = Math.min(BANDS - 1, Math.floor(t)); showBand(bandIdx, true); return; }
-      if(pr <= .001){ if(bandIdx !== 0){ bandIdx = 0; showBand(0, false); } return; }
-      if(pr >= .999){ const L = BANDS - 1; if(bandIdx !== L){ bandIdx = L; showBand(L, false); } return; }
-      // A scroll the reader did not make - the address bar collapsing, a reflow,
-      // a late image - changes nothing at all. This is what stops the words
-      // moving on their own, and it is the only thing that ever did.
-      if(!isDriving()) return;
       let i = bandIdx;
       if(t > bandIdx + 1 + EDGE)  i = Math.min(BANDS - 1, Math.floor(t));
       else if(t < bandIdx - EDGE) i = Math.max(0, Math.floor(t));
@@ -2354,134 +2343,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       }
     });
 
-    // --- ONE SWIPE CARRIES ONE STATEMENT, AND NOTHING ELSE MOVES THE PAGE ---
-    //
-    // Asked for, plainly: read a statement, scroll, read a statement, scroll -
-    // and go through all three BEFORE the page carries on down. Two things have
-    // to be true for that, and every earlier version had one of them at the
-    // expense of the other.
-    //
-    // First: a swipe settles the run on a statement. Without that, where the
-    // reader ends up is wherever their momentum ran out, which is why it took
-    // several swipes to change a statement one minute and took the whole section
-    // off the screen the next.
-    //
-    // Second, and this is the part that makes it a deck rather than a scroll: a
-    // settle may not carry the reader more than ONE statement from the one their
-    // swipe began on. A hard flick lands on the next statement, not past it, and
-    // not out of the section. So the run cannot be skipped: three swipes, three
-    // statements, and only then does the page go lower.
-    //
-    // The page moving at the end of a swipe is not the page moving on its own -
-    // it is the swipe finishing. What it will never do is move without one: the
-    // settle is armed by a touch, a wheel or a scrolling key and by nothing else,
-    // so the address bar collapsing, a reflow or a late image leave everything
-    // exactly where it is. That distinction is what four earlier versions of this
-    // got wrong.
-    let driving    = false;   // the reader is mid-gesture, momentum included
-    let fingerDown = false;
-    let snapping   = false;   // our own settle is moving the page
-    let fromBand   = 0;       // the statement the current gesture began on
-    let startedInside = false;// ...and whether the run was on screen when it did
-    let gestureY   = 0;       // the scroll position the gesture began at
-    let quietT = 0, snapT = null;
-    const proxy = {y:0};
-
-    const bandTop = i => Math.round(trig.start + (trig.end - trig.start) * (i / BANDS));
-    const doSettle = () => {
-      // Whether the swipe BEGAN in the run, not whether it ended there. A hard
-      // flick clears 1705px of pin long before this runs, so asking the trigger
-      // whether it is active now would let exactly the gesture this exists to
-      // catch go straight through - which is what "I swipe and the whole thing
-      // goes away" was.
-      if(!startedInside || fingerDown) return;
-      // A SWIPE, NOT A TOUCH. The gesture has to have actually scrolled the page
-      // before anything settles it. Without this, a bare tap - a finger put down
-      // and lifted, a thumb resting on the glass, a tap on any part of the
-      // screen - opened the window, closed it 130ms later and settled: and a
-      // settle from a standstill mid-band slides the page to the next statement
-      // and changes the words. The reader touched nothing that was meant to
-      // scroll, and the page moved and the statement changed. That is the last
-      // of the "it moves by itself".
-      if(Math.abs(window.scrollY - gestureY) < 30) return;
-      const y = window.scrollY, span = (trig.end - trig.start) / BANDS;
-      let target = Math.round((y - trig.start) / span);
-      // never more than one statement either side of where the swipe started
-      target = Math.max(fromBand - 1, Math.min(fromBand + 1, target));
-      if(target >= BANDS){ startedInside = false; return; }  // last one read; let them go
-      target = Math.max(0, target);
-      const to = bandTop(target);
-      // The statement changes as the settle begins rather than when it lands.
-      // Landing sits the scroll exactly ON a boundary, and a rule that waits for
-      // the boundary to be passed never fires there - which is why a gentle
-      // swipe moved the page to the next statement and left the old words up.
-      if(target !== bandIdx){ bandIdx = target; showBand(target, false); }
-      fromBand = target;
-      if(Math.abs(to - y) < 2) return;
-      snapping = true;
-      if(snapT) snapT.kill();
-      proxy.y = y;
-      snapT = gsap.to(proxy, {
-        y: to, overwrite: true, ease: 'power2.inOut',
-        duration: Math.min(.45, Math.max(.18, Math.abs(to - y) / 2600)),
-        onUpdate: () => window.scrollTo(0, Math.round(proxy.y)),
-        onComplete: () => { snapping = false; snapT = null; }
-      });
-    };
-    // 130ms of stillness and the finger off. Every opener schedules its own
-    // close as well, so a touch that never scrolls - a tap, a long press, a
-    // finger resting on the glass - cannot leave the window open behind it.
-    const closeSoon = () => {
-      clearTimeout(quietT);
-      quietT = setTimeout(() => {
-        if(fingerDown) return;
-        driving = false;
-        doSettle();
-      }, 130);
-    };
-    const openWindow = () => {
-      if(!driving && !snapping){
-        // A swipe that begins ABOVE the run counts too, and begins from "before
-        // the first statement" - otherwise the very first hard flick of the page
-        // carries the reader straight past the whole section before this has any
-        // say, which is the same "it just goes away" from the other side. From
-        // -1 the cap allows band 0 and no further, so that flick lands on the
-        // top of the run with the first statement up.
-        fromBand      = trig.isActive ? bandIdx : -1;
-        startedInside = trig.isActive || window.scrollY <= trig.start;
-        gestureY      = window.scrollY;   // where the gesture began, to tell a
-                                          // swipe from a touch that went nowhere
-      }
-      driving = true;
-    };
-    const onTouchStart = () => { fingerDown = true; openWindow(); closeSoon(); };
-    const onTouchEnd   = () => { fingerDown = false; closeSoon(); };
-    const onWheel      = () => { openWindow(); closeSoon(); };
-    const onKey        = e => {
-      if(/^(Arrow|Page|Home|End)/.test(e.key) || e.key === ' ' || e.key === 'Spacebar'){ openWindow(); closeSoon(); }
-    };
-    const onScroll = () => { if(driving && !snapping) closeSoon(); };
-    addEventListener('touchstart',  onTouchStart, {passive:true});
-    addEventListener('touchend',    onTouchEnd,   {passive:true});
-    addEventListener('touchcancel', onTouchEnd,   {passive:true});
-    addEventListener('wheel',       onWheel,      {passive:true});
-    addEventListener('keydown',     onKey,        {passive:true});
-    addEventListener('scroll',      onScroll,     {passive:true});
-    // While the settle is running the statement is ALREADY decided - doSettle set
-    // it before starting the tween, because the tween lands exactly on a boundary
-    // and a position rule cannot resolve a boundary it is sitting on. Letting the
-    // position rule run during the settle undid that decision: it saw the scroll
-    // still short of the line, put the old statement back, and the reader watched
-    // the page move to the next one and the words stay behind.
-    isDriving = () => driving && !snapping;
+    // Nothing listens for touches any more and nothing calls scrollTo. The only
+    // listener left on this screen is the one that re-measures the travel
+    // distance when the window's WIDTH changes - a rotation - and never on the
+    // height-only change an address bar makes.
     trig._dropSnap = () => {
-      clearTimeout(quietT); if(snapT) snapT.kill();
-      removeEventListener('touchstart',  onTouchStart);
-      removeEventListener('touchend',    onTouchEnd);
-      removeEventListener('touchcancel', onTouchEnd);
-      removeEventListener('wheel',       onWheel);
-      removeEventListener('keydown',     onKey);
-      removeEventListener('scroll',      onScroll);
       removeEventListener('resize', remeasureTravel);
       removeEventListener('orientationchange', remeasureTravel);
     };
