@@ -2144,15 +2144,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   // --- ONE SWIPE, ONE STEP ---
   //
-  // The phone's rule, in one place, because two screens work by it: the opening
-  // run's three statements and the plan screen's two framings.
+  // The plan screen's rule on a phone: its two framings hand over on a swipe.
+  // The opening run was built on this too and no longer is - it plays itself
+  // now (see the note by BAND_HOLD) - but the reasoning below is what a
+  // gesture-driven screen on a phone has to answer, and this is still one.
   //
-  // Asked for on the run, and it is the fix for "it all goes at once": every
-  // version before this read the step off the SCROLL POSITION - thirds of a
-  // pin, with a margin either side of each boundary - and a phone flick
-  // carries two to three thousand pixels after the finger leaves. A band was
-  // 568. So one throw crossed the lot. No margin fixes that, because the margin
-  // is measured in the same pixels the flick has too many of.
+  // A step must NOT be read off the scroll position. A phone flick carries two
+  // to three thousand pixels after the finger leaves, so any band narrow enough
+  // to swipe between is narrow enough for one throw to cross several. No margin
+  // around the boundaries fixes it, because the margin is measured in the same
+  // pixels the flick has too many of.
   //
   // A gesture is a gesture whatever its length, so counting them is the only
   // thing that makes one swipe mean one step. And once the count owns the step,
@@ -2161,10 +2162,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // section carries `touch-action: none` and the page does not scroll at all.
   // Nothing is preventDefault-ed on touch and nothing calls scrollTo; the
   // browser is simply told this surface does not pan, so a flick has nowhere to
-  // carry the reader and no momentum to arrive with. The whole family of "it
-  // moved by itself" cannot happen while the page cannot move: an address bar
-  // collapsing, a throw overshooting the end, a settle reversing a swipe - none
-  // of them have a scroll to act on.
+  // carry the reader and no momentum to arrive with. A screen that cannot move
+  // cannot be moved by a collapsing address bar either.
   //
   // The lock lifts the moment the last step is up, so the swipe after that one
   // scrolls the page on normally, with the phone's own inertia. Backwards walks
@@ -2367,13 +2366,73 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
     const BANDS = phraseEl.length;
 
-    // --- WHICH STATEMENT IS UP ---
+    // --- WHICH STATEMENT IS UP: A CLOCK ---
     //
-    // A count of gestures, stepped by makeSwipeSteps above. Nothing here reads
-    // the scroll position: showBand is the whole of what a step does, and the
-    // photographs follow it because showBand calls play().
-    const steps = makeSwipeSteps($('#act1'), phraseEl.length,
-                                 (i, immediate) => showBand(i, immediate));
+    // Asked for, after three rounds of trying to make the reader's gesture
+    // drive it: "just make it an animation that moves on its own without
+    // scrolling."
+    //
+    // It is the right call, and the reason is the same one every round ran
+    // into. On a phone the scroll moves when the reader has not moved it: iOS
+    // shifts it about ninety pixels of its own accord when the address bar
+    // collapses, and ScrollTrigger re-measures a PIN'S SPACER on the refresh
+    // that follows, under a reader standing still. Anything downstream of the
+    // scroll therefore twitches - whether it reads the position (the bands),
+    // the progress (the scrub), or only whether a section is pinned (the
+    // touch-action lock). Three different mechanisms, three reports of the same
+    // glitch, because the fault was never in the mechanism.
+    //
+    // So this screen is downstream of nothing. There is no pin here any more
+    // and no gesture handler; the section is one ordinary screen the page
+    // scrolls past, and the run plays on a timeline of its own while it is
+    // there. The reader can scroll whenever and wherever they like and the only
+    // thing that happens is that the page scrolls.
+    //
+    // (The desktop is untouched: it still scrubs across its own pin, where none
+    // of the above applies - a mouse does not collapse an address bar.)
+    const BAND_HOLD = 1.7;   // a statement stands this long after its photographs have run
+    const LOOP_GAP  = 1.6;   // ...and the last one this long before the run starts over
+    // What play(i) costs in seconds: FIRST_ON for the photograph a statement
+    // opens on, then NEXT_ON_BY_SEG[i] for each one after it. Derived rather
+    // than written down, so changing the pace of the photographs re-times the
+    // statements over them instead of drifting out of step with them.
+    const bandRun = i => FIRST_ON + (phraseFrames[i].length - 2) * NEXT_ON_BY_SEG[i];
+
+    let auto = null;
+    // Back to the top of the run outright. tl1 is rewound first and then
+    // resetRun re-states the baseline, because a timeline rewound past a to()
+    // re-renders that tween's recorded start - which would otherwise leave
+    // later photographs stacked over the hero. Same three steps the loop in the
+    // non-scroll build takes, for the same reason.
+    const toFirst = () => {
+      if(segTween) segTween.kill();
+      segTween = null; seg = -1; shown = -1;
+      tl1.pause(0);
+      resetRun();
+      showBand(0, true);
+    };
+    const stopAuto = () => {
+      if(auto) auto.pause();
+      if(segTween) segTween.pause();
+    };
+    const startAuto = () => {
+      if(auto) auto.kill();
+      // Reduced motion: the run still tells its three statements — it is the
+      // page's opening argument, not decoration — but each one cuts into place
+      // rather than riding up the screen.
+      const cut = RM;
+      auto = gsap.timeline({repeat:-1});
+      let at = 0;
+      phraseEl.forEach((_, i) => {
+        auto.call(i ? () => showBand(i, cut) : toFirst, null, at);
+        at += bandRun(i) + (i === phraseEl.length - 1 ? LOOP_GAP : BAND_HOLD);
+      });
+      // an empty beat holding the loop open to the end of the last statement's
+      // stay; without it the timeline ends on its last callback and repeats at
+      // once, which would cut back to the hero the instant the third statement
+      // finished arriving
+      auto.to({}, {duration:.01}, at);
+    };
 
     const play = i => {
       if(i === seg) return;
@@ -2403,56 +2462,36 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       segTween = chain;
     };
     trig = ScrollTrigger.create({
-      // The pin no longer paces anything. It used to be the pace - 200vh a
-      // statement, then 160, 140, 110, 90, 70, each number a trade between
-      // "too many scrolls to switch" and "one flick crosses the lot" - because
-      // the statement was read off the scroll position and so distance was the
-      // only dial there was. The stepper above ended that: a swipe is a swipe
-      // at any length, and inside the run there is no scroll for a flick to
-      // spend.
+      // NO PIN. The pin was the last thing on this screen still downstream of
+      // the scroll, and a pin's spacer is exactly what iOS re-measures when its
+      // address bar goes. #act1 is one ordinary screen now; the page scrolls
+      // past it like any other.
       //
-      // What is left for this number to do is the runway AFTER the last
-      // statement: the lock lifts once "Own and save your data." is up, and
-      // this is how far the reader then travels with it held before the section
-      // hands over. One unhurried swipe's worth. Longer would be scrolling
-      // against a finished screen, which is the one thing a held frame must not
-      // become.
-      trigger:'#act1', start:'top top', end:'+=70%',
-      pin:true,
-      // No snap, and nothing here reads the progress any more. The statement is
-      // the gesture count; the scroll's only remaining job is to carry the
-      // reader out of the section once the run is done. onUpdate exists solely
-      // to keep the lock in step with the trigger going active and inactive.
-      onUpdate: () => steps.sync(),
-      onEnter: () => steps.sync(), onEnterBack: () => steps.sync(), onLeave: () => steps.sync(),
+      // So this trigger holds nothing and paces nothing. It answers one
+      // question - is the run on screen - and starts or stops the clock on the
+      // answer. A run playing to nobody below the fold is only a phone warming
+      // itself up.
+      trigger:'#act1', start:'top top', end:'bottom top',
+      onEnter: startAuto, onEnterBack: startAuto,
+      onLeave: stopAuto,
       // start > 1 for the same reason the run's other triggers test it: this
       // section starts at the very top of the page, so leaving backwards fires
-      // once during setup, at scroll 0 — which killed the first statement's
-      // chain the moment it was made and left the hero sitting there for good.
-      onLeaveBack: self => {
-        if(self.start <= 1) return;
-        if(segTween) segTween.kill();
-        segTween = null; seg = -1;
-        tl1.pause(0);
-        resetRun();
-      }
+      // once during setup, at scroll 0 — which would stop the clock on the very
+      // beat it was started.
+      onLeaveBack: self => { if(self.start > 1) stopAuto(); }
     });
 
-    steps.bind(trig);
-
-    // Everything this screen listens for, taken back off again: the stepper's
-    // five, plus the re-measure that fires when the window's WIDTH changes - a
-    // rotation - and never on the height-only change an address bar makes.
     trig._dropSnap = () => {
       removeEventListener('resize', remeasureTravel);
       removeEventListener('orientationchange', remeasureTravel);
-      steps.destroy();
+      if(auto) auto.kill();
+      auto = null;
     };
 
-    // The run opens on its first statement whatever the scroll happens to be -
-    // there is nothing above this section for the reader to have come from, and
-    // the statement is no longer derived from a position it could disagree with.
-    steps.set(0);
+    // The reader is already here — this is the top of the page — so the trigger's
+    // own onEnter will not fire for them. Start it outright.
+    toFirst();
+    startAuto();
     play(0);
     return trig;
   };
@@ -2973,8 +3012,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // pin's length is re-measured on the refresh that follows. Both of those
     // read as the section reversing toward its start with nobody touching it.
     //
-    // So the two framings are stepped, by the same one-swipe-one-step rule the
-    // opening run works by (see makeSwipeSteps): the reader arrives and
+    // So the two framings are stepped, one swipe to a framing (see
+    // makeSwipeSteps): the reader arrives and
     // "Introducing the Data Savings Plan" comes up; one swipe and it hands over
     // to "Open an account, request your data, and earn $25."; the swipe after
     // that scrolls the page on. The screen cannot move in between, so there is
@@ -3112,7 +3151,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // its recorded start (opacity 1) whenever the playhead sits before it — so a
   // refresh or a rewind leaves later photos stacked over the hero. Same cure as the
   // tags: while the run is parked at the top, state the true baseline outright.
-  const resetRun = () => {
+  // A function declaration, not a const: the phone's run reaches this from its
+  // own setup, which runs earlier in this file than this line does. Same reason
+  // restartRun and loopWhileHere below are declared rather than assigned.
+  function resetRun(){
     if(tl1.time() >= 0.01) return;
     gsap.set($$('#act1 > .frame, #act2 .frame'), {opacity:0});
     gsap.set($$('#act1 > .frame[data-i="0"]'), {opacity:1});
@@ -3136,7 +3178,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // caused. (Before the guard it would have been too early: the blanket runs
     // after it.)
     showFlatPhone();
-  };
+  }
   const hideTags = resetRun;
   ScrollTrigger.addEventListener('refresh', hideTags);
   hideTags();
