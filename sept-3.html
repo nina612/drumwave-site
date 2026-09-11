@@ -2285,7 +2285,31 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // both sentences sit on exactly the same line, so a real crossfade would
     // show them printed through each other. Sequenced like this it reads as one
     // becoming the other.
-    const OUT_TIME = .5, IN_TIME = .7, IN_LAG = .45;
+    // SEQUENTIAL BY CONSTRUCTION: the in starts exactly when the out finishes,
+    // not .05 before it. These three sentences share one line on the screen, so
+    // any overlap at all is two of them printed through each other — there is no
+    // "faint enough to be safe" when the ink is in the same place. .45 out, .45
+    // lag, .65 in: a clean dissolve through, and a little slower than it was.
+    const OUT_TIME = .45, IN_TIME = .65, IN_LAG = .45;
+
+    // A gsap.set does NOT kill a tween already running on the same element: it
+    // writes the value once and the tween carries on writing over it on the very
+    // next frame. That is the reported text overlap, and it is why it only ever
+    // happened on an interruption — steady cycling never has two tweens in
+    // flight, but scrolling away mid-handover and coming back calls toFirst,
+    // whose gsap.set(0) was silently overwritten by the fade it did not stop.
+    // Reproduced six times out of six before this; measured at hero=.83 with
+    // sayA=.14, and at hero=.21 with sayA=.71.
+    //
+    // So every path that puts a statement away kills its tween first. The two
+    // participants in a handover are safe already — both tweens carry
+    // overwrite:true, which kills other tweens of the SAME target — but the
+    // third statement, and every statement on a reset, were not.
+    const park = keep => phraseEl.forEach((el, k) => {
+      if(keep.indexOf(k) >= 0) return;
+      gsap.killTweensOf(el);
+      gsap.set(el, {opacity:0});
+    });
 
     let shown = 0;
     let bandIdx = -1;
@@ -2305,13 +2329,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // the copy's own record of which statement is up
       bandIdx = i;
       if(immediate){
-        phraseEl.forEach((el, k) => gsap.set(el, {opacity: k === i ? 1 : 0}));
+        park([i]);
+        gsap.killTweensOf(phraseEl[i]);
+        gsap.set(phraseEl[i], {opacity:1});
         upIdx = i;
       } else {
-        phraseEl.forEach((el, k) => {
-          if(k === i || k === upIdx) return;
-          gsap.set(el, {opacity:0});              // not up, not arriving: just dark
-        });
+        park([i, upIdx]);                         // everything but the two in the handover
         if(upIdx >= 0 && upIdx !== i)
           gsap.to(phraseEl[upIdx], {opacity:0, duration:OUT_TIME, ease:'power1.in',
                                     overwrite:true});
@@ -2378,7 +2401,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // statement simply appearing. The park is immediate because the loop has
       // just taken the third statement off; the hero rises into the space it
       // left rather than crossing it.
-      phraseEl.forEach(el => gsap.set(el, {opacity:0}));
+      park([]);                                   // kill every fade in flight, then clear
       upIdx = -1;
       // Asked for: "Your life creates data" appears immediately, at the same
       // time as the first image. IN_LAG is the gap that lets one statement clear
@@ -2996,7 +3019,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // does not start leaving until 1.10, so 1.0 sits mid-plateau; B is whole
     // from 1.84 and the timeline holds to 2.25, so 2.0 sits mid-plateau in its.
     const SOL_AT = [1.0, 2.0];
-    const SOL_IN = .8, SOL_SWAP = .55;
+    // Smoother, asked for. .9 and .8 where these were .8 and .55, on power2.inOut
+    // rather than power1 — it eases out of rest and back into it instead of
+    // running at a near-constant rate between them. The speed this gives up
+    // costs nothing, because a reader moving fast never sees this tween at all:
+    // past SOL_RUSH the handover is instantaneous (see solRender).
+    const SOL_IN = .9, SOL_SWAP = .8;
     let solTween = null, solIdx = 0;
     const solGo = (i, immediate) => {
       solIdx = i;
@@ -3004,7 +3032,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       if(immediate){ solTween = null; tl.pause(i === 0 ? 0 : SOL_AT[i]); return; }
       tl.pause();
       solTween = gsap.to(tl, {time:SOL_AT[i], duration:i === 0 ? SOL_IN : SOL_SWAP,
-                              ease:'power1.inOut'});
+                              ease:'power2.inOut'});
     };
     // The line, and the margin either side of it. .32 of two screens is about
     // 540px in, so the statement holds for a third of the section and the offer
