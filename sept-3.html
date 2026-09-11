@@ -2287,96 +2287,92 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       });
     }
     // Two screens of scroll per statement, and nothing but the reader's own
-    // position deciding which one is up. Distance is what stops a gesture
-    // crossing two statements — a phone flick runs about 900px and a statement
-    // is 1688 — and it is the only thing doing that job now; see the trigger
-    // below for the snap that used to and why it had to go.
+    // position deciding which one is up. Nothing here reads the scroll any
+    // more — the run plays itself; see the note by BAND_HOLD below.
     let seg = -1, segTween = null;
     // The three statements, in the order they are spoken. They already share one
     // resting place (all three sit on --hero-bottom), so moving them is a matter
     // of carrying one away from it while the next comes to it.
     const phraseEl = ['#act1 .hero-h', '#sayA', '#sayB'].map(s => $(s));
-    // The whole travel of a statement: from its resting place at the bottom to
-    // clear off the top. The copy sits 128 up with a box around 140 tall, so its
-    // top edge starts near 576 of 844 — .6 of the height carries it to roughly
-    // 60, which is where the board leaves the outgoing statement as a ghost.
-    // --- THREE STATES, AND A SCROLL BETWEEN THEM ---
+    // --- ONE STATEMENT FADES OUT, THE NEXT FADES IN ---
     //
-    // Asked for, in these words: "your life creates data (static) -> scroll ->
-    // every tap every step (static) -> scroll -> own and save your data
-    // (static)".
+    // Asked for: the text should fade in, and the three statements should pass
+    // between each other smoothly.
     //
-    // Everything before this tied the copy's position to the scroll position
-    // continuously, and that is what kept letting the page move the words when
-    // the reader had not. The last of those was the plainest: travel() read
-    // window.innerHeight on every frame, iOS grows that by ninety pixels when
-    // the address bar collapses, and so the statements slid up when the bar went
-    // and back down when it returned. Reproduced with the scroll held still and
-    // only the height changed, 812 to 902: the page did not move a pixel and the
-    // copy moved fourteen.
+    // Two things were in the way. The first is that the opening statement never
+    // faded at all - it was SET, not tweened, both on arrival and at the top of
+    // every loop, so the run cut to "Your life creates data" out of nothing
+    // once every eleven seconds. It fades now like the other two, which is what
+    // costs nothing and was most of the complaint.
     //
-    // The fix for that particular one is below (travel is measured, not read),
-    // but the shape asked for here removes the whole family of them. The pin is
-    // three equal bands, one a statement. Anywhere inside a band, that statement
-    // is whole and still - not "nearly arrived", not "part way out", just there.
-    // Crossing into the next band plays a short transition and the next one is
-    // whole and still. Nothing is a function of the scroll's exact value any
-    // more, only of which third of the pin it is in, so a wobble of fourteen
-    // pixels - or ninety - changes nothing at all. It cannot: the bands are
-    // hundreds of pixels wide.
+    // The second is the distance. These durations and easings were written for
+    // a scrubbed pin, where the statement's travel was the reader's own gesture
+    // made visible and wanted to be large: .6 of the viewport, 487px on a phone,
+    // covered in .46s once the run played itself. That is not a fade with a
+    // little movement in it, it is a slide that happens to be fading - and at
+    // that speed the eye follows the motion rather than reading the words.
     //
-    // Quick out and slow in are kept, as asked for earlier, but they are now the
-    // durations of the transition rather than distances along the scroll.
-    const OUT_TIME = .28, IN_TIME = .46, IN_LAG = .06;
-    const IN_RISE  = .34;           // the arriving statement comes from here
+    // RISE is 34px now, flat. The three statements share one place on the
+    // screen, so the movement was never carrying them anywhere - it only has to
+    // give the fade a direction. Small enough that the words stay legible the
+    // whole way through, and the transition reads as one statement becoming
+    // another rather than two sliding past.
+    //
+    // Flat px rather than a fraction of the viewport is also what finally
+    // retires travel(): it read window.innerHeight, iOS grows that by ninety
+    // pixels when the address bar collapses, and the statements slid when it
+    // went (measured once at fourteen pixels with the page not moving at all).
+    // The re-measure that guarded against it, and its two listeners, go with it
+    // - 34 is 34 at every height.
+    const RISE = 34;
+    // Out quick, in slower, and the in starts as the out is most of the way
+    // gone: .42 of a .52 exit. They overlap for a tenth of a second, with the
+    // outgoing under .2 of opacity for all of it, so the two never read as two
+    // sentences stacked in one place - which is what a true crossfade would do
+    // here, since both rest on the same line.
+    const OUT_TIME = .52, IN_TIME = .72, IN_LAG = .42;
 
-    // Measured once and kept, NOT read live - see the note above. Re-measured
-    // only when the WIDTH changes, which is a rotation or a real resize, never
-    // on the height-only change an address bar makes. Same distinction
-    // ScrollTrigger's own ignoreMobileResize draws.
-    let travelPx = window.innerHeight * .6;
-    let travelW  = window.innerWidth;
-    const travel = () => travelPx;
-
-    // Where each statement sits when the band belongs to i: gone above, whole in
-    // place, or waiting below. A pure function of the index, so showing a state
-    // twice is the same as showing it once and there is nothing to accumulate.
-    const stateFor = (i, k) => k < i ? {y: -travel(), opacity: 0}
-                            : k > i ? {y: travel() * IN_RISE, opacity: 0}
-                            : {y: 0, opacity: 1};
     let shown = 0;
     let bandIdx = -1;
+    // which statement is actually on screen, so only that one is animated out —
+    // the third is already parked and has nothing to do
+    let upIdx = -1;
     // Declared up here rather than at its own create(), because the trigger's
-    // own callbacks reach the stepper, which is built before it - a const would
-    // be in its dead zone for those.
+    // own callbacks reach the run, which is built before it - a const would be
+    // in its dead zone for those.
     let trig = null;
+    // Where a statement waits, and where it goes. Below and clear on the way in;
+    // above and clear on the way out; and once it is out it is put straight back
+    // below, invisible, ready to arrive again on the next time round.
     const showBand = (i, immediate) => {
-      // the copy's own record of which statement is up; the stepper owns the
-      // count, this is what a re-measure re-states without asking it
+      // the copy's own record of which statement is up
       bandIdx = i;
-      phraseEl.forEach((el, k) => {
-        const st = stateFor(i, k);
-        if(immediate){ gsap.set(el, st); return; }
-        gsap.to(el, Object.assign({}, st, {
-          overwrite: true,
-          duration: k === i ? IN_TIME : OUT_TIME,
-          delay:    k === i ? IN_LAG  : 0,
-          ease:     k === i ? 'power2.out' : 'power2.in'
-        }));
-      });
+      if(immediate){
+        phraseEl.forEach((el, k) => gsap.set(el, k === i ? {y:0, opacity:1}
+                                                         : {y:RISE, opacity:0}));
+        upIdx = i;
+      } else {
+        phraseEl.forEach((el, k) => {
+          if(k === i || k === upIdx) return;
+          gsap.set(el, {y:RISE, opacity:0});      // not up, not arriving: just parked
+        });
+        if(upIdx >= 0 && upIdx !== i){
+          const out = phraseEl[upIdx];
+          gsap.to(out, {y:-RISE, opacity:0, duration:OUT_TIME, ease:'power1.in',
+                        overwrite:true,
+                        // back below the moment it is gone, while nothing can see it
+                        onComplete: () => gsap.set(out, {y:RISE})});
+        }
+        gsap.fromTo(phraseEl[i], {y:RISE, opacity:0},
+          {y:0, opacity:1, duration:IN_TIME, delay:IN_LAG, ease:'power2.out',
+           overwrite:true});
+        upIdx = i;
+      }
       // The photographs follow the statement that is up, asked for: a
       // statement's set only starts once its own words are already there. With
       // discrete states there is no ambiguity about when that is.
       if(shown !== i){ shown = i; play(shown); }
     };
-    const remeasureTravel = () => {
-      if(window.innerWidth === travelW) return;
-      travelW  = window.innerWidth;
-      travelPx = window.innerHeight * .6;
-      if(bandIdx >= 0) showBand(bandIdx, true);
-    };
-    addEventListener('resize', remeasureTravel);
-    addEventListener('orientationchange', remeasureTravel);
 
     const BANDS = phraseEl.length;
 
@@ -2423,7 +2419,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       segTween = null; seg = -1; shown = -1;
       tl1.pause(0);
       resetRun();
-      showBand(0, true);
+      // Parked first, then faded in — not set. This runs on arrival AND at the
+      // top of every loop, and showBand(0, true) is exactly the cut the fade
+      // was asked for to remove: eleven seconds of run and then the first
+      // statement simply appearing. The park is immediate because the loop has
+      // just taken the third statement off; the hero rises into the space it
+      // left rather than crossing it.
+      phraseEl.forEach(el => gsap.set(el, {y:RISE, opacity:0}));
+      upIdx = -1;
+      showBand(0, false);
     };
     const stopAuto = () => {
       if(auto) auto.pause();
@@ -2495,12 +2499,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       onLeaveBack: self => { if(self.start > 1) stopAuto(); }
     });
 
-    trig._dropSnap = () => {
-      removeEventListener('resize', remeasureTravel);
-      removeEventListener('orientationchange', remeasureTravel);
-      if(auto) auto.kill();
-      auto = null;
-    };
+    trig._dropSnap = () => { if(auto) auto.kill(); auto = null; };
 
     // The reader is already here — this is the top of the page — so the trigger's
     // own onEnter will not fire for them. Start it outright.
