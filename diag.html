@@ -1,0 +1,35 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dWallet — device check</title>
+<style>
+ body{margin:0;padding:24px;background:#070707;color:#F3F2EE;
+   font:16px/1.5 -apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+ h1{font-size:20px;margin:0 0 20px}
+ dl{margin:0} dt{color:#999;font-size:13px;margin-top:16px}
+ dd{margin:2px 0 0;font-size:18px;font-weight:600}
+ .bad{color:#ff6b6b} .good{color:#5be26b}
+ p{color:#999;font-size:14px;margin-top:28px}
+ a{color:#6aa8ff}
+</style></head><body>
+<h1>Device check</h1>
+<dl id="out"></dl>
+<p id="verdict"></p>
+<p><a href="sept-3.html?hero=1">version 1</a> &nbsp;·&nbsp;
+   <a href="sept-3.html?hero=2">version 2</a><br>
+   <a href="sept-3.html?hero=2&amp;motion=on">version 2, forcing motion on</a></p>
+<script>
+ var rm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+ var rows = [
+   ['Reduced motion reported', rm ? 'YES — this is why the hero is frozen' : 'no', rm],
+   ['Viewport width', innerWidth + 'px' + (innerWidth <= 760 ? ' (mobile layout)' : ' (desktop layout)'), innerWidth > 760],
+   ['Device pixel ratio', devicePixelRatio, false],
+   ['Touch points', navigator.maxTouchPoints, false]
+ ];
+ document.getElementById('out').innerHTML = rows.map(function(r){
+   return '<dt>' + r[0] + '</dt><dd class="' + (r[2] ? 'bad' : 'good') + '">' + r[1] + '</dd>';
+ }).join('');
+ document.getElementById('verdict').textContent = rm
+   ? 'iOS reports this when Reduce Motion is on in Settings > Accessibility > Motion, AND when Low Power Mode is on. Turn off Low Power Mode, or use the "forcing motion on" link below.'
+   : 'Nothing here explains a frozen hero — send this screen back.';
+</script>
+</body></html>

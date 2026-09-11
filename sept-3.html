@@ -1713,8 +1713,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // that is never exercised is a branch that is broken. It only ever turns
   // reduced motion ON, so it cannot be used to take it away from someone who
   // asked for it.
-  const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-          || /(?:^|[?&#])motion=reduce(?:[&#]|$)/.test(location.search + location.hash);
+  // ?motion=on forces reduced motion OFF, and it exists because of a trap worth
+  // naming: iOS reports prefers-reduced-motion:reduce when LOW POWER MODE is on,
+  // not only when someone has set Reduce Motion in Accessibility. A phone on 18%
+  // battery therefore gets the frozen hero, and the page's main content simply
+  // does not move for them. This flag is how to tell the two apart from a phone
+  // in ten seconds: if the run plays with ?motion=on and not without it, the
+  // device is reporting reduced motion for one reason or the other.
+  // ?motion=reduce still forces it on, for testing the frozen state.
+  const RM_FORCED_OFF = /(?:^|[?&#])motion=on(?:[&#]|$)/.test(location.search + location.hash);
+  const RM = !RM_FORCED_OFF &&
+             (window.matchMedia('(prefers-reduced-motion: reduce)').matches
+              || /(?:^|[?&#])motion=reduce(?:[&#]|$)/.test(location.search + location.hash));
   // Everything up to the age ticker runs on its own clock: the timeline plays
   // when the screen is reached and rewinds if you scroll back above it, rather
   // than being scrubbed. Reduced motion skips straight to each end state.
