@@ -1757,7 +1757,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   window.addEventListener('error', e => {
     window.__heroErr = (e.message || 'error') + ' @' + (e.lineno || '?');
   });
-  window.__heroBuild = 'b4da075';
+  window.__heroBuild = 'motion-fix';
 
   const RM_FORCED_OFF = /(?:^|[?&#])motion=on(?:[&#]|$)/.test(location.search + location.hash);
   const RM = !RM_FORCED_OFF &&
@@ -2453,8 +2453,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   ];
   const classOf = t => { const r = PHOTO().find(([m]) => Math.abs(m - t) < 1e-6);
                          return r ? r[1] : 'simple'; };
-  const holdFor  = t => classOf(t) === 'busy' ? HOLD_BUSY : HOLD_SIMPLE;
-  const xfadeFor = t => classOf(t) === 'busy' ? XF_BUSY   : XF_SIMPLE;
+  // REDUCED MOTION IS CALM, NOT DEAD.
+  //
+  // It used to freeze the run on one photograph. That is the strictest reading
+  // of the setting and it turned out to be the wrong default, for a reason worth
+  // writing down: a frozen hero is indistinguishable from a broken one. iOS
+  // reports prefers-reduced-motion:reduce for LOW POWER MODE as well as for the
+  // accessibility toggle, so a phone under 20% battery got a hero that never
+  // moved and looked like a bug — which is exactly how this was reported.
+  //
+  // What the setting is actually asking for is no MOTION: no travel, no zoom,
+  // no parallax, nothing that slides across the screen. A slow cross-dissolve
+  // between still photographs is none of those. So under reduced motion every
+  // photograph holds 2.5s and dissolves over 1.0s, the statements cross-fade
+  // with no travel at all, and the images' zoom is removed outright below.
+  // Still and slow, rather than stopped.
+  const RM_HOLD = 2.5, RM_XFADE = 1.0;
+  const holdFor  = t => RM ? RM_HOLD  : (classOf(t) === 'busy' ? HOLD_BUSY : HOLD_SIMPLE);
+  const xfadeFor = t => RM ? RM_XFADE : (classOf(t) === 'busy' ? XF_BUSY   : XF_SIMPLE);
   // "Own and save your data" is the one statement of the three with only two
   // photographs, and the only one that crosses between them on a dissolve
   // rather than a cut. A fifth of a second spent that whole dissolve in a
@@ -2477,6 +2493,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // photograph change at all, so it has none.
   const cutAt = t => Math.abs(t - tl1.duration()) < 1e-6 ? 0
                    : Math.abs(t - (ACT1_END + FAMILY)) < 1e-6 ? DISSOLVE : CUT;
+
+  // The photographs' zoom is the one piece of real motion left in the run — the
+  // hero, the tap frame and the baby each ease out of a slight push. Under
+  // reduced motion those tweens are taken out of the timeline outright and the
+  // scale pinned at 1, so what is left is opacity and nothing else. Killing the
+  // tweens rather than overriding the value, because the playhead still walks
+  // and would write the scale back on every frame.
+  if(RM){
+    tl1.getChildren(true, true, false).forEach(t => {
+      const v = t.vars || {};
+      if(v.scale !== undefined || (v.startAt && v.startAt.scale !== undefined)) t.kill();
+    });
+    gsap.set('#act1 .frame img, #act2 .frame img', {scale:1});
+  }
 
   const buildRunPin = phone => {
     if(!phone){
@@ -2533,8 +2563,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // enough that the words stay legible the whole way. The scrub-era version of
     // this travelled .6 of the viewport, 487px, and that is what not to go back
     // to: at that distance the eye follows the motion instead of reading.
-    const RISE     = HERO_V === 1 ? 56 : 0,   // where the incoming one comes from
-          OUT_LIFT = HERO_V === 1 ? 40 : 0;   // and where the outgoing one goes
+    // Nothing travels under reduced motion — that is the part of the setting
+    // that is not negotiable. v1's statements normally arrive from 56 below.
+    const RISE     = RM ? 0 : (HERO_V === 1 ? 56 : 0),
+          OUT_LIFT = RM ? 0 : (HERO_V === 1 ? 40 : 0);
     const withY = (o, y) => RISE ? Object.assign({}, o, {y}) : o;
 
     // STILL SEQUENTIAL BY CONSTRUCTION, and that matters more with movement, not
@@ -2702,13 +2734,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     };
     const startAuto = () => {
       if(auto) auto.kill();
-      // REDUCED MOTION: the run does not run. The block below was empty and the
-      // JS only made the statements cut instead of fade, so the photographs went
-      // on cycling for a reader who has asked the OS for no movement. Now the
-      // hero holds its first photograph and its first statement, and nothing
-      // moves at all — no cycle, no crossfade, no loop. The copy is still
-      // legible and the picture is still there; it simply never changes.
-      if(RM){ auto = null; toFirstStatic(); return; }
+
       // Reduced motion: the run still tells its three statements — it is the
       // page's opening argument, not decoration — but each one cuts into place
       // rather than riding up the screen.
@@ -2750,13 +2776,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // it, so the first photograph is already whole when the hold begins.
       const marks = phraseFrames[i];
       tl1.pause(Math.min(marks[0] + cutAt(marks[0]), tl1.duration()));
-      // REDUCED MOTION stops here: the statement's first photograph is put up
-      // and nothing walks. Guarding startAuto alone was not enough — showBand
-      // calls play() whenever the statement changes, so the chain was still
-      // being built and the photographs went on cycling under a reader who had
-      // asked for no movement. Measured before this: three different pictures
-      // across eighteen seconds with the setting on.
-      if(RM){ segTween = null; return; }
       const chain = gsap.timeline();
       // The first statement gets a beat to itself before anything moves.
       if(i === 0 && HEAD_LEAD) chain.to({}, {duration:HEAD_LEAD});
