@@ -1178,14 +1178,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    clipped beside the logo. The phone nav now folds everything into the menu
    at 760px instead (see above), so there is no more clipping to dodge — same
    fix sept-8 made for the same reason. */
-@media (prefers-reduced-motion:reduce){
-  /* The run is frozen from the script (see RM in startAuto) — this is the part
-     CSS owns: anything that would still move or transition on its own is stopped
-     here, so a reader with the OS setting on gets a page that holds still even
-     if a tween is created somewhere this file has not thought of. The block was
-     empty before; reduced motion was handled only to the extent of making the
-     hero's statements cut instead of fade, while the photographs behind them
-     went on cycling regardless. */
+@media (prefers-reduced-motion:reduce) and (max-width:760px){
+  /* The run is frozen from the script (see RM in startAuto and in play) — this
+     is the part CSS owns: anything that would still move or transition on its
+     own is stopped, so a reader with the OS setting on gets a page that holds
+     still even if a tween is created somewhere this file has not thought of.
+     The block was empty before; reduced motion was handled only to the extent of
+     making the hero's statements cut instead of fade, while the photographs
+     behind them went on cycling regardless.
+     AND max-width, deliberately. Asked for: leave the desktop alone. Without it
+     this was the one rule in the hero work that reached above 760 — it would
+     have taken CSS transitions off the wide layout too, hover states included.
+     The desktop has less to freeze anyway: its run is scrubbed, so it only ever
+     moves when the reader moves it. */
   *,*::before,*::after{
     animation-duration:.001ms !important;
     animation-iteration-count:1 !important;
