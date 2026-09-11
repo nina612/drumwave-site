@@ -219,19 +219,28 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    .025em pushes them back down onto it. */
 /* z-index 6 so the headline paints over the frames, which follow it in the DOM. */
 #act1 .hero-h{z-index:6;
-  position:absolute;left:6.3vw;top:calc(51.67vh + .05em);bottom:auto;max-width:92vw;color:#fff;
+  /* 54.5vh, not 51.67 — asked for: sit it a little lower on a wide screen. At
+     900 tall that is 25px down, and it still leaves a clear margin under the
+     last line rather than crowding the bottom edge. */
+  position:absolute;left:6.3vw;top:calc(54.5vh + .05em);bottom:auto;max-width:92vw;color:#fff;
   /* 7.29vw is 140/1920, so the cap is reached at exactly the frame it was drawn on.
      The floor stays at the 3rem it has always been: the spec is for the wide screen,
      and letting it set the phone's size too would have shrunk the headline there
      from 48px to 35px, which is not what was asked for. */
   font-size:clamp(3rem,7.29vw,8.75rem);
-  /* .95, not the .8 drawn. This headline's lines are the worst pair on either
-     page: "customers to power" puts a p under nothing much, but "your business."
-     brings a y and a b up under that p, and that pair's ink wants .94 of the
-     font size — so .8 met it by 19.6px at 1920 and 10.4 at 1024, and the p of
-     "Empower" met the c and t below it by another 10.5. A ratio, so no width
-     was ever safe. */
-  font-weight:400;line-height:.95;letter-spacing:-.03em;
+  /* 1.03, and this headline is why the number matters. Its lines are the worst
+     pair on either page: "customers to power" puts a p under nothing much, but
+     "your business." brings a y and a b up under that p, and that pair's ink
+     wants .94 of the font size. .8 met it by 19.6px at 1920. .95 stopped the
+     collision but only just — measured on the running page at 1440x900, the
+     descender of "customers to power" and the ascender of "your business." left
+     1.1px between them, which on 105px type is a near miss rather than
+     clearance, and any shift in a metric (another engine, the fallback face
+     while Titillium loads, a zoom level) takes it negative. That is what made
+     the overlap intermittent rather than constant. 1.03 gives 9.5px, and it is
+     the same ratio sept-3's three big statements were moved to for the same
+     reason. A ratio, so it holds at every width. */
+  font-weight:400;line-height:1.03;letter-spacing:-.03em;
 }
 /* the phone break is the default-hidden one, the same pattern sept-3's #worth
    uses; the 760px block does the swap */
