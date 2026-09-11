@@ -2898,45 +2898,50 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     fitSolHow();
     const tl = buildSolTl(false);
 
-    // NOT SCRUBBED, AND NOT SWIPED EITHER. It plays itself, the way the
-    // opening run does.
+    // THE READER SCROLLS AND IT TURNS OVER — but in two states, not on a scrub.
     //
-    // The scrub went first, and for the reason the run's did: a scrubbed pin
-    // plays backwards whenever the scroll goes backwards, and on a phone the
-    // scroll goes backwards without the reader — iOS shifts it about ninety
-    // pixels when the address bar collapses, and a pin's length is re-measured
-    // on the refresh that follows. Both read as the section reversing with
-    // nobody touching it.
+    // Asked for in those words, after two wrong turns worth recording, because
+    // the shape below is what is left once both are ruled out.
     //
-    // What replaced it was a swipe, one gesture to a framing, held in place by
-    // touch-action while a framing was still ahead. That lock had to go — it
-    // trapped a reader coming back UP the page, since touch-action cannot be
-    // told a direction (see makeSwipeSteps' own note, now deleted with it).
-    // And taking the lock off broke the other end: with nothing holding the
-    // page, one hard flick crosses the whole pin, so the gesture that was meant
-    // to bring "Open an account, request your data, and earn $25." up carried
-    // the reader past the section instead and they never saw it. Reported as
-    // "it is also not scrolling to open an account".
+    // A SCRUB was the first. It ties the animation to the scroll continuously,
+    // in both directions — so when iOS shifts the scroll about ninety pixels of
+    // its own accord as the address bar collapses, the screen plays backwards
+    // under a reader who has not moved. That is the "it reverses" report.
     //
-    // Those two are the same screen pulling in opposite directions: a gesture
-    // cannot both turn the page of this screen and scroll the page it is on.
-    // So it does not have to. The reader scrolls; the screen tells itself.
+    // A SWIPE was the second, one gesture to a framing. To make a gesture mean
+    // that and not "scroll the page", the page had to be held still
+    // (touch-action), and touch-action cannot be told a direction — so it
+    // trapped anyone coming back UP. Taking the hold off let one flick cross
+    // the whole pin, and the gesture meant to bring the offer up carried the
+    // reader past the section instead. Those are the two reports, and they are
+    // the same screen pulled in opposite directions.
+    //
+    // What is left is the scroll deciding, but only WHICH of two states is up —
+    // never how far through one. The pin is a line with a framing either side.
+    // Above the line "Introducing the Data Savings Plan"; below it "Open an
+    // account, request your data, and earn $25." Crossing plays a short
+    // handover on its own clock, so the change is always whole and always at
+    // its own pace; nothing is ever left half-played, and there is no partial
+    // state for a wobble to nudge.
+    //
+    // Which is the whole answer to the ninety pixels: they no longer move
+    // anything unless they cross the line, and EDGE below is wider than they
+    // are. And a hard flick, which was fatal when there were three statements
+    // to skip, cannot skip anything here — there are two states and the far one
+    // is where a flick was going anyway.
     //
     // The two framings' own resting moments on this timeline. A is whole from
     // .86 and does not start leaving until 1.10, so 1.0 sits in the middle of
     // its plateau; B is whole from 1.84 and the timeline holds to 2.25, so 2.0
     // sits in the middle of its. The tail past 2.0 is left unplayed: it existed
-    // to carry the last framing out of view unchanged under a scrub, and
-    // nothing is scrubbing now.
+    // to carry the last framing out of view unchanged under a scrub.
     const SOL_AT = [1.0, 2.0];
-    // .8 for the arrival, 1.2 standing on it, .8 for the handover — so "Open an
-    // account" is whole 2.8s after the section is reached. It then STAYS. This
-    // is the one screen on the page with an offer and a button on it, so unlike
-    // the run it does not go round again: nothing takes the call to action back
-    // off the screen once it is up.
-    const SOL_IN = .8, SOL_HOLD = 1.2, SOL_SWAP = .8;
-    let solTween = null, solSeq = null, solIdx = 0;
-    // immediate is the put-away and the rebuild, not a beat the screen played:
+    // .8 for the arrival, .8 for the handover — its own clock either way, so
+    // the speed of the reader's thumb changes when it happens, never how it
+    // looks.
+    const SOL_IN = .8, SOL_SWAP = .8;
+    let solTween = null, solIdx = 0;
+    // immediate is the put-away and the rebuild, not a beat the reader reached:
     // framing 0 parks at the timeline's start so its reveal is still to come,
     // framing 1 at its own resting moment.
     const solGo = (i, immediate) => {
@@ -2947,54 +2952,71 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       solTween = gsap.to(tl, {time:SOL_AT[i], duration:i === 0 ? SOL_IN : SOL_SWAP,
                               ease:'power1.inOut'});
     };
-    const solStop = () => {
-      if(solSeq) solSeq.kill();
-      solSeq = null;
-      if(solTween) solTween.kill();
-      solTween = null;
+    // Where the line sits, as a fraction of the pin. .38 rather than half:
+    // everything before it is one screen the reader has read in a second, and
+    // everything after it is the offer and its button, which is what they came
+    // to. Roughly two fifths of the scroll to reach it, three fifths standing
+    // on it.
+    const SOL_LINE = .38;
+    // How far past the line the reader must be before it counts, in either
+    // direction. .12 of a 150% pin is about 150px on a phone — comfortably
+    // wider than the ~90 the address bar moves, which is the number this exists
+    // to beat. It is also the lag: how far past the line they travel before the
+    // screen answers. Larger is steadier, smaller answers sooner, and this is
+    // the first place to go if it ever feels slow.
+    const SOL_EDGE = .12;
+    const solRender = pr => {
+      const want = solIdx === 0 ? (pr > SOL_LINE + SOL_EDGE ? 1 : 0)
+                                : (pr < SOL_LINE - SOL_EDGE ? 0 : 1);
+      if(want !== solIdx) solGo(want, false);
     };
-    // Arrival: the reveal this screen has always opened with, then the handover
-    // on its own clock. Only from the start — coming back UP to a screen the
-    // reader left on the second framing finds it on the second framing, which
-    // is where they left it.
-    const solArrive = () => {
-      if(solIdx !== 0 || tl.time() >= .01 || solSeq) return;
-      solGo(0, false);
-      solSeq = gsap.timeline();
-      solSeq.call(() => solGo(1, false), null, SOL_IN + SOL_HOLD);
-    };
-    // ...and the guarantee, which the clock on its own cannot give. A reader
-    // moving quickly can cross this pin in less than the 2.8s above, and the
-    // whole point of the screen is the second framing. So if they are a third
-    // of the way through the pin and it has not started yet, it starts now
-    // rather than on its own schedule.
+    // Arrival: the reveal this screen has always opened with. Only from the
+    // start — coming back up to a screen the reader left on the second framing
+    // finds it on the second framing, which is where they left it.
+    const solArrive = () => { if(solIdx === 0 && tl.time() < .01) solGo(0, false); };
+    // The reveal is cued BEFORE the pin, not by it, and for two reasons.
     //
-    // This reads the progress, which is the thing every glitch on this page
-    // came from — but it reads it ONE WAY, as a floor under when the handover
-    // begins. It can only ever bring the second framing on sooner; it cannot
-    // take it off, cannot run backwards, and never touches the first framing.
-    // A toolbar shifting the scroll ninety pixels can at worst start the
-    // handover a moment early, which is not something anyone can see.
-    const SOL_GUARD = .33;
+    // A trigger is not active AT its own start — isActive is false at exactly
+    // the start pixel and true one past it — and 'top top' is a natural place
+    // to come to rest, since it is simply "scroll until the section fills the
+    // screen". Measured resting there: onEnter had not fired and the screen sat
+    // blank. The age track carries a note about the same trap.
+    //
+    // And the section is on screen before it pins: it slides up from below with
+    // its copy still queued, so the reader watches an empty dark screen arrive
+    // and only then sees anything. Cueing at 85% of the viewport means the
+    // first framing is whole by the time the section has finished arriving,
+    // which is what it should have been doing all along.
+    // It is also where the screen is PUT AWAY, and that belongs here rather than
+    // on the pin. Resetting when the pin is left backwards meant resetting at
+    // the pin's own start pixel — a place the reader can simply come to rest,
+    // with the section still filling the screen — so scrolling back up to the
+    // top of it blanked it and nothing brought it back. Putting it away when
+    // the section has actually dropped off the bottom is both later and
+    // unambiguous.
+    const cue = ScrollTrigger.create({trigger:'#solution', start:'top 85%',
+                                      onEnter: solArrive, onEnterBack: solArrive,
+                                      onLeaveBack: () => solGo(0, true)});
     const trig = ScrollTrigger.create({
-      // 150%, where this was 225 scrubbed and then 120 swiped. Nothing is paced
-      // by it any more; what it buys is time on screen. The handover finishes
-      // 2.8s in, and this is the distance that gives an ordinary scroll — and
-      // the guard above — room to get there before the section hands over.
+      // 150%, where this was 225 scrubbed. It is not pacing an animation any
+      // more — it is the distance the two framings are spread over, and the
+      // thing that gives EDGE above enough pixels to be worth more than a
+      // toolbar. Shorter and the margin shrinks with it.
       trigger:'#solution', start:'top top', end:'+=150%', pin:true,
       onEnter:     solArrive,
       onEnterBack: solArrive,
-      onUpdate: self => { if(solIdx === 0 && self.progress > SOL_GUARD){ solStop(); solGo(1, false); } },
-      // Gone back above the section entirely — put it away, so meeting it again
-      // is an arrival rather than a screen already half spent.
-      onLeaveBack: () => { solStop(); solGo(0, true); }
+      // solArrive here as well as on the two enters: it is guarded and idempotent,
+      // so it costs nothing, and it is what catches a reader who arrives by any
+      // route the enters happen not to fire on.
+      onUpdate:    self => { solArrive(); solRender(self.progress); }
+      // no onLeaveBack: the put-away is the cue trigger's, see the note above.
     });
     // Queued at the timeline's own start. Nothing is shown until the section is
     // reached: a set() here would spend the reveal before the reader is there.
     tl.pause(0);
-    if(trig.isActive) solArrive();
+    if(trig.isActive){ solArrive(); solRender(trig.progress); }
 
-    return () => { solStop(); trig.kill(); tl.kill();
+    return () => { if(solTween) solTween.kill(); cue.kill(); trig.kill(); tl.kill();
       // the cards were moved into their own section, and an earlier build held
       // a touch-action on this one; both are the other branch's to set again
       solSec.style.touchAction = ''; };
