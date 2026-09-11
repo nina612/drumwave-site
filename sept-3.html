@@ -1015,7 +1015,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      38 and 24 clear of the edge. On every size I can measure the natural
      position is already inside this, so it never engages — it is there for the
      screen I have not thought of. */
+  /* Full bleed on the phone, asked for: the button runs the same measure as the
+     copy above it rather than shrinking to its label. Not a symmetric inset —
+     min(87.69vw,377px) is .sol-state's own width, so the button's right edge
+     lands on the headline's, which is what "to the margins" means on a screen
+     whose left gutter (26) and right (22 at 390) are not the same number.
+     justify-content, because the base rule only centres this pill's label on
+     the cross axis: at auto width there was nothing to centre along the main
+     one, and left alone the label would now sit against the leading edge. */
   .solution-preview .sol-cta{left:min(6.15vw,26px);bottom:auto;
+    width:min(87.69vw,377px);justify-content:center;
     top:min(calc(var(--sol-card-top) + var(--sol-card-h) + 24px), calc(100% - 62px))}
   /* --- SAVE YOUR DATA. GROW ITS VALUE. on the phone: Figma 4045:23128 ---
      the vw paddings and gaps are a few pixels at this width, so set them in
@@ -1041,11 +1050,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      which over this black comes out nearer #B5B5B5. Left-aligned, as drawn —
      the frame centres the heading above it and leaves this ranged left. */
   .closing-sub{margin-top:20px;font-weight:400;line-height:1.4;color:#999;opacity:1;text-align:left}
-  /* the frame's button is 216 x 50, and it gets there with 18 type inside 24
-     and 16 of padding — the 216 x 50 here was the same box reached with 16 type
-     and the padding opened up to 33 and 17 to fill it. 65 above it, not 12vw
-     (47 at 390). */
-  .closing-cta{margin-top:65px;padding:16px 24px;font-size:18px}
+  /* Full bleed on the phone, asked for: the button runs the copy block's own
+     measure rather than the 216 the frame draws it at. min(88vw,378px) is
+     .closing-copy's width said again — the two are siblings in a centred
+     column, so matching the number is what puts their edges in line; there is
+     no parent box here whose width either of them could inherit.
+     The height is untouched at the frame's 50: 18 of type on line-height 1
+     between 16 and 16 of padding. The 24 across is now only a floor under the
+     label, which the width has taken over from. 65 above it, not 12vw (47 at
+     390). */
+  .closing-cta{margin-top:65px;padding:16px 24px;font-size:18px;width:min(88vw,378px)}
 }
 /* The 440px rule that used to hide the rule/wordmark here is gone: it existed
    because the nav carried its full CTA down to that width and the label

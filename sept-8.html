@@ -725,7 +725,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      runs — so it stays rather than becoming this screen's own number. */
   .solution-preview #solStateA .sol-headline{font-size:min(11.28vw,44px);line-height:1.03;letter-spacing:-.0172em}
   .solution-preview #solStateA .sol-body{margin-top:37px;font-size:clamp(1rem,4.4vw,1.15rem);line-height:1.3;opacity:1}
-  .solution-preview .biz-cta{width:auto;min-width:0;height:auto;margin-top:74px;padding:1rem 1.6rem;font-size:1rem;opacity:1}
+  /* Full bleed on the phone, asked for. 100% and not a measure of its own:
+     this button is in normal flow inside #solStateA, which already carries the
+     page's phone gutter as padding (min(6.2vw,27px)) and the 428 cap, so its
+     content box IS the margin-to-margin measure the headline and body run on.
+     The width the wide rule sets — 14.11vw on a 10.5rem floor — is what has to
+     be cleared for that to take, hence width:100% where it said auto. */
+  .solution-preview .biz-cta{width:100%;min-width:0;height:auto;margin-top:74px;padding:1rem 1.6rem;font-size:1rem;opacity:1}
   .solution-preview .biz-note{max-width:none;margin-top:37px;font-size:.62rem;opacity:1}
   /* Asked for: neither of the two stat cards — the balance chart and the claimed
      offers count under it — appears on the phone. They are one export, so the
@@ -796,7 +802,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .sol-how .ent-copy{position:static;width:auto;max-width:428px;padding:0 min(6.2vw,27px)}
   .sol-how .ent-title{margin-bottom:1.2rem;font-size:clamp(2rem,8.7vw,2.4rem)}
   .sol-how .ent-body{width:auto;margin-bottom:1.6rem;font-size:clamp(.9rem,4vw,1rem)}
-  .sol-how .ent-cta{padding:1rem 1.4rem;min-height:0;font-size:1rem}
+  /* Full bleed, the same way and for the same reason as .biz-cta above: .ent-copy
+     carries the gutter as padding, so 100% is margin to margin. */
+  .sol-how .ent-cta{width:100%;padding:1rem 1.4rem;min-height:0;font-size:1rem}
   /* Figma 3783:22580, the Your DSP card. The board is 390 wide, not the 402 a
      screenshot of it reports — that figure is two sibling frames overflowing
      the right edge, and the nav's 24 + 342 + 24 settles it. So the card is
