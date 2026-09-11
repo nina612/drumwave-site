@@ -1,0 +1,19 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dWallet — hero version 1</title>
+<!-- A stub, not a copy of the page. It exists because a query string is the one
+     part of a link that does not reliably survive the trip to a phone: a chat or
+     notes app can strip it from a shared URL, and Safari caches per-URL so an
+     older visit can be served back. Both failures look identical from the
+     outside — the two versions render the same, because both are really the
+     same one.
+     So the version is chosen HERE, by script, after the link has been opened,
+     where no app can have taken it off. The timestamp defeats the cache. -->
+<meta name="robots" content="noindex">
+<style>html{background:#070707;color:#777;font:14px -apple-system,system-ui,sans-serif}
+ body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh}</style>
+</head><body>
+<p>Loading version 1…</p>
+<script>location.replace('sept-3.html?hero=1&cb=' + Date.now());</script>
+<noscript><a href="sept-3.html?hero=1">Continue to version 1</a></noscript>
+</body></html>
