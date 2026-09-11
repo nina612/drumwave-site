@@ -948,6 +948,31 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   /* the same 15px margin the figure above it uses, and 42 off the bottom —
      which on the frame's 387 makes the block the 357 it draws, and puts its
      bottom on the frame's 1036.7 of 1080. */
+  /* --- THE RULER'S TAP TARGET ---
+     Asked for: easier to grab and drag, with the circle drawn exactly as it is.
+     Nothing here changes a painted pixel; it only changes where a touch counts.
+
+     Measured before: the band that actually answered a touch ran from 17px
+     above the circle's centre to 9px below it — TWENTY-SIX pixels, against the
+     44 a thumb wants. Two things made it that small. The track is 44 tall but
+     the rail sits 17 down, so only 27 of it is under the circle; and .track
+     carries margin-bottom:-26px, which pulls the age labels up INTO that lower
+     part, and .ages is a later sibling so it was painted on top and took the
+     touches. The circle looked like the target and was the one place you could
+     not reliably start from.
+
+     So: a transparent hit layer on the track, reaching 12 above it and 6 below,
+     and the track lifted over .ages so the labels stop intercepting. That is a
+     62px band centred on the circle — 29 above, 33 below — where there were 26.
+     It is a pseudo-element, so it is not a separate event target: a touch on it
+     arrives as a touch on .track and the existing x-mapping, which reads the
+     track's own box, is unaffected.
+
+     touch-action stays pan-y on the track, which is what keeps a vertical swipe
+     starting anywhere in this band scrolling the page rather than being eaten —
+     the mistake the note by .ctl records from the last time this area grew. */
+  .age-scene .track{z-index:2}
+  .age-scene .track::before{content:"";position:absolute;left:0;right:0;top:-12px;bottom:-6px}
   .age-scene .ctl{left:15px;right:15px;bottom:42px}
   /* the ruler's last tick lands at 352.27 of that 357, not on its right edge;
      the hairline under it does run the full width, as it does on the frame */
