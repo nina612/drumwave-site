@@ -719,6 +719,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      only decides where a line would wrap, and at 293 the longer ones do. The
      measure below stays wide enough that each line is the line it was written
      as, which is invisible against the frame and the point of the 73. */
+  /* --- WHY THE SCROLL WAS NEVER SMOOTH, EVEN WITH NOTHING PINNED ---
+     will-change does not mean "this may change". It means "give this its own
+     compositor layer and keep it there", and the base rules put it on every
+     .frame and every masked line: 42 elements here, 20 of them full-bleed
+     photographs. At 390x844 on a 3x phone one of those layers is 11.8MB, so the
+     stack is about 237MB of GPU memory held permanently — ten of it in
+     #ageFrames alone, which is exactly the screen reported as glitching.
+     iOS Safari has a hard budget for this. Past it, it discards layers and
+     re-rasterises them while the finger is moving, and re-rasterising a
+     full-screen photograph mid-scroll is the stutter and the apparent jumping.
+     No pin was needed for any of it, which is why removing every pin did not
+     finish the job.
+     The hint is wrong even where it is affordable: the browser promotes an
+     element on its own for the duration of an opacity or transform tween and
+     drops it afterwards, which is the behaviour wanted. Stated permanently, it
+     only takes the memory away from the scrolling. Off here; the wide layout,
+     which scrubs these frames on a machine with room to spare, keeps it. */
+  .frame{will-change:auto}
+  .ln > span{will-change:auto}
   #act1{--hero-bottom:15.17vh}
   /* 56 on all three statements, asked for. On vw so a narrower phone keeps the
      line structure rather than the pixels, reaching the 56 at the 390 the page
