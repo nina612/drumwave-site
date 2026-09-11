@@ -715,10 +715,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      copy stretching under type that has stopped growing. */
   .solution-preview #solStateA{transform:none;width:auto;max-width:428px;padding:111px min(6.2vw,27px) 0}
   /* 44 on 44.8, the one headline size this phone page runs — the 8.7vw clamp
-     was bottoming out at 33.93, which is also why "dWallet. Earn $200." held on
-     one line where the frame breaks it. */
-  /* 1.03 for the same reason as the wide rule: "$200." sets a $ under the
-     descenders above it, and 1.0182 is under the 1.02 that pair's ink needs. */
+     was bottoming out at 33.93. It had a second job, holding "dWallet. Earn
+     $200." on one line where the frame breaks it, and that line is now just
+     "dWallet."; the size stands on the frame's own 44. */
+  /* 1.03 stands too, though this headline no longer needs it: it was set
+     against the $ of "$200.", which in Titillium rises above the cap height and
+     wants 1.02 of the font size under the descenders above it. With the offer
+     gone there is no $ here to clear, and 1.03 is what the rest of the page
+     runs — so it stays rather than becoming this screen's own number. */
   .solution-preview #solStateA .sol-headline{font-size:min(11.28vw,44px);line-height:1.03;letter-spacing:-.0172em}
   .solution-preview #solStateA .sol-body{margin-top:37px;font-size:clamp(1rem,4.4vw,1.15rem);line-height:1.3;opacity:1}
   .solution-preview .biz-cta{width:auto;min-width:0;height:auto;margin-top:74px;padding:1rem 1.6rem;font-size:1rem;opacity:1}
@@ -953,7 +957,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <div class="sol-state" id="solStateA">
       <div class="sol-headline">
         <span class="ln"><span>Open a Business</span></span>
-        <span class="ln"><span>dWallet. Earn $200.</span></span>
+        <span class="ln"><span>dWallet.</span></span>
       </div>
       <p class="sol-body">Begin your data savings journey today.</p>
       <a class="biz-cta" href="#">Open a Business dWallet</a>
