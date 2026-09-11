@@ -2937,8 +2937,32 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // A now goes a little earlier and a little quicker, clearing at 1.36.
     tl.fromTo(solA, {yPercent:0}, {yPercent:-112, duration:.22, stagger:.04}, 1.10);
     tl.fromTo('#solStateA .sol-body', {opacity:.7}, {opacity:0, duration:.2}, 1.10);
-    tl.fromTo('#solutionPreview .sol-glow-l', {opacity:.4}, {opacity:0, duration:.3, ease:'power1.inOut'}, 1.15);
-    tl.fromTo('#solutionPreview .sol-glow-r', {opacity:.2}, {opacity:0, duration:.3, ease:'power1.inOut'}, 1.15);
+    // The blue casts leave with the copy that brought them in — on the WIDE
+    // build. The phone gets them back, and that is the whole of "make the offer
+    // arrive the way the statement does".
+    //
+    // Measured, the two headlines are already authored identically: both are
+    // fromTo(yPercent SOL_OUT -> 0, duration .3, stagger .08, power3.out), and
+    // on the phone both play in about a third of a second. What differed was
+    // never the words, it was the LIGHT behind them. "Introducing the Data
+    // Savings Plan" rises at .14 while the casts are coming up 0 -> .4 and .2,
+    // so it arrives onto a screen that is brightening. "Open an account" rose at
+    // 1.38 while the same casts were going .4 -> 0 across 1.15 to 1.45 — at 1.38
+    // they are already three quarters gone — so it arrived onto a screen going
+    // dark and finished on black. Same entrance, opposite lighting.
+    //
+    // So on the phone they dip out with the outgoing statement and come back up
+    // underneath the incoming one, on the same .5 and the same power1.out the
+    // opening uses, starting just before the words the way the opening does.
+    // The wide build keeps its clean corner: that screen has a third framing
+    // after it and the casts belong to the first.
+    const glowOut = withCards ? 1.15 : 1.10, glowOutDur = withCards ? .3 : .2;
+    tl.fromTo('#solutionPreview .sol-glow-l', {opacity:.4}, {opacity:0, duration:glowOutDur, ease:'power1.inOut'}, glowOut);
+    tl.fromTo('#solutionPreview .sol-glow-r', {opacity:.2}, {opacity:0, duration:glowOutDur, ease:'power1.inOut'}, glowOut);
+    if(!withCards){
+      tl.fromTo('#solutionPreview .sol-glow-l', {opacity:0}, {opacity:.4, duration:.5, ease:'power1.out'}, 1.34);
+      tl.fromTo('#solutionPreview .sol-glow-r', {opacity:0}, {opacity:.2, duration:.5, ease:'power1.out'}, 1.34);
+    }
     // The card used to ease up 3.33vh here, which is what gave it two different y
     // values across the two framings. It rests at the risen height now (see
     // .sol-card's top) and does not move between them at all.
@@ -3059,19 +3083,36 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // back (see the cue's onLeaveBack). That is the trade this line asks for and
     // it is the right way round for a screen carrying the offer.
     //
-    // RUSH .15: past a seventh of the travel the handover does not animate at
-    // all. A reader that far in at speed was thrown past the line rather than
-    // crossing it at reading speed, and the .55s it takes is .55s they may not
-    // have — from there the offer is simply there.
-    const SOL_LINE = .06, SOL_EDGE = .08, SOL_RUSH = .15;
-    const solRender = pr => {
+    // THE RUSH IS A SPEED, NOT A POSITION — and that is the fix for "make the
+    // offer arrive the way the statement does".
+    //
+    // The two headlines have always been authored identically: both are
+    // fromTo(yPercent SOL_OUT -> 0, duration .3, stagger .08, power3.out). The
+    // reason the offer did not LOOK like the statement is that it was almost
+    // never animating. The rush was a position, .15, and the handover fires at
+    // LINE+EDGE = .14 — a window one per cent of the travel wide. Any reader
+    // crossing .14 was past .15 a frame or two later, so solRender killed the
+    // tween in flight and snapped the words into place. Measured: the statement
+    // arrives over five sampled frames, 72 -> [17,61] -> 0 on rising light,
+    // while the offer went 72 -> 0 between two samples with no cascade at all.
+    //
+    // Position was the wrong discriminator. What the rush is FOR is a reader who
+    // was thrown past the line rather than crossing it at reading speed, and the
+    // thing that distinguishes those is how fast they are moving. So it asks the
+    // trigger: reading-speed scrolling runs a few hundred px/s, a phone flick
+    // two to four thousand. Below the threshold the entrance plays in full;
+    // above it, or if they are somehow already half way through the section, the
+    // offer is simply there.
+    const SOL_LINE = .06, SOL_EDGE = .08, SOL_RUSH = .5, SOL_FAST = 1800;
+    const solRender = (pr, v) => {
+      const thrown = v > SOL_FAST || pr > SOL_RUSH;
       const want = solIdx === 0 ? (pr > SOL_LINE + SOL_EDGE ? 1 : 0)
                                 : (pr < SOL_LINE - SOL_EDGE ? 0 : 1);
-      if(want !== solIdx){ solGo(want, want === 1 && pr > SOL_RUSH); return; }
+      if(want !== solIdx){ solGo(want, want === 1 && thrown); return; }
       // Past halfway with the handover still running means the reader was thrown
       // past the line rather than crossing it at reading speed, and the .55 it
       // takes is .55 they may not have. From there it is simply finished.
-      if(want === 1 && pr > SOL_RUSH && solTween && solTween.isActive()){
+      if(want === 1 && thrown && solTween && solTween.isActive()){
         solTween.kill(); solTween = null; tl.pause(SOL_AT[1]);
       }
     };
@@ -3089,7 +3130,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       onLeaveBack: () => solGo(0, true)});
     const trig = ScrollTrigger.create({
       trigger:'#solution', start:'top top', end:'bottom bottom',
-      onUpdate: self => { solArrive(); solRender(self.progress); },
+      onUpdate: self => { solArrive(); solRender(self.progress, Math.abs(self.getVelocity())); },
       // The floor. If the screen is left going FORWARD with the statement still
       // up, the reader crossed the whole section faster than anything could be
       // read — so the screen is put on the offer outright, with no transition.
@@ -3099,7 +3140,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       onLeave: () => { if(solIdx === 0) solGo(1, true); }
     });
     tl.pause(0);
-    if(trig.isActive){ solArrive(); solRender(trig.progress); }
+    if(trig.isActive){ solArrive(); solRender(trig.progress, 0); }
 
     return () => {
       if(solTween) solTween.kill();
