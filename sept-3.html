@@ -1759,7 +1759,53 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   window.addEventListener('error', e => {
     window.__heroErr = (e.message || 'error') + ' @' + (e.lineno || '?');
   });
-  window.__heroBuild = 'slide';
+  window.__heroBuild = 'probe';
+
+  // ?probe=1 draws a small readout on the page itself and measures the run in
+  // situ. It exists because measuring this from inside an IFRAME does not work:
+  // a framed document gets its requestAnimationFrame throttled, GSAP's clock
+  // advances in large steps, and a perfectly good .35s slide completes between
+  // two rendered frames — so a sampler sees only the endpoints and reports
+  // "it is cutting" about an animation that is fine. That false negative was
+  // produced here before this was written. The only faithful place to measure a
+  // transition is the top-level page, running normally, on the device in
+  // question.
+  if(/(?:^|[?&#])probe=1(?:[&#]|$)/.test(location.search + location.hash)){
+    addEventListener('DOMContentLoaded', () => {
+      const box = document.createElement('div');
+      box.setAttribute('style', 'position:fixed;z-index:99999;left:8px;right:8px;top:8px;'+
+        'padding:10px 12px;border-radius:8px;background:rgba(0,0,0,.88);color:#eee;'+
+        'font:12px/1.45 -apple-system,system-ui,sans-serif;white-space:pre-line;'+
+        'border:1px solid rgba(255,255,255,.2)');
+      document.body.appendChild(box);
+      const offs = {}; let photoChanges = 0, prevPhotos = '';
+      const yOf = sp => { const t = getComputedStyle(sp).transform;
+        if(!t || t === 'none') return 0;
+        try { return Math.round(new DOMMatrix(t).m42); } catch(e){ return 0; } };
+      setInterval(() => {
+        const st = ['#act1 .hero-h', '#sayA', '#sayB'].map(q => document.querySelector(q));
+        st.forEach(e => { if(!e) return;
+          Array.prototype.forEach.call(e.querySelectorAll('.ln > span'), sp => {
+            if(getComputedStyle(sp.parentElement).display === 'none') return;
+            offs[yOf(sp)] = 1; }); });
+        const ph = Array.prototype.map.call(
+          document.querySelectorAll('#act1 > .frame, #act2 .frame'),
+          f => getComputedStyle(f).opacity).join();
+        if(prevPhotos && ph !== prevPhotos) photoChanges++;
+        prevPhotos = ph;
+        const vals = Object.keys(offs).map(Number).sort((a,b) => a - b);
+        const big = Math.max.apply(null, vals.map(Math.abs));
+        const mids = vals.filter(v => Math.abs(v) > 3 && Math.abs(v) < big - 3).length;
+        box.textContent =
+          'build ' + window.__heroBuild + '   ' + innerWidth + 'x' + innerHeight + '\n' +
+          'reduced motion: ' + (RM ? 'YES (this freezes movement)' : 'no') + '\n' +
+          'script error: ' + (window.__heroErr || 'none') + '\n' +
+          'photo updates: ' + photoChanges + '\n' +
+          'text offsets: ' + (vals.length > 14 ? vals.length + ' distinct' : vals.join(', ')) + '\n' +
+          'TEXT SLIDES: ' + (mids > 2 ? 'yes (' + mids + ' in-between values)' : 'NO - cutting');
+      }, 300);
+    });
+  }
 
   const RM_FORCED_OFF = /(?:^|[?&#])motion=on(?:[&#]|$)/.test(location.search + location.hash);
   const RM = !RM_FORCED_OFF &&

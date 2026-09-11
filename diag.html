@@ -14,11 +14,15 @@
  a{color:#6aa8ff;display:inline-block;margin-top:14px}
 </style></head><body>
 <h1>Hero diagnostic</h1>
-<p class="sub">Loads the real page below and reports what your phone does with it.</p>
+<p class="sub">Loads version 1 below and reports what your phone does with it.<br>
+  <b>For the text transition, use the probe link at the bottom instead</b> — a framed
+  page has its animation clock throttled, so timings measured in here are not
+  trustworthy.</p>
 <div id="rows"></div>
-<div id="verdict" class="wait">Testing… give it about six seconds.</div>
-<iframe id="f" src="sept-3.html?hero=2" title="hero under test"></iframe>
-<a href="sept-3.html?hero=2&motion=on">Open v2 with motion forced on →</a>
+<div id="verdict" class="wait">Testing… about six seconds.</div>
+<iframe id="f" src="sept-3.html?hero=1" title="hero under test"></iframe>
+<a href="sept-3.html?hero=1&amp;probe=1">v1 with the on-page probe →</a><br>
+<a href="sept-3.html?hero=2&amp;probe=1">v2 with the on-page probe →</a>
 <script>
 var rows = [], rm = matchMedia('(prefers-reduced-motion: reduce)').matches;
 function put(k, v, bad){ rows.push('<div class="row"><span class="k">'+k+
