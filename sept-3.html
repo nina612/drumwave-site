@@ -1798,7 +1798,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         const mids = vals.filter(v => Math.abs(v) > 3 && Math.abs(v) < big - 3).length;
         box.textContent =
           'build ' + window.__heroBuild + '   ' + innerWidth + 'x' + innerHeight + '\n' +
-          'reduced motion: ' + (RM ? 'YES (this freezes movement)' : 'no') + '\n' +
+          'version: v' + HERO_V + '\n' +
+          'reduced motion: ' + (RM ? 'YES - Low Power Mode or Settings > Accessibility >'
+                                     + ' Motion > Reduce Motion. Both versions slow down.'
+                                   : 'no') + '\n' +
           'script error: ' + (window.__heroErr || 'none') + '\n' +
           'photo updates: ' + photoChanges + '\n' +
           'text offsets: ' + (vals.length > 14 ? vals.length + ' distinct' : vals.join(', ')) + '\n' +
@@ -2512,13 +2515,26 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   //
   // What the setting is actually asking for is no MOTION: no travel, no zoom,
   // no parallax, nothing that slides across the screen. A slow cross-dissolve
-  // between still photographs is none of those. So under reduced motion every
-  // photograph holds 2.5s and dissolves over 1.0s, the statements cross-fade
-  // with no travel at all, and the images' zoom is removed outright below.
-  // Still and slow, rather than stopped.
-  const RM_HOLD = 2.5, RM_XFADE = 1.0;
-  const holdFor  = t => RM ? RM_HOLD  : (classOf(t) === 'busy' ? HOLD_BUSY : HOLD_SIMPLE);
-  const xfadeFor = t => RM ? RM_XFADE : (classOf(t) === 'busy' ? XF_BUSY   : XF_SIMPLE);
+  // between still photographs is none of those. So under reduced motion there
+  // is no travel and no zoom at all — but the run still moves, slowly.
+  //
+  // And it stays the version it is. The first cut of this held every photograph
+  // for a flat 2.5s no matter which version was loaded, which quietly collapsed
+  // v1 and v2 into one animation — the entire difference between them IS their
+  // pacing. On a desktop the two were obviously different; on a phone in Low
+  // Power Mode they were pixel-for-pixel the same, which is exactly how it was
+  // reported. So reduced motion now slows each version down rather than
+  // replacing it: v1 (the deliberate one) goes slower still, v2 keeps its
+  // per-image rhythm with every hold floored to a full second so nothing
+  // flickers past. Calm, and still two different things.
+  const RM_HOLD_SIMPLE = HERO_V === 1 ? 3.5 : 1.0,
+        RM_HOLD_BUSY   = HERO_V === 1 ? 3.5 : 1.8,
+        RM_XF_SIMPLE   = HERO_V === 1 ? 1.2 : .8,
+        RM_XF_BUSY     = HERO_V === 1 ? 1.2 : .8;
+  const holdFor  = t => classOf(t) === 'busy' ? (RM ? RM_HOLD_BUSY   : HOLD_BUSY)
+                                              : (RM ? RM_HOLD_SIMPLE : HOLD_SIMPLE);
+  const xfadeFor = t => classOf(t) === 'busy' ? (RM ? RM_XF_BUSY   : XF_BUSY)
+                                              : (RM ? RM_XF_SIMPLE : XF_SIMPLE);
   // "Own and save your data" is the one statement of the three with only two
   // photographs, and the only one that crosses between them on a dissolve
   // rather than a cut. A fifth of a second spent that whole dissolve in a
@@ -2767,7 +2783,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // A leg's HOLD belongs to the photograph that is up during it — the one that
     // cut in at the PREVIOUS mark. Its crossfade belongs to the photograph it is
     // fading INTO, at marks[k], because that is the one being resolved.
-    const legHold  = (i, k) => (i === 0 && k === 1) ? FIRST_HOLD
+    // The opening photograph takes the same reduced-motion floor as the rest,
+    // or v2's first frame would still flick past in .46s on a phone in Low
+    // Power Mode while every frame after it held for a second.
+    const firstHold = RM ? Math.max(FIRST_HOLD, RM_HOLD_SIMPLE) : FIRST_HOLD;
+    const legHold  = (i, k) => (i === 0 && k === 1) ? firstHold
                                                     : holdFor(phraseFrames[i][k - 1]);
     const legXfade = (i, k) => cutAt(phraseFrames[i][k]) ? xfadeFor(phraseFrames[i][k]) : 0;
     const bandRun = i => { let t = 0;
