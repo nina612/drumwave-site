@@ -2424,7 +2424,29 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // any overlap at all is two of them printed through each other — there is no
     // "faint enough to be safe" when the ink is in the same place. .45 out, .45
     // lag, .65 in: a clean dissolve through, and a little slower than it was.
-    const OUT_TIME = .45, IN_TIME = .65, IN_LAG = .45;
+    // v1's statements ARRIVE — asked for, "like it's coming into the screen".
+    // v2 keeps the pure dissolve it was tuned to: nothing travels there, and
+    // withY below leaves its tweens without a y property at all, so v2's
+    // elements still carry no transform rather than a no-op matrix.
+    //
+    // 56 in and 40 out. Large enough to read as coming from somewhere — these
+    // sit 15vh off the bottom, so 56 is most of the gap under them — and small
+    // enough that the words stay legible the whole way. The scrub-era version of
+    // this travelled .6 of the viewport, 487px, and that is what not to go back
+    // to: at that distance the eye follows the motion instead of reading.
+    const RISE     = HERO_V === 1 ? 56 : 0,   // where the incoming one comes from
+          OUT_LIFT = HERO_V === 1 ? 40 : 0;   // and where the outgoing one goes
+    const withY = (o, y) => RISE ? Object.assign({}, o, {y}) : o;
+
+    // STILL SEQUENTIAL BY CONSTRUCTION, and that matters more with movement, not
+    // less: the in starts exactly when the out ends (IN_LAG >= OUT_TIME), so the
+    // two are never on screen together. These three sentences share one line —
+    // there is no "faint enough to be safe" when the ink is in the same place.
+    const OUT_TIME = HERO_V === 1 ? .4  : .45,
+          IN_TIME  = HERO_V === 1 ? .75 : .65,
+          IN_LAG   = HERO_V === 1 ? .4  : .45,
+          IN_FAST  = HERO_V === 1 ? .6  : .45,   // the opening one, which has no lag
+          IN_EASE  = HERO_V === 1 ? 'power2.out' : 'power1.out';
 
     // A gsap.set does NOT kill a tween already running on the same element: it
     // writes the value once and the tween carries on writing over it on the very
@@ -2442,7 +2464,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const park = keep => phraseEl.forEach((el, k) => {
       if(keep.indexOf(k) >= 0) return;
       gsap.killTweensOf(el);
-      gsap.set(el, {opacity:0});
+      gsap.set(el, withY({opacity:0}, RISE));   // dark, and waiting below
     });
 
     let shown = 0;
@@ -2465,17 +2487,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       if(immediate){
         park([i]);
         gsap.killTweensOf(phraseEl[i]);
-        gsap.set(phraseEl[i], {opacity:1});
+        gsap.set(phraseEl[i], withY({opacity:1}, 0));
         upIdx = i;
       } else {
         park([i, upIdx]);                         // everything but the two in the handover
         if(upIdx >= 0 && upIdx !== i)
-          gsap.to(phraseEl[upIdx], {opacity:0, duration:OUT_TIME, ease:'power1.in',
-                                    overwrite:true});
+          gsap.to(phraseEl[upIdx], withY({opacity:0, duration:OUT_TIME, ease:'power1.in',
+                                          overwrite:true}, -OUT_LIFT));
         const d = lag === undefined ? IN_LAG : lag;
-        gsap.fromTo(phraseEl[i], {opacity:0},
-          {opacity:1, duration:d ? IN_TIME : .45, delay:d, ease:'power1.out',
-           overwrite:true});
+        gsap.fromTo(phraseEl[i], withY({opacity:0}, RISE),
+          withY({opacity:1, duration:d ? IN_TIME : IN_FAST, delay:d, ease:IN_EASE,
+                 overwrite:true}, 0));
         upIdx = i;
       }
       // The photographs follow the statement that is up, asked for: a
