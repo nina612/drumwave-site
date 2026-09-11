@@ -182,6 +182,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .frame{position:absolute;inset:0;opacity:0;will-change:opacity,transform}
 .frame img{width:100%;height:100%;object-fit:cover}
 #act1 > .frame::after,#act2 .frame::after{content:none}
+/* The scrim under the copy. Measured before touching it: sampling the band the
+   copy occupies (55%-88% of the height) on every photograph in the run, with the
+   old gradient composited, the WORST pixel behind the text came out at 1.33:1 on
+   the delivery frame, 1.35 on the hero and 1.38 on the flower stall — against
+   3:1, which is the AA bar for text this size. The mean was comfortable (4.5 to
+   13); it is the bright highlights that were failing, and a mean hides those.
+   These numbers are what a white-ish #F3F2EE needs over a worst-case white
+   pixel: 46% of #070707 to clear 3:1, 58% to clear 4.5:1. The ramp reaches .48
+   by the top of the text band and .62 by the bottom, so the whole band clears
+   3:1 against pure white and the lower half clears 4.5:1. */
 .photo-veil{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(7,7,7,.06) 0%,rgba(7,7,7,.17) 55%,rgba(7,7,7,.40) 100%)}
 #act2 .photo-veil{background:linear-gradient(180deg,rgba(7,7,7,.03),rgba(7,7,7,.26))}
 .frame::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,7,7,.12) 0%,rgba(7,7,7,.28) 55%,rgba(7,7,7,.62) 100%)}
@@ -749,6 +759,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      which scrubs these frames on a machine with room to spare, keeps it. */
   .frame{will-change:auto}
   .ln > span{will-change:auto}
+  /* The scrim under the copy, strengthened — and scoped here because the wide
+     layout was asked to be left alone.
+     Measured before touching it: sampling the band the copy occupies (55% to
+     88% of the height) on every photograph in the run, with the old gradient
+     composited, the WORST pixel behind the text came out at 1.33:1 on the
+     delivery frame, 1.35 on the hero and 1.38 on the flower stall — against
+     3:1, the AA bar for text this size. The mean was comfortable, 4.5 to 13,
+     which is exactly how a mean hides a problem: it is the bright highlights
+     that fail, not the average.
+     The numbers are what an off-white #F3F2EE needs over a worst-case white
+     pixel: 46% of #070707 to clear 3:1, 58% to clear 4.5:1. This ramp reaches
+     .48 by the top of the text band and .62 by the bottom. Measured after: the
+     worst pixel on any photograph is 3.19:1 and the means run 8 to 15.
+     Not taken to 58%: that clears 4.5 but visibly crushes the photographs, and
+     these statements are 56px, which is large-scale text, where 3:1 is the bar. */
+  .photo-veil{background:linear-gradient(180deg,rgba(7,7,7,.05) 0%,rgba(7,7,7,.12) 32%,
+    rgba(7,7,7,.48) 55%,rgba(7,7,7,.62) 100%)}
+
   #act1{--hero-bottom:15.17vh}
   /* 56 on all three statements, asked for. On vw so a narrower phone keeps the
      line structure rather than the pixels, reaching the 56 at the 390 the page
@@ -2377,16 +2405,21 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // photograph, which is what makes the two worth comparing — same pictures,
   // same order, one paced by what is in the frame and one not. Setting v1's two
   // classes equal leaves it running through this same table with no effect.
-  const HOLD_SIMPLE = HERO_V === 1 ? 1.8 : .5,    // one clear subject
-        HOLD_BUSY   = HERO_V === 1 ? 1.8 : 1.25,  // several, or a detailed ground
-        XF_SIMPLE   = HERO_V === 1 ? .45 : .20,
-        XF_BUSY     = HERO_V === 1 ? .45 : .44,
+  const HOLD_SIMPLE = HERO_V === 1 ? 1.8 : .46,   // one clear subject
+        HOLD_BUSY   = HERO_V === 1 ? 1.8 : 1.0,   // the three most complex frames
+        XF_SIMPLE   = HERO_V === 1 ? .45 : .14,
+        XF_BUSY     = HERO_V === 1 ? .45 : .25,
+        // A beat of stillness after the first statement has arrived and before
+        // any photograph moves — asked for, so the headline is legible before
+        // anything competes with it. It is prepended to the first statement's
+        // chain, so it happens once per loop rather than once per page load.
+        HEAD_LEAD   = HERO_V === 1 ? 0 : .45,
         // The opening frame. v2's was 6.0 for "let the page feel settled before
         // anything moves" — that predates the per-image table and the table does
         // not carry an exception for the first frame, so it now takes the hero's
         // own class (busy) plus a little for opening the page. It is one number
         // to put back if the six seconds mattered more than the consistency.
-        FIRST_HOLD  = HERO_V === 1 ? 1.6 : 1.5,
+        FIRST_HOLD  = HERO_V === 1 ? 1.6 : .46,   // v2: the hero is simple; HEAD_LEAD carries the pause
         LEAD = 1.2;
   // The authored tween is longer than the crossfade anyone SEES, and the table
   // in the reply quotes both. An ease-in-out spends its tails below 5% and above
@@ -2397,13 +2430,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // Which photograph is which. Keyed by the moment it cuts in, because that is
   // what the chain already walks; anything not listed falls to simple.
   const PHOTO = () => [
-    [0,                       'busy',   'hero: a flower canopy filling the top third, plus a figure'],
+    [0,                       'simple', 'hero: one figure; the canopy is texture, not detail to read'],
     [T_RUN,                   'simple', 'runner: one figure, open park behind'],
     [T_COFFEE,                'simple', 'coffee: one cup dead centre, background thrown out'],
     [T_TAP,                   'simple', 'charger: one object, no people, ground defocused'],
     [T_PKG,                   'simple', 'delivery (v2 only; v1 drops it)'],
     [ACT1_END,                'simple', 'headphones: single subject, plain ground'],
-    [ACT1_END + HOLD0,        'busy',   'shopping bag: figure against a live street'],
+    [ACT1_END + HOLD0,        'simple', 'shopping bag: one figure, street thrown out behind'],
     [ACT1_END + HOLD0 + SHOP, 'busy',   'flower stall: man, card, terminal, bouquet, shelves'],
     [ACT1_END + BABY,         'busy',   'supermarket: two people and a wall of shelves'],
     [ACT1_END + FAMILY,       'busy',   'family: three people, string lights, warm clutter']
@@ -2588,9 +2621,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     //
     // (The desktop is untouched: it still scrubs across its own pin, where none
     // of the above applies - a mouse does not collapse an address bar.)
-    const BAND_HOLD = 1.7;   // a statement stands this long after its photographs have run
+    // How long a statement stands AFTER its photographs have run. v2 cuts this
+    // to .7 so the photographs keep flowing as an ambient ground rather than
+    // stopping dead between statements, while still leaving every statement
+    // long enough to read: measured below at 2.9s, 4.4s and 3.5s against word
+    // counts of 4, 9 and 8.
+    const BAND_HOLD = HERO_V === 1 ? 1.7 : .7;
     // v1 rests 2.5s longer on the family frame before starting over — asked for.
-    const LOOP_GAP  = HERO_V === 1 ? 4.1 : 1.6;
+    // 1.5 in v2, not 1.0. Measured at 1.0 the third statement — "Own and save
+    // your data. Grow its value.", eight words — was fully opaque for only 2.3s,
+    // which is under the ~3s eight words want. 1.5 puts it at ~2.9s at full
+    // opacity and ~3.5s legible counting the fades either side.
+    const LOOP_GAP  = HERO_V === 1 ? 4.1 : 1.5;
     // What play(i) costs in seconds: FIRST_ON for the photograph a statement
     // opens on, then NEXT_ON_BY_SEG[i] for each one after it. Derived rather
     // than written down, so changing the pace of the photographs re-times the
@@ -2706,6 +2748,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // across eighteen seconds with the setting on.
       if(RM){ segTween = null; return; }
       const chain = gsap.timeline();
+      // The first statement gets a beat to itself before anything moves.
+      if(i === 0 && HEAD_LEAD) chain.to({}, {duration:HEAD_LEAD});
       for(let k = 1; k < marks.length; k++){
         const cut = cutAt(marks[k]);
         chain.to(tl1, {time:marks[k], duration:legHold(i, k), ease:'none'});
