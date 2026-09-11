@@ -622,6 +622,34 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    a 1920 container is restated in phone terms, since 1.6667cqw of 390 is 6px.
    ============================================================ */
 @media (max-width:760px){
+  /* --- NATIVE SNAP, AND WHY IT IS `proximity` AND NOT `mandatory` ---
+     There was never any snap on this page: no scroll-snap-type, no
+     scroll-snap-align, no scroll library, no wheel/touch/scroll listener and no
+     preventDefault anywhere in the file. What the bouncing actually was is in
+     the note below this one and in the two commits before it — a GSAP pin on the
+     opening run, 23 elements holding permanent compositor layers, and 22
+     full-screen JPEGs decoding on the main thread.
+     So this adds snap rather than fixing it, and it is deliberately the gentle
+     kind. `mandatory` means the scroller must always come to rest ON a snap
+     point, and that is only safe when every section is exactly one screen. Here
+     one is: measured at 375x812, #act1 is 812 (1.00 screens) but #solution is
+     3676 (4.53) and #how is 1755 (2.16). Mandatory across those would make the
+     middle of the plan screen and most of the FAQ unreachable — the scroller
+     would drag the reader off them to the nearest boundary, which is precisely
+     the "it auto-corrects itself" this is meant to remove.
+     `proximity` engages only when the reader comes to rest NEAR a boundary, so a
+     screen-height section clicks into place and a long one is read normally.
+     scroll-snap-stop is deliberately NOT set either: `always` forbids a gesture
+     from crossing more than one snap point, which turns a flick into a fight.
+     It goes on `html` and not `body`. body carries overflow-x:hidden, which
+     makes body a scroll container that never scrolls — measured, snap declared
+     there does nothing at all (120 stayed 120), while on html it works (120
+     pulled back to 0, 700 carried on to 812). */
+  html{scroll-snap-type:y proximity}
+  /* only the boxes that genuinely begin a screen — not the tall content inside
+     them, which would put snap points mid-paragraph */
+  .act,#how{scroll-snap-align:start}
+
   /* --- WHY THE SCROLL WAS NOT SMOOTH ---
      will-change does not mean "this may change". It means "give this its own
      compositor layer and keep it there", and the base rules put it on every
