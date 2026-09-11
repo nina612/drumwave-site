@@ -999,7 +999,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      And `inset:auto` has to come BEFORE `top:0`, not after: it is the shorthand,
      so written second it resets the top it was meant to leave alone — which was
      the other half of the same measurement. */
-  #solution{--sol-screen:100vh;height:calc(var(--sol-screen) * 2);overflow:visible}
+  /* THREE screens, not two, and the arithmetic is the point. A sticky box one
+     screen tall inside a section N screens tall travels (N-1) screens before it
+     releases — so a two-screen section gave exactly ONE screen of travel, and
+     the offer only held the back half of it. Three gives two screens of travel,
+     and with the line at .15 the offer holds better than 1.7 of them. Asked for:
+     the offer must be on screen at any scroll speed, and the only thing that
+     buys that without holding the page still is distance it is up for. */
+  #solution{--sol-screen:100vh;height:calc(var(--sol-screen) * 3);overflow:visible}
   .solution-preview{position:sticky;inset:auto;top:0;
     height:var(--sol-screen);overflow:hidden}
   .solution-preview #solStateA,
@@ -3006,7 +3013,29 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // ~90 the address bar moves, which is the number it exists to beat. It is
     // also the lag: how far past the line the reader travels before the screen
     // answers. Smaller answers sooner, larger is steadier.
-    const SOL_LINE = .32, SOL_EDGE = .1, SOL_RUSH = .55;
+    // .06, where this was .32 and then .15. The statement does not need travel
+    // inside the section, because it already has the whole APPROACH: it is cued
+    // at 85% of the viewport, so it is whole and standing for roughly a screen
+    // of scroll before the sticky box even engages. Everything after that is
+    // the offer's, which is what "the offer must be shown at any scroll speed"
+    // actually buys — the only thing that keeps something on screen through a
+    // throw, short of holding the page still, is the distance it is up for.
+    // The handover lands about 200px into the travel and the offer then holds
+    // the remaining ~1220, better than 85 per cent of it.
+    //
+    // EDGE stays .08 — ~115px here, still wider than the ~90 the address bar
+    // moves, which is the number it exists to beat. It has a second effect at
+    // this line worth stating plainly: the backward threshold is .06 - .08,
+    // which is below zero, so once the offer is up scrolling back inside the
+    // section keeps it up. Only leaving the section entirely puts the statement
+    // back (see the cue's onLeaveBack). That is the trade this line asks for and
+    // it is the right way round for a screen carrying the offer.
+    //
+    // RUSH .15: past a seventh of the travel the handover does not animate at
+    // all. A reader that far in at speed was thrown past the line rather than
+    // crossing it at reading speed, and the .55s it takes is .55s they may not
+    // have — from there the offer is simply there.
+    const SOL_LINE = .06, SOL_EDGE = .08, SOL_RUSH = .15;
     const solRender = pr => {
       const want = solIdx === 0 ? (pr > SOL_LINE + SOL_EDGE ? 1 : 0)
                                 : (pr < SOL_LINE - SOL_EDGE ? 0 : 1);
@@ -3032,7 +3061,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       onLeaveBack: () => solGo(0, true)});
     const trig = ScrollTrigger.create({
       trigger:'#solution', start:'top top', end:'bottom bottom',
-      onUpdate: self => { solArrive(); solRender(self.progress); }
+      onUpdate: self => { solArrive(); solRender(self.progress); },
+      // The floor. If the screen is left going FORWARD with the statement still
+      // up, the reader crossed the whole section faster than anything could be
+      // read — so the screen is put on the offer outright, with no transition.
+      // It cannot un-skip what has already gone past, but it means the smallest
+      // scroll back finds the offer rather than the statement, and that the
+      // section is never left in a state the reader has already travelled past.
+      onLeave: () => { if(solIdx === 0) solGo(1, true); }
     });
     tl.pause(0);
     if(trig.isActive){ solArrive(); solRender(trig.progress); }
