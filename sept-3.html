@@ -2156,114 +2156,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // other — asked for.
   const NEXT_ON_BY_SEG = [NEXT_ON, NEXT_ON, 1.8];
 
-  // --- ONE SWIPE, ONE STEP ---
-  //
-  // The plan screen's rule on a phone: its two framings hand over on a swipe,
-  // one framing to a gesture whatever the gesture's length. That is the whole
-  // of it, and it is deliberately less than it used to be.
-  //
-  // WHAT CAME OUT, AND WHY. This used to hold the page still as well: while a
-  // framing was still ahead, the pinned section carried `touch-action: none`,
-  // so the reader could not scroll at all until they had stepped to the end.
-  // On the opening run that was harmless - it sat at scroll 0, where there is
-  // nothing above to scroll back to - but this screen has the whole page above
-  // it, and touch-action cannot be told a direction. It is on or it is off, and
-  // it is read when a gesture STARTS, before anything knows which way the thumb
-  // is about to go.
-  //
-  // So coming back UP the page: the reader enters the section on the second
-  // framing, their first upward swipe steps back to the first framing, the lock
-  // snaps on behind them - and now nothing pans, in either direction, until
-  // they swipe DOWN again. Reported exactly as it behaves: "if I scroll past it
-  // it's hard to scroll back up."
-  //
-  // The lock is gone rather than made cleverer, because it was solving a
-  // problem this screen does not have. It existed so that scroll DISTANCE could
-  // not skip a step - but on a phone every scroll is a touch gesture, so the
-  // count and the scroll advance together on their own, and the pin gives the
-  // two framings their room. What is left cannot trap anyone: the page pans
-  // whenever the reader pans it, and a swipe also happens to turn the page of
-  // the screen they are on.
-  //
-  // el   is still taken, and still cleared on teardown, so nothing is left
-  //      holding a touch-action an earlier build set.
-  const makeSwipeSteps = (el, count, onStep) => {
-    // How far a finger travels before a drag counts as a swipe. Small enough
-    // that a real swipe always passes it on its first move, large enough that a
-    // tap or a thumb settling on the glass does not.
-    const SWIPE_PX = 14;
-    // A trackpad sends a burst of wheel events for one gesture and then keeps
-    // sending them as the momentum decays. A gesture is over after this much
-    // quiet, and everything inside the burst belongs to the swipe that started
-    // it.
-    const WHEEL_GAP = 260;
-    // The phone's nav panel opens over this section, and a thumb scrolling
-    // inside it is not a swipe at the screen underneath.
-    const menuPanel = $('#navMenuPanel');
-    const menuOpen = () => !!(menuPanel && menuPanel.classList.contains('open'));
-
-    let idx = 0, trig = null;
-    const live = () => !!(trig && trig.isActive) && !menuOpen();
-    const canStep = dir => dir > 0 ? idx < count - 1 : idx > 0;
-    const step = dir => {
-      idx = Math.min(count - 1, Math.max(0, idx + dir));
-      onStep(idx, false);
-    };
-
-    // TOUCH. Passive, and nothing is preventDefault-ed: these listeners only
-    // read which way the thumb went. The page's own scrolling is never touched.
-    let tY = 0, tLive = false, tSpent = true;
-    const onTouchStart = e => {
-      tLive = live() && e.touches.length === 1;
-      tSpent = false;
-      if(tLive) tY = e.touches[0].clientY;
-    };
-    const onTouchMove = e => {
-      if(!tLive || tSpent || !e.touches.length) return;
-      const dy = tY - e.touches[0].clientY;     // + is a swipe up, which is forward
-      if(Math.abs(dy) < SWIPE_PX) return;
-      tSpent = true;                            // one step per gesture, whatever is left of it
-      const dir = dy > 0 ? 1 : -1;
-      if(canStep(dir)) step(dir);
-    };
-    const onTouchEnd = () => { tLive = false; };
-
-    // WHEEL, for a trackpad or a mouse in a window this narrow. Also passive
-    // now: it used to preventDefault for the whole burst, which is the same
-    // trap as the touch-action lock wearing different clothes.
-    let wLast = -1e9;
-    const onWheel = e => {
-      if(!live()) return;
-      const now = performance.now();
-      if(now - wLast <= WHEEL_GAP){ wLast = now; return; }
-      wLast = now;
-      const dir = e.deltaY > 0 ? 1 : -1;
-      if(canStep(dir)) step(dir);
-    };
-
-    addEventListener('touchstart', onTouchStart, {passive:true});
-    addEventListener('touchmove',  onTouchMove,  {passive:true});
-    addEventListener('touchend',   onTouchEnd,   {passive:true});
-    addEventListener('touchcancel',onTouchEnd,   {passive:true});
-    addEventListener('wheel',      onWheel,      {passive:true});
-
-    return {
-      // the trigger whose isActive decides whether a gesture here means anything
-      bind: t => { trig = t; },
-      index: () => idx,
-      // put the screen on a step outright, no transition - arrival, and reset
-      set: i => { idx = Math.min(count - 1, Math.max(0, i)); onStep(idx, true); },
-      destroy: () => {
-        removeEventListener('touchstart', onTouchStart);
-        removeEventListener('touchmove',  onTouchMove);
-        removeEventListener('touchend',   onTouchEnd);
-        removeEventListener('touchcancel',onTouchEnd);
-        removeEventListener('wheel',      onWheel);
-        if(el) el.style.touchAction = '';
-      }
-    };
-  };
-
   const buildRunPin = phone => {
     if(!phone){
       const runSnap = runStops.map(t => t / tl1.duration()).concat([1]);
@@ -3006,19 +2898,29 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     fitSolHow();
     const tl = buildSolTl(false);
 
-    // NOT SCRUBBED. Asked for, and it is the same complaint the opening run
-    // had: a scrubbed pin plays backwards whenever the scroll goes backwards,
-    // and on a phone the scroll goes backwards without the reader — iOS shifts
-    // it about ninety pixels on its own when the address bar collapses, and a
-    // pin's length is re-measured on the refresh that follows. Both of those
-    // read as the section reversing toward its start with nobody touching it.
+    // NOT SCRUBBED, AND NOT SWIPED EITHER. It plays itself, the way the
+    // opening run does.
     //
-    // So the two framings are stepped, one swipe to a framing (see
-    // makeSwipeSteps): the reader arrives and
-    // "Introducing the Data Savings Plan" comes up; one swipe and it hands over
-    // to "Open an account, request your data, and earn $25."; the swipe after
-    // that scrolls the page on. The screen cannot move in between, so there is
-    // nothing for a toolbar or a refresh to play backwards.
+    // The scrub went first, and for the reason the run's did: a scrubbed pin
+    // plays backwards whenever the scroll goes backwards, and on a phone the
+    // scroll goes backwards without the reader — iOS shifts it about ninety
+    // pixels when the address bar collapses, and a pin's length is re-measured
+    // on the refresh that follows. Both read as the section reversing with
+    // nobody touching it.
+    //
+    // What replaced it was a swipe, one gesture to a framing, held in place by
+    // touch-action while a framing was still ahead. That lock had to go — it
+    // trapped a reader coming back UP the page, since touch-action cannot be
+    // told a direction (see makeSwipeSteps' own note, now deleted with it).
+    // And taking the lock off broke the other end: with nothing holding the
+    // page, one hard flick crosses the whole pin, so the gesture that was meant
+    // to bring "Open an account, request your data, and earn $25." up carried
+    // the reader past the section instead and they never saw it. Reported as
+    // "it is also not scrolling to open an account".
+    //
+    // Those two are the same screen pulling in opposite directions: a gesture
+    // cannot both turn the page of this screen and scroll the page it is on.
+    // So it does not have to. The reader scrolls; the screen tells itself.
     //
     // The two framings' own resting moments on this timeline. A is whole from
     // .86 and does not start leaving until 1.10, so 1.0 sits in the middle of
@@ -3027,71 +2929,74 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // to carry the last framing out of view unchanged under a scrub, and
     // nothing is scrubbing now.
     const SOL_AT = [1.0, 2.0];
-    // .8 for the arrival and 1.0 for the handover. The handover has further to
-    // go — A leaves over 1.10 to 1.36 and B arrives over 1.38 to 1.84, one
-    // after the other rather than across each other — so at the arrival's own
-    // pace it would read as the quicker of the two.
-    const SOL_IN = .8, SOL_SWAP = 1.0;
-    let solTween = null;
-    // immediate is the put-away and the rebuild, not a step the reader made:
+    // .8 for the arrival, 1.2 standing on it, .8 for the handover — so "Open an
+    // account" is whole 2.8s after the section is reached. It then STAYS. This
+    // is the one screen on the page with an offer and a button on it, so unlike
+    // the run it does not go round again: nothing takes the call to action back
+    // off the screen once it is up.
+    const SOL_IN = .8, SOL_HOLD = 1.2, SOL_SWAP = .8;
+    let solTween = null, solSeq = null, solIdx = 0;
+    // immediate is the put-away and the rebuild, not a beat the screen played:
     // framing 0 parks at the timeline's start so its reveal is still to come,
     // framing 1 at its own resting moment.
     const solGo = (i, immediate) => {
+      solIdx = i;
       if(solTween) solTween.kill();
       if(immediate){ solTween = null; tl.pause(i === 0 ? 0 : SOL_AT[i]); return; }
       tl.pause();
       solTween = gsap.to(tl, {time:SOL_AT[i], duration:i === 0 ? SOL_IN : SOL_SWAP,
                               ease:'power1.inOut'});
     };
-    const steps = makeSwipeSteps(solSec, 2, solGo);
-
-    // The first framing's reveal — the entrance this screen has always opened
-    // with — plays when the section is actually reached, and only if the reader
-    // has not already stepped past it. Coming back UP to a screen they left on
-    // the second framing finds it on the second framing, which is where they
-    // left it; only a return from above puts it away (onLeaveBack below).
-    const solArrive = () => {
-      if(steps.index() === 0 && tl.time() < .01) solGo(0, false);
+    const solStop = () => {
+      if(solSeq) solSeq.kill();
+      solSeq = null;
+      if(solTween) solTween.kill();
+      solTween = null;
     };
+    // Arrival: the reveal this screen has always opened with, then the handover
+    // on its own clock. Only from the start — coming back UP to a screen the
+    // reader left on the second framing finds it on the second framing, which
+    // is where they left it.
+    const solArrive = () => {
+      if(solIdx !== 0 || tl.time() >= .01 || solSeq) return;
+      solGo(0, false);
+      solSeq = gsap.timeline();
+      solSeq.call(() => solGo(1, false), null, SOL_IN + SOL_HOLD);
+    };
+    // ...and the guarantee, which the clock on its own cannot give. A reader
+    // moving quickly can cross this pin in less than the 2.8s above, and the
+    // whole point of the screen is the second framing. So if they are a third
+    // of the way through the pin and it has not started yet, it starts now
+    // rather than on its own schedule.
+    //
+    // This reads the progress, which is the thing every glitch on this page
+    // came from — but it reads it ONE WAY, as a floor under when the handover
+    // begins. It can only ever bring the second framing on sooner; it cannot
+    // take it off, cannot run backwards, and never touches the first framing.
+    // A toolbar shifting the scroll ninety pixels can at worst start the
+    // handover a moment early, which is not something anyone can see.
+    const SOL_GUARD = .33;
     const trig = ScrollTrigger.create({
-      // 120%, where this was 225. The pin no longer carries the animation, so
-      // its length is not the pace of anything. Two things it still decides,
-      // and they pull opposite ways.
-      //
-      // It is the runway AFTER the second framing — the distance the reader
-      // travels with it held once the lock lifts — which wants to be short,
-      // since nothing changes across it.
-      //
-      // And it is what catches a reader arriving on momentum. The lock cannot:
-      // touch-action is read when a gesture STARTS, and a flick thrown on the
-      // age screen above has already started somewhere the lock does not apply,
-      // so its momentum runs on into this section whatever this section says.
-      // If the pin is shorter than that momentum the reader crosses the whole
-      // plan screen without stopping in it. The opening run has no such
-      // problem — it begins at scroll 0, where nobody arrives moving — which is
-      // why 70% is right there and not here.
-      //
-      // 120% is a screen of momentum-catching and about a screen of held card
-      // afterwards. If a flick is still getting past this, it is the number to
-      // raise; if the card outstays its welcome on the way out, the one to cut.
-      // (Missing the screen is not losing it: scrolling back up re-enters the
-      // section and plays its arrival again, see onEnterBack.)
-      trigger:'#solution', start:'top top', end:'+=120%', pin:true,
+      // 150%, where this was 225 scrubbed and then 120 swiped. Nothing is paced
+      // by it any more; what it buys is time on screen. The handover finishes
+      // 2.8s in, and this is the distance that gives an ordinary scroll — and
+      // the guard above — room to get there before the section hands over.
+      trigger:'#solution', start:'top top', end:'+=150%', pin:true,
       onEnter:     solArrive,
       onEnterBack: solArrive,
+      onUpdate: self => { if(solIdx === 0 && self.progress > SOL_GUARD){ solStop(); solGo(1, false); } },
       // Gone back above the section entirely — put it away, so meeting it again
       // is an arrival rather than a screen already half spent.
-      onLeaveBack: () => { steps.set(0); if(solTween) solTween.kill(); tl.pause(0); }
+      onLeaveBack: () => { solStop(); solGo(0, true); }
     });
-    steps.bind(trig);
     // Queued at the timeline's own start. Nothing is shown until the section is
     // reached: a set() here would spend the reveal before the reader is there.
     tl.pause(0);
     if(trig.isActive) solArrive();
 
-    return () => { steps.destroy(); trig.kill(); tl.kill();
-      // the lock is an inline style on a live element, and the cards were moved
-      // into their own section; both are the other branch's to set again
+    return () => { solStop(); trig.kill(); tl.kill();
+      // the cards were moved into their own section, and an earlier build held
+      // a touch-action on this one; both are the other branch's to set again
       solSec.style.touchAction = ''; };
   });
 
