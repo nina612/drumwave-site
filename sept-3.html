@@ -1749,6 +1749,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // in ten seconds: if the run plays with ?motion=on and not without it, the
   // device is reporting reduced motion for one reason or the other.
   // ?motion=reduce still forces it on, for testing the frozen state.
+  // Anything this script throws is recorded rather than lost. The page had no
+  // error reporting at all, so a failure on a device I cannot open a console on
+  // was invisible — "it does not work" with nothing to go on. diag.html reads
+  // these two fields out of an iframe and shows them.
+  window.__heroErr = null;
+  window.addEventListener('error', e => {
+    window.__heroErr = (e.message || 'error') + ' @' + (e.lineno || '?');
+  });
+  window.__heroBuild = 'b4da075';
+
   const RM_FORCED_OFF = /(?:^|[?&#])motion=on(?:[&#]|$)/.test(location.search + location.hash);
   const RM = !RM_FORCED_OFF &&
              (window.matchMedia('(prefers-reduced-motion: reduce)').matches

@@ -1,35 +1,55 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>dWallet — device check</title>
+<title>dWallet — why isn't the hero animating?</title>
 <style>
- body{margin:0;padding:24px;background:#070707;color:#F3F2EE;
-   font:16px/1.5 -apple-system,BlinkMacSystemFont,system-ui,sans-serif}
- h1{font-size:20px;margin:0 0 20px}
- dl{margin:0} dt{color:#999;font-size:13px;margin-top:16px}
- dd{margin:2px 0 0;font-size:18px;font-weight:600}
- .bad{color:#ff6b6b} .good{color:#5be26b}
- p{color:#999;font-size:14px;margin-top:28px}
- a{color:#6aa8ff}
+ body{margin:0;padding:20px 18px 40px;background:#070707;color:#F3F2EE;
+   font:15px/1.5 -apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+ h1{font-size:19px;margin:0 0 4px} .sub{color:#888;font-size:13px;margin:0 0 22px}
+ .row{display:flex;justify-content:space-between;gap:14px;padding:11px 0;
+   border-bottom:1px solid rgba(255,255,255,.09)}
+ .k{color:#999;font-size:13px} .v{font-weight:600;text-align:right}
+ .bad{color:#ff6b6b} .good{color:#5be26b} .wait{color:#e8c95b}
+ #verdict{margin:24px 0 0;padding:14px;border-radius:10px;background:rgba(255,255,255,.06);font-size:14px}
+ iframe{width:100%;height:210px;border:1px solid rgba(255,255,255,.15);border-radius:10px;margin-top:20px}
+ a{color:#6aa8ff;display:inline-block;margin-top:14px}
 </style></head><body>
-<h1>Device check</h1>
-<dl id="out"></dl>
-<p id="verdict"></p>
-<p><a href="sept-3.html?hero=1">version 1</a> &nbsp;·&nbsp;
-   <a href="sept-3.html?hero=2">version 2</a><br>
-   <a href="sept-3.html?hero=2&amp;motion=on">version 2, forcing motion on</a></p>
+<h1>Hero diagnostic</h1>
+<p class="sub">Loads the real page below and reports what your phone does with it.</p>
+<div id="rows"></div>
+<div id="verdict" class="wait">Testing… give it about six seconds.</div>
+<iframe id="f" src="sept-3.html?hero=2" title="hero under test"></iframe>
+<a href="sept-3.html?hero=2&motion=on">Open v2 with motion forced on →</a>
 <script>
- var rm = matchMedia('(prefers-reduced-motion: reduce)').matches;
- var rows = [
-   ['Reduced motion reported', rm ? 'YES — this is why the hero is frozen' : 'no', rm],
-   ['Viewport width', innerWidth + 'px' + (innerWidth <= 760 ? ' (mobile layout)' : ' (desktop layout)'), innerWidth > 760],
-   ['Device pixel ratio', devicePixelRatio, false],
-   ['Touch points', navigator.maxTouchPoints, false]
- ];
- document.getElementById('out').innerHTML = rows.map(function(r){
-   return '<dt>' + r[0] + '</dt><dd class="' + (r[2] ? 'bad' : 'good') + '">' + r[1] + '</dd>';
- }).join('');
- document.getElementById('verdict').textContent = rm
-   ? 'iOS reports this when Reduce Motion is on in Settings > Accessibility > Motion, AND when Low Power Mode is on. Turn off Low Power Mode, or use the "forcing motion on" link below.'
-   : 'Nothing here explains a frozen hero — send this screen back.';
-</script>
-</body></html>
+var rows = [], rm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function put(k, v, bad){ rows.push('<div class="row"><span class="k">'+k+
+  '</span><span class="v '+(bad?'bad':'good')+'">'+v+'</span></div>');
+  document.getElementById('rows').innerHTML = rows.join(''); }
+put('Reduced motion reported', rm ? 'YES' : 'no', rm);
+put('Viewport', innerWidth+'×'+innerHeight, false);
+put('svh supported', (window.CSS && CSS.supports && CSS.supports('height','100svh')) ? 'yes' : 'NO', !(window.CSS&&CSS.supports&&CSS.supports('height','100svh')));
+var f = document.getElementById('f');
+f.onload = function(){
+  var w = f.contentWindow, d = f.contentDocument;
+  setTimeout(function(){
+    var err = w.__heroErr;
+    put('Build', w.__heroBuild || 'unknown (stale cache?)', !w.__heroBuild);
+    put('GSAP loaded', w.gsap ? 'yes' : 'NO', !w.gsap);
+    put('ScrollTriggers built', w.ScrollTrigger ? w.ScrollTrigger.getAll().length : 0,
+        !w.ScrollTrigger || w.ScrollTrigger.getAll().length < 2);
+    put('Script error', err ? err : 'none', !!err);
+    var fr = d.querySelectorAll('#act1 > .frame, #act2 .frame');
+    var a = [].map.call(fr, function(x){ return w.getComputedStyle(x).opacity; }).join();
+    setTimeout(function(){
+      var b = [].map.call(fr, function(x){ return w.getComputedStyle(x).opacity; }).join();
+      var moving = a !== b;
+      put('Photographs changing', moving ? 'yes' : 'NO', !moving);
+      var v = document.getElementById('verdict');
+      if (err) { v.className='bad'; v.textContent = 'The page is throwing an error: ' + err + ' — send me this line.'; }
+      else if (!w.gsap) { v.className='bad'; v.textContent = 'GSAP did not load — the animation library is missing or blocked.'; }
+      else if (rm) { v.className='bad'; v.textContent = 'Your phone reports Reduced Motion, so the hero is frozen on purpose. Check Settings > Battery > Low Power Mode and Settings > Accessibility > Motion > Reduce Motion. The link below bypasses it.'; }
+      else if (!moving) { v.className='bad'; v.textContent = 'No error, GSAP loaded, reduced motion off — but the photographs are not changing. Send me this screen.'; }
+      else { v.className='good'; v.textContent = 'The hero IS animating here. If the full page looks static, it is likely a cached copy — pull to refresh, or add ?v=99 to the link.'; }
+    }, 3500);
+  }, 2500);
+};
+</script></body></html>
