@@ -974,50 +974,43 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .solution-preview .sol-state{left:min(6.15vw,26px);max-width:min(87.69vw,377px)}
   /* the desktop rule above is an id selector, so it outranks .sol-state's
      placement here unless said again at the same specificity */
-  /* --- TWO SCREENS, NOT ONE SCREEN THAT CHANGES ---
-     Asked for in these words: "make sure it never gets skipped in any
-     scenario". Nothing driven by scroll can promise that. A pin can be crossed
-     by momentum, a timer can run out while the reader is still moving, a
-     threshold can be passed and left behind in the same throw — every version
-     of this screen so far has been one of those, and each one was skippable in
-     some scenario.
-     A SECTION cannot be skipped. It is 844 pixels of document with the offer
-     printed on it; passing it means scrolling past it, the same as any other
-     screen on the page. So the plan is two screens now: the statement on the
-     first, the offer and its button on the second, both simply there.
-     It is also what takes the last pin off the phone, which is the other half
-     of the report — "whenever I scroll to the timeline animation it glitches
-     and goes up and down". #ages sits directly above this, so the pin engaged
-     and released right at its edge, and a pin engaging under momentum on iOS
-     is the jump. With no pin left, nothing on this page holds, moves or
-     re-measures the scroll: it is an ordinary document from the hero to the
-     footer. */
-  /* --sol-screen is declared on the SECTION, not on .solution-preview inside it.
-     A custom property inherits downward only, so a height on #solution that
-     reads a variable its own child declares is an invalid value — measured, the
-     section collapsed to 0 and took 2954px out of the document while the copy,
-     being absolutely positioned off explicit tops, still drew in the right
-     places and hid it. */
-  /* The first screen is a statement and a paragraph — it does not need a whole
-     viewport, and with the card moved to the offer it was leaving ~600px of
-     black under three lines of copy. .62 of a screen holds the copy with air
-     under it and no hole. The OFFER keeps its full screen, which is what makes
-     it unskippable: it is a whole viewport of document with the card, the price
-     and the button on it. */
-  #solution{--sol-screen:100vh;--sol-lead:calc(var(--sol-screen) * .62);
-    height:calc(var(--sol-lead) + var(--sol-screen))}
-  .solution-preview #solStateA{top:20vh;left:min(6.15vw,26px)}
-  .solution-preview #solStateB{top:calc(var(--sol-lead) + 20vh);left:min(6.15vw,26px)}
-  /* Both framings stand, so both are painted outright. !important because the
-     run's resetRun re-states every masked line on the page on every refresh,
-     and the wide layout's timeline writes these as inline styles — neither is
-     anything this screen wants applied to it now that nothing here animates. */
-  .solution-preview .sol-headline .ln > span{transform:none !important}
-  .solution-preview .sol-body{opacity:.7 !important}
-  .solution-preview .sol-card{opacity:1 !important;transform:none !important}
-  .solution-preview .sol-cta{opacity:1 !important;transform:none !important}
-  .solution-preview .sol-glow-l{opacity:.4 !important}
-  .solution-preview .sol-glow-r{opacity:.2 !important}
+  /* --- ONE SCREEN THAT CHANGES, HELD BY position:sticky ---
+     Asked for: the two framings back on one screen with a transition between
+     them, not stacked, and no glitches.
+     The holding is done by STICKY, not by a ScrollTrigger pin, and that is the
+     whole of why this is safe now. A JS pin takes the section out of flow
+     mid-scroll and puts a spacer in its place, re-measuring on every refresh —
+     under iOS momentum that is the jump, and it is what every earlier version of
+     this screen was built on. Sticky is the browser's own: the element never
+     leaves the flow, there is no spacer, nothing is measured by script, and the
+     compositor holds it. Nothing here can be re-measured under a moving finger.
+     .solution-preview is the sticky box, so it is one screen tall and its
+     absolutely-positioned children — both framings, the card, the button — keep
+     the exact coordinates they were drawn at, in the one place they share. The
+     SECTION is two screens tall; that is the scroll the reader spends on it, and
+     the distance the handover has to happen in. */
+  /* overflow:visible on the section, and two bugs' worth of why.
+     .act sets overflow:hidden, and an overflow:hidden ancestor IS a scroll
+     container — a sticky child sticks to ITS scrollport, which never scrolls, so
+     sticky silently does nothing. Measured before this: the box's top went 0,
+     -122, -244 ... -812, scrolling away with the section instead of holding.
+     The clipping that overflow:hidden was doing moves onto the sticky box, which
+     is the one screen that actually needs it.
+     And `inset:auto` has to come BEFORE `top:0`, not after: it is the shorthand,
+     so written second it resets the top it was meant to leave alone — which was
+     the other half of the same measurement. */
+  #solution{--sol-screen:100vh;height:calc(var(--sol-screen) * 2);overflow:visible}
+  .solution-preview{position:sticky;inset:auto;top:0;
+    height:var(--sol-screen);overflow:hidden}
+  .solution-preview #solStateA,
+  .solution-preview #solStateB{top:20vh;left:min(6.15vw,26px)}
+  /* NOTE, because this was a bug here for one round: the masked line transforms
+     must NOT be forced off. The stacked version overrode them to none because
+     both framings stood at once and neither was ever queued. On one screen the
+     timeline hides the framing that is not up by holding its lines BELOW their
+     masks — that transform IS the hiding — so overriding it printed
+     "Introducing the Data Savings Plan" and "Open an account…" on top of each
+     other, both fully legible, in the same place. */
   /* 44 flat, not the base clamp: its 2.2rem floor is what a 390 screen gets,
      and that is 35 against the frame's 44. The colour is the page's own bone,
      which is #F3F2EE — the same off-white the frame sets on the block, and
@@ -1052,8 +1045,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      which is also the screen that must not be missed; the first screen is the
      statement and its paragraph. */
   .solution-preview .sol-card{right:auto;left:min(7.74vw,33px);bottom:auto;
-    top:calc(var(--sol-lead) + var(--sol-card-top));
-    width:calc(var(--sol-card-h) * 1.598)}
+    top:var(--sol-card-top);width:calc(var(--sol-card-h) * 1.598)}
   /* ...and on a phone the screen is shorter than 100vh says it is. The address
      bar is showing most of the time, and vh does not count it: a 667 phone
      shows about 575. This stack — 20vh down, then 244 of copy, then the card,
@@ -1101,8 +1093,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .solution-preview .sol-cta{left:min(6.15vw,26px);bottom:auto;
     padding:16px 24px;font-size:18px;
     width:min(87.69vw,377px);justify-content:center;
-    top:min(calc(var(--sol-lead) + var(--sol-card-top) + var(--sol-card-h) + 24px),
-            calc(var(--sol-lead) + var(--sol-screen) - 62px))}
+    top:min(calc(var(--sol-card-top) + var(--sol-card-h) + 24px),
+            calc(var(--sol-screen) - 62px))}
   /* --- SAVE YOUR DATA. GROW ITS VALUE. on the phone: Figma 4045:23128 ---
      the vw paddings and gaps are a few pixels at this width, so set them in
      their own terms */
@@ -2976,27 +2968,80 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   }).add('(max-width: 760px)', () => {
     solHost.appendChild(solHowEl);
     fitSolHow();
+    const tl = buildSolTl(false);
 
-    // NO TIMELINE, NO TRIGGER, NO PIN. The phone's plan screen is two screens of
-    // ordinary document now — see the CSS note by #solution in the 760 block —
-    // so there is nothing here to animate and nothing to drive it with. All this
-    // branch does is move the four cards into their own section, which is markup.
+    // THE HANDOVER. Two states, and the scroll only ever decides WHICH — never
+    // how far through one. That distinction is the whole reason this is stable:
+    //   - a SCRUB ties the animation to the scroll in both directions, so the
+    //     ninety pixels iOS shifts when the address bar collapses play the screen
+    //     backwards under a reader who has not moved;
+    //   - a state that flips at a line, with a margin either side of it, cannot
+    //     be moved at all by ninety pixels, because the margin is wider.
+    // The change itself runs on its own clock, so it is always whole and always
+    // at its own pace — there is no half-played state for a wobble to nudge.
     //
-    // Why it ended up here, recorded so it is not undone by accident: every
-    // scroll-driven version of this screen was skippable. A pin can be crossed by
-    // momentum; a timer can run out while the reader is still moving; a progress
-    // threshold can be passed and left behind inside one throw. Asked for, in
-    // capitals: it must never be skipped in any scenario. Only a section can
-    // promise that, because passing it means scrolling past it.
+    // No pin here. The screen is held by position:sticky (see the CSS note), so
+    // this trigger measures and holds nothing; it reports progress and that is
+    // all. start/end are the sticky box's own travel: from the section's top
+    // reaching the viewport top to its bottom reaching the viewport bottom.
     //
-    // And the pin was the last thing on the phone that could hold, move or
-    // re-measure the scroll. #ages sits directly above this screen, so the pin
-    // engaged and released right at its lower edge — which is where "it glitches
-    // and goes up and down" was being felt, a pin engaging under iOS momentum.
-    // There is no pin anywhere on the phone now.
+    // The framings' resting moments on this timeline. A is whole from .86 and
+    // does not start leaving until 1.10, so 1.0 sits mid-plateau; B is whole
+    // from 1.84 and the timeline holds to 2.25, so 2.0 sits mid-plateau in its.
+    const SOL_AT = [1.0, 2.0];
+    const SOL_IN = .8, SOL_SWAP = .55;
+    let solTween = null, solIdx = 0;
+    const solGo = (i, immediate) => {
+      solIdx = i;
+      if(solTween) solTween.kill();
+      if(immediate){ solTween = null; tl.pause(i === 0 ? 0 : SOL_AT[i]); return; }
+      tl.pause();
+      solTween = gsap.to(tl, {time:SOL_AT[i], duration:i === 0 ? SOL_IN : SOL_SWAP,
+                              ease:'power1.inOut'});
+    };
+    // The line, and the margin either side of it. .32 of two screens is about
+    // 540px in, so the statement holds for a third of the section and the offer
+    // for the remaining two thirds — the offer is the screen they came for.
+    // EDGE .1 of two screens is ~170px on a phone, comfortably wider than the
+    // ~90 the address bar moves, which is the number it exists to beat. It is
+    // also the lag: how far past the line the reader travels before the screen
+    // answers. Smaller answers sooner, larger is steadier.
+    const SOL_LINE = .32, SOL_EDGE = .1, SOL_RUSH = .55;
+    const solRender = pr => {
+      const want = solIdx === 0 ? (pr > SOL_LINE + SOL_EDGE ? 1 : 0)
+                                : (pr < SOL_LINE - SOL_EDGE ? 0 : 1);
+      if(want !== solIdx){ solGo(want, want === 1 && pr > SOL_RUSH); return; }
+      // Past halfway with the handover still running means the reader was thrown
+      // past the line rather than crossing it at reading speed, and the .55 it
+      // takes is .55 they may not have. From there it is simply finished.
+      if(want === 1 && pr > SOL_RUSH && solTween && solTween.isActive()){
+        solTween.kill(); solTween = null; tl.pause(SOL_AT[1]);
+      }
+    };
+    // The reveal, when the screen is actually reached. Cued at 85% of the
+    // viewport rather than by the section's own top, for the reason the age
+    // track has a note about: a trigger is not active AT its own start, and
+    // 'top top' is a natural place to come to rest — resting exactly there left
+    // the screen blank. Cueing earlier also means the first framing is whole by
+    // the time the section has finished arriving, rather than sliding up empty.
+    const solArrive = () => { if(solIdx === 0 && tl.time() < .01) solGo(0, false); };
+    const cue = ScrollTrigger.create({trigger:'#solution', start:'top 85%',
+      onEnter: solArrive, onEnterBack: solArrive,
+      // put away only once the section has really dropped off the bottom, so
+      // meeting it again is an arrival rather than a screen already half spent
+      onLeaveBack: () => solGo(0, true)});
+    const trig = ScrollTrigger.create({
+      trigger:'#solution', start:'top top', end:'bottom bottom',
+      onUpdate: self => { solArrive(); solRender(self.progress); }
+    });
+    tl.pause(0);
+    if(trig.isActive){ solArrive(); solRender(trig.progress); }
+
     return () => {
-      // the cards go back, and an earlier build left a touch-action on this
-      // section; both are the other branch's to set again
+      if(solTween) solTween.kill();
+      cue.kill(); trig.kill(); tl.kill();
+      // an earlier build held a touch-action on this section; the other branch
+      // sets its own
       solSec.style.touchAction = '';
     };
   });
