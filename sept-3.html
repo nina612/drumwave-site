@@ -803,17 +803,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      well off the screen. */
   #act1 #sayA .ln:not(.say-phone){display:none}
   #act1 .say-phone{display:block}
-  /* Asked for: on a phone the statements travel the screen as one another
-     arrives — the outgoing one rides up and away while the next comes up from
-     below — rather than each line clearing its own mask in place. So the masks
-     come off here, and the per-line reveals with them: the run's timeline
-     writes those transforms inline, on the element, which is the one thing a
-     stylesheet only beats with !important. What moves instead is the block,
-     and that is driven from the statement change (see buildRunPin). */
-  #act1 .hero-h .ln,
-  #act1 .run-say .ln{overflow:visible}
-  #act1 .hero-h .ln > span,
-  #act1 .run-say .ln > span{transform:none !important}
+  /* THE MASKS ARE BACK. They were taken off here so the phone could move the
+     whole block instead of revealing line by line — but a block that moves has
+     to clear the screen before the next one arrives, or the two print through
+     each other, and once that is enforced there is a gap with nothing in it.
+     Asked for: the text should SLIDE into the next, and it was reading as a cut.
+     It was one: v2's block travel had been taken to zero, so the handover was a
+     fade in place with no movement to see at all.
+     With the masks on, each line slides up out of its own clipped box and the
+     next slides up into place. The movement is visible, and two statements can
+     never print through each other, because a line on its way out is clipped by
+     the box it is leaving. The run's timeline writes these same transforms, so
+     the phone build kills those tweens rather than fighting them with
+     !important — see the note by copySpans in buildRunPin. */
   /* the nudge in the base rule goes: it corrects this block's leading against
      .run-say's, and the two now share one */
   #act1 .hero-h{bottom:var(--hero-bottom)}
@@ -1757,7 +1759,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   window.addEventListener('error', e => {
     window.__heroErr = (e.message || 'error') + ' @' + (e.lineno || '?');
   });
-  window.__heroBuild = 'motion-fix';
+  window.__heroBuild = 'slide';
 
   const RM_FORCED_OFF = /(?:^|[?&#])motion=on(?:[&#]|$)/.test(location.search + location.hash);
   const RM = !RM_FORCED_OFF &&
@@ -2553,21 +2555,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // any overlap at all is two of them printed through each other — there is no
     // "faint enough to be safe" when the ink is in the same place. .45 out, .45
     // lag, .65 in: a clean dissolve through, and a little slower than it was.
-    // v1's statements ARRIVE — asked for, "like it's coming into the screen".
-    // v2 keeps the pure dissolve it was tuned to: nothing travels there, and
-    // withY below leaves its tweens without a y property at all, so v2's
-    // elements still carry no transform rather than a no-op matrix.
-    //
-    // 56 in and 40 out. Large enough to read as coming from somewhere — these
-    // sit 15vh off the bottom, so 56 is most of the gap under them — and small
-    // enough that the words stay legible the whole way. The scrub-era version of
-    // this travelled .6 of the viewport, 487px, and that is what not to go back
-    // to: at that distance the eye follows the motion instead of reading.
-    // Nothing travels under reduced motion — that is the part of the setting
-    // that is not negotiable. v1's statements normally arrive from 56 below.
-    const RISE     = RM ? 0 : (HERO_V === 1 ? 56 : 0),
-          OUT_LIFT = RM ? 0 : (HERO_V === 1 ? 40 : 0);
-    const withY = (o, y) => RISE ? Object.assign({}, o, {y}) : o;
 
     // STILL SEQUENTIAL BY CONSTRUCTION, and that matters more with movement, not
     // less: the in starts exactly when the out ends (IN_LAG >= OUT_TIME), so the
@@ -2576,8 +2563,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const OUT_TIME = HERO_V === 1 ? .4  : .45,
           IN_TIME  = HERO_V === 1 ? .75 : .65,
           IN_LAG   = HERO_V === 1 ? .4  : .45,
-          IN_FAST  = HERO_V === 1 ? .6  : .45,   // the opening one, which has no lag
-          IN_EASE  = HERO_V === 1 ? 'power2.out' : 'power1.out';
+          IN_EASE  = 'power1.out';   // reduced motion's cross-fade only
 
     // A gsap.set does NOT kill a tween already running on the same element: it
     // writes the value once and the tween carries on writing over it on the very
@@ -2592,10 +2578,40 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // participants in a handover are safe already — both tweens carry
     // overwrite:true, which kills other tweens of the SAME target — but the
     // third statement, and every statement on a reset, were not.
+    // THE STATEMENTS SLIDE, LINE BY LINE, out of and into their masks. Declared
+    // above park(), which uses linesOf — a const arrow is in its dead zone until
+    // its own line runs, and putting these below cost a silent
+    // "linesOf is not defined" that stopped the whole run.
+    //
+    // The run's own timeline writes these same transforms — it is what drives
+    // them on the wide layout — so on the phone those tweens are killed rather
+    // than overridden. Overriding is what the stylesheet used to do with
+    // transform:none !important, and it cost the phone every reveal it had.
+    const copySpans = $$('#act1 .hero-h .ln > span, #act1 .run-say .ln > span');
+    tl1.getChildren(true, true, false).forEach(t => {
+      const tg = t.targets ? t.targets() : [];
+      if(tg.some(el => copySpans.indexOf(el) >= 0)) t.kill();
+    });
+    // Only the lines this breakpoint shows: #sayA carries a three-line wide
+    // markup and a five-line phone one, and staggering across all eight would
+    // spread the cascade over lines nobody can see.
+    const linesOf = el => $$('.ln > span', el)
+      .filter(sp => getComputedStyle(sp.parentElement).display !== 'none');
+    // 125% of a line box clears it: the phone sets line-height 1.16, so the ink
+    // sits inside its box.
+    const LINE_TRAVEL = 125;
+    // Sequential, and with masks that is still a slide rather than a gap — the
+    // reader watches the lines leave, then watches the next ones arrive.
+    // Simultaneous would put an outgoing line and an incoming one inside the
+    // same box at once, which is the overlap this has been bitten by twice.
+    const L_OUT = .35, L_OUT_STAG = .04, L_IN = .45, L_IN_STAG = .05;
+
     const park = keep => phraseEl.forEach((el, k) => {
       if(keep.indexOf(k) >= 0) return;
-      gsap.killTweensOf(el);
-      gsap.set(el, withY({opacity:0}, RISE));   // dark, and waiting below
+      const sp = linesOf(el);
+      gsap.killTweensOf(el); gsap.killTweensOf(sp);
+      gsap.set(el, {opacity:0});
+      gsap.set(sp, {yPercent: RM ? 0 : LINE_TRAVEL});   // waiting below their masks
     });
 
     let shown = 0;
@@ -2615,20 +2631,40 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const showBand = (i, immediate, lag) => {
       // the copy's own record of which statement is up
       bandIdx = i;
+      const inSpans = linesOf(phraseEl[i]);
       if(immediate){
         park([i]);
-        gsap.killTweensOf(phraseEl[i]);
-        gsap.set(phraseEl[i], withY({opacity:1}, 0));
+        gsap.killTweensOf(phraseEl[i]); gsap.killTweensOf(inSpans);
+        gsap.set(phraseEl[i], {opacity:1});
+        gsap.set(inSpans, {yPercent:0});
+        upIdx = i;
+      } else if(RM){
+        // no travel at all under reduced motion — a plain cross-fade in place
+        park([i, upIdx]);
+        if(upIdx >= 0 && upIdx !== i)
+          gsap.to(phraseEl[upIdx], {opacity:0, duration:OUT_TIME, ease:'power1.in', overwrite:true});
+        gsap.set(inSpans, {yPercent:0});
+        gsap.fromTo(phraseEl[i], {opacity:0},
+          {opacity:1, duration:IN_TIME, delay:OUT_TIME, ease:'power1.out', overwrite:true});
         upIdx = i;
       } else {
         park([i, upIdx]);                         // everything but the two in the handover
-        if(upIdx >= 0 && upIdx !== i)
-          gsap.to(phraseEl[upIdx], withY({opacity:0, duration:OUT_TIME, ease:'power1.in',
-                                          overwrite:true}, -OUT_LIFT));
-        const d = lag === undefined ? IN_LAG : lag;
-        gsap.fromTo(phraseEl[i], withY({opacity:0}, RISE),
-          withY({opacity:1, duration:d ? IN_TIME : IN_FAST, delay:d, ease:IN_EASE,
-                 overwrite:true}, 0));
+        let outFor = 0;
+        if(upIdx >= 0 && upIdx !== i){
+          const out = phraseEl[upIdx], outSpans = linesOf(out);
+          outFor = L_OUT + L_OUT_STAG * Math.max(0, outSpans.length - 1);
+          gsap.killTweensOf(outSpans);
+          gsap.to(outSpans, {yPercent:-LINE_TRAVEL, duration:L_OUT, stagger:L_OUT_STAG,
+            ease:'power2.in', overwrite:true,
+            // dark and re-queued once it is out of sight, never before
+            onComplete: () => { gsap.set(out, {opacity:0});
+                                gsap.set(outSpans, {yPercent:LINE_TRAVEL}); }});
+        }
+        const d = lag === undefined ? outFor : lag;
+        gsap.set(phraseEl[i], {opacity:1});        // the block is on; its lines are still below
+        gsap.fromTo(inSpans, {yPercent:LINE_TRAVEL},
+          {yPercent:0, duration:L_IN, stagger:L_IN_STAG, delay:d, ease:'power2.out',
+           overwrite:true});
         upIdx = i;
       }
       // The photographs follow the statement that is up, asked for: a
@@ -2698,16 +2734,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // re-renders that tween's recorded start - which would otherwise leave
     // later photographs stacked over the hero. Same three steps the loop in the
     // non-scroll build takes, for the same reason.
-    // Reduced motion's resting state: photograph one, statement one, no clock.
-    const toFirstStatic = () => {
-      if(segTween) segTween.kill();
-      segTween = null; seg = -1; shown = -1;
-      tl1.pause(Math.min(cutAt(0) || CUT, tl1.duration()));
-      resetRun();
-      park([]);
-      upIdx = -1;
-      showBand(0, true);            // set, not faded
-    };
     const toFirst = () => {
       if(segTween) segTween.kill();
       segTween = null; seg = -1; shown = -1;
