@@ -1778,11 +1778,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         'font:12px/1.45 -apple-system,system-ui,sans-serif;white-space:pre-line;'+
         'border:1px solid rgba(255,255,255,.2)');
       document.body.appendChild(box);
-      const offs = {}; let photoChanges = 0, prevPhotos = '';
+      // SAMPLED EVERY FRAME, NOT EVERY 300ms.
+      //
+      // The first version of this polled on a 300ms interval and then called a
+      // slide a cut unless it had caught more than two in-between positions. A
+      // .35s tween only lands one or two samples at that rate, so a working
+      // slide reported "NO - cutting" on a real phone — and it did, and it sent
+      // this hunting in the wrong direction. A sampler must not be slower than
+      // the thing it is sampling.
+      //
+      // Lines going IN travel from +TRAVEL to 0; lines going OUT travel from 0
+      // to -TRAVEL. They are counted apart because the bug that was actually
+      // here only ever broke one of them: every statement arrived correctly and
+      // the loop point had no exit at all, which a single merged count hides.
+      const offs = {}; let photoChanges = 0, prevPhotos = '', frames = 0;
       const yOf = sp => { const t = getComputedStyle(sp).transform;
         if(!t || t === 'none') return 0;
         try { return Math.round(new DOMMatrix(t).m42); } catch(e){ return 0; } };
-      setInterval(() => {
+      const sample = () => {
+        frames++;
         const st = ['#act1 .hero-h', '#sayA', '#sayB'].map(q => document.querySelector(q));
         st.forEach(e => { if(!e) return;
           Array.prototype.forEach.call(e.querySelectorAll('.ln > span'), sp => {
@@ -1793,20 +1807,30 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
           f => getComputedStyle(f).opacity).join();
         if(prevPhotos && ph !== prevPhotos) photoChanges++;
         prevPhotos = ph;
-        const vals = Object.keys(offs).map(Number).sort((a,b) => a - b);
-        const big = Math.max.apply(null, vals.map(Math.abs));
-        const mids = vals.filter(v => Math.abs(v) > 3 && Math.abs(v) < big - 3).length;
+        requestAnimationFrame(sample);
+      };
+      requestAnimationFrame(sample);
+      const t0 = Date.now();
+      setInterval(() => {
+        const vals = Object.keys(offs).map(Number).sort((a, b) => a - b);
+        const lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+        // in-between positions on each leg, excluding the two resting states
+        const inMid  = vals.filter(v => v >  3 && v < hi - 3).length;
+        const outMid = vals.filter(v => v < -3 && v > lo + 3).length;
+        const secs = (Date.now() - t0) / 1000;
         box.textContent =
           'build ' + window.__heroBuild + '   ' + innerWidth + 'x' + innerHeight + '\n' +
-          'version: v' + HERO_V + '\n' +
-          'reduced motion: ' + (RM ? 'YES - Low Power Mode or Settings > Accessibility >'
-                                     + ' Motion > Reduce Motion. Both versions slow down.'
+          'version: v' + HERO_V + '   ' + Math.round(frames / secs) + 'fps\n' +
+          'reduced motion: ' + (RM ? 'YES - Low Power Mode or Settings >'
+                                     + ' Accessibility > Motion > Reduce Motion'
                                    : 'no') + '\n' +
           'script error: ' + (window.__heroErr || 'none') + '\n' +
           'photo updates: ' + photoChanges + '\n' +
-          'text offsets: ' + (vals.length > 14 ? vals.length + ' distinct' : vals.join(', ')) + '\n' +
-          'TEXT SLIDES: ' + (mids > 2 ? 'yes (' + mids + ' in-between values)' : 'NO - cutting');
-      }, 300);
+          'travel seen: ' + lo + ' to ' + hi + '\n' +
+          'SLIDE IN:  ' + (inMid  > 1 ? 'yes (' + inMid  + ')' : 'NO - cutting') + '\n' +
+          'SLIDE OUT: ' + (outMid > 1 ? 'yes (' + outMid + ')' : 'NO - cutting')
+                        + (secs < 20 ? '   ...watch 20s' : '');
+      }, 250);
     });
   }
 
@@ -2811,14 +2835,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // statement simply appearing. The park is immediate because the loop has
       // just taken the third statement off; the hero rises into the space it
       // left rather than crossing it.
-      park([]);                                   // kill every fade in flight, then clear
-      upIdx = -1;
-      // Asked for: "Your life creates data" appears immediately, at the same
-      // time as the first image. IN_LAG is the gap that lets one statement clear
-      // before the next arrives, and on arrival there is nothing to clear — the
-      // screen is empty and the photograph is already there — so the lag is 0
-      // and the fade is short enough to land with it rather than trail it.
-      showBand(0, false, 0);
+      // THE LOOP IS A HANDOVER LIKE ANY OTHER.
+      //
+      // This used to be park([]) followed by upIdx = -1, which is two separate
+      // ways of saying "there is nothing on screen" — and both were wrong at
+      // the top of a loop, where the third statement is still standing. park([])
+      // erased it on the spot and upIdx = -1 then told showBand there was
+      // nothing to slide out. So two of the three transitions slid and the
+      // third, the one that comes round again and again, cut. That is the cut
+      // that kept getting reported, and it is the one a reader is most likely
+      // to be looking straight at: v1 holds four seconds here before it turns.
+      //
+      // Keeping upIdx lets the ordinary out-then-in path run. Nothing else has
+      // to change: on genuine ARRIVAL upIdx is still -1, so outFor is 0 and the
+      // default lag is 0 — the same immediate entrance the explicit 0 was
+      // asking for, now derived instead of hard-coded.
+      park([upIdx]);                              // keep what is up; it has an exit to make
+      showBand(0, false);
     };
     const stopAuto = () => {
       if(auto) auto.pause();
