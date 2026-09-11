@@ -2158,34 +2158,35 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   // --- ONE SWIPE, ONE STEP ---
   //
-  // The plan screen's rule on a phone: its two framings hand over on a swipe.
-  // The opening run was built on this too and no longer is - it plays itself
-  // now (see the note by BAND_HOLD) - but the reasoning below is what a
-  // gesture-driven screen on a phone has to answer, and this is still one.
+  // The plan screen's rule on a phone: its two framings hand over on a swipe,
+  // one framing to a gesture whatever the gesture's length. That is the whole
+  // of it, and it is deliberately less than it used to be.
   //
-  // A step must NOT be read off the scroll position. A phone flick carries two
-  // to three thousand pixels after the finger leaves, so any band narrow enough
-  // to swipe between is narrow enough for one throw to cross several. No margin
-  // around the boundaries fixes it, because the margin is measured in the same
-  // pixels the flick has too many of.
+  // WHAT CAME OUT, AND WHY. This used to hold the page still as well: while a
+  // framing was still ahead, the pinned section carried `touch-action: none`,
+  // so the reader could not scroll at all until they had stepped to the end.
+  // On the opening run that was harmless - it sat at scroll 0, where there is
+  // nothing above to scroll back to - but this screen has the whole page above
+  // it, and touch-action cannot be told a direction. It is on or it is off, and
+  // it is read when a gesture STARTS, before anything knows which way the thumb
+  // is about to go.
   //
-  // A gesture is a gesture whatever its length, so counting them is the only
-  // thing that makes one swipe mean one step. And once the count owns the step,
-  // the scroll must not ALSO own it - two owners is what every earlier
-  // snap/latch pair was. So while there is still a step ahead, the pinned
-  // section carries `touch-action: none` and the page does not scroll at all.
-  // Nothing is preventDefault-ed on touch and nothing calls scrollTo; the
-  // browser is simply told this surface does not pan, so a flick has nowhere to
-  // carry the reader and no momentum to arrive with. A screen that cannot move
-  // cannot be moved by a collapsing address bar either.
+  // So coming back UP the page: the reader enters the section on the second
+  // framing, their first upward swipe steps back to the first framing, the lock
+  // snaps on behind them - and now nothing pans, in either direction, until
+  // they swipe DOWN again. Reported exactly as it behaves: "if I scroll past it
+  // it's hard to scroll back up."
   //
-  // The lock lifts the moment the last step is up, so the swipe after that one
-  // scrolls the page on normally, with the phone's own inertia. Backwards walks
-  // the steps back one per gesture the same way.
+  // The lock is gone rather than made cleverer, because it was solving a
+  // problem this screen does not have. It existed so that scroll DISTANCE could
+  // not skip a step - but on a phone every scroll is a touch gesture, so the
+  // count and the scroll advance together on their own, and the pin gives the
+  // two framings their room. What is left cannot trap anyone: the page pans
+  // whenever the reader pans it, and a swipe also happens to turn the page of
+  // the screen they are on.
   //
-  // el     the pinned section the lock sits on
-  // count  how many steps it has
-  // onStep (i, immediate) - what the screen does when the step changes
+  // el   is still taken, and still cleared on teardown, so nothing is left
+  //      holding a touch-action an earlier build set.
   const makeSwipeSteps = (el, count, onStep) => {
     // How far a finger travels before a drag counts as a swipe. Small enough
     // that a real swipe always passes it on its first move, large enough that a
@@ -2196,31 +2197,21 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // quiet, and everything inside the burst belongs to the swipe that started
     // it.
     const WHEEL_GAP = 260;
-    // The phone's nav panel opens over these sections, and a thumb scrolling
-    // inside it is not a swipe at the screen underneath. The panel sits outside
-    // both pinned sections, so the lock never applied to it; this is the other
-    // half of the same point.
+    // The phone's nav panel opens over this section, and a thumb scrolling
+    // inside it is not a swipe at the screen underneath.
     const menuPanel = $('#navMenuPanel');
     const menuOpen = () => !!(menuPanel && menuPanel.classList.contains('open'));
 
     let idx = 0, trig = null;
     const live = () => !!(trig && trig.isActive) && !menuOpen();
     const canStep = dir => dir > 0 ? idx < count - 1 : idx > 0;
-    // The page is held still while a step is still ahead of the reader, and
-    // handed back the moment the last one is up. Read by the browser at
-    // touchstart, so it only has to be right between gestures, not during one.
-    const sync = () => {
-      if(el) el.style.touchAction = (trig && trig.isActive && idx < count - 1) ? 'none' : '';
-    };
     const step = dir => {
       idx = Math.min(count - 1, Math.max(0, idx + dir));
       onStep(idx, false);
-      sync();
     };
 
-    // TOUCH. No preventDefault anywhere: touch-action has already told the
-    // browser this surface does not pan, so these listeners are passive and
-    // only have to decide which way the thumb went.
+    // TOUCH. Passive, and nothing is preventDefault-ed: these listeners only
+    // read which way the thumb went. The page's own scrolling is never touched.
     let tY = 0, tLive = false, tSpent = true;
     const onTouchStart = e => {
       tLive = live() && e.touches.length === 1;
@@ -2237,34 +2228,31 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     };
     const onTouchEnd = () => { tLive = false; };
 
-    // WHEEL, for a trackpad or a mouse in a window this narrow. touch-action
-    // says nothing about these, so the lock here is a preventDefault, held for
-    // the whole burst so the momentum cannot step a second time or leak into
-    // the page underneath.
-    let wLast = -1e9, wHeld = false;
+    // WHEEL, for a trackpad or a mouse in a window this narrow. Also passive
+    // now: it used to preventDefault for the whole burst, which is the same
+    // trap as the touch-action lock wearing different clothes.
+    let wLast = -1e9;
     const onWheel = e => {
-      if(!live()){ wHeld = false; return; }
-      const now = performance.now(), fresh = now - wLast > WHEEL_GAP;
+      if(!live()) return;
+      const now = performance.now();
+      if(now - wLast <= WHEEL_GAP){ wLast = now; return; }
       wLast = now;
-      if(!fresh){ if(wHeld && e.cancelable) e.preventDefault(); return; }
       const dir = e.deltaY > 0 ? 1 : -1;
-      wHeld = canStep(dir);
-      if(wHeld){ if(e.cancelable) e.preventDefault(); step(dir); }
+      if(canStep(dir)) step(dir);
     };
 
     addEventListener('touchstart', onTouchStart, {passive:true});
     addEventListener('touchmove',  onTouchMove,  {passive:true});
     addEventListener('touchend',   onTouchEnd,   {passive:true});
     addEventListener('touchcancel',onTouchEnd,   {passive:true});
-    addEventListener('wheel',      onWheel,      {passive:false});
+    addEventListener('wheel',      onWheel,      {passive:true});
 
     return {
       // the trigger whose isActive decides whether a gesture here means anything
-      bind: t => { trig = t; sync(); },
-      sync,
+      bind: t => { trig = t; },
       index: () => idx,
       // put the screen on a step outright, no transition - arrival, and reset
-      set: i => { idx = Math.min(count - 1, Math.max(0, i)); onStep(idx, true); sync(); },
+      set: i => { idx = Math.min(count - 1, Math.max(0, i)); onStep(idx, true); },
       destroy: () => {
         removeEventListener('touchstart', onTouchStart);
         removeEventListener('touchmove',  onTouchMove);
@@ -3063,7 +3051,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // the second framing finds it on the second framing, which is where they
     // left it; only a return from above puts it away (onLeaveBack below).
     const solArrive = () => {
-      steps.sync();
       if(steps.index() === 0 && tl.time() < .01) solGo(0, false);
     };
     const trig = ScrollTrigger.create({
@@ -3090,8 +3077,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // (Missing the screen is not losing it: scrolling back up re-enters the
       // section and plays its arrival again, see onEnterBack.)
       trigger:'#solution', start:'top top', end:'+=120%', pin:true,
-      onUpdate: () => steps.sync(),
-      onLeave:  () => steps.sync(),
       onEnter:     solArrive,
       onEnterBack: solArrive,
       // Gone back above the section entirely — put it away, so meeting it again
