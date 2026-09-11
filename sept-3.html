@@ -998,9 +998,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      section collapsed to 0 and took 2954px out of the document while the copy,
      being absolutely positioned off explicit tops, still drew in the right
      places and hid it. */
-  #solution{--sol-screen:100vh;height:calc(var(--sol-screen) * 2)}
+  /* The first screen is a statement and a paragraph — it does not need a whole
+     viewport, and with the card moved to the offer it was leaving ~600px of
+     black under three lines of copy. .62 of a screen holds the copy with air
+     under it and no hole. The OFFER keeps its full screen, which is what makes
+     it unskippable: it is a whole viewport of document with the card, the price
+     and the button on it. */
+  #solution{--sol-screen:100vh;--sol-lead:calc(var(--sol-screen) * .62);
+    height:calc(var(--sol-lead) + var(--sol-screen))}
   .solution-preview #solStateA{top:20vh;left:min(6.15vw,26px)}
-  .solution-preview #solStateB{top:calc(var(--sol-screen) + 20vh);left:min(6.15vw,26px)}
+  .solution-preview #solStateB{top:calc(var(--sol-lead) + 20vh);left:min(6.15vw,26px)}
   /* Both framings stand, so both are painted outright. !important because the
      run's resetRun re-states every masked line on the page on every refresh,
      and the wide layout's timeline writes these as inline styles — neither is
@@ -1040,9 +1047,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      first screen, a copy on the second (see the phone branch of the plan
      screen's matchMedia, which makes it). Same src, so the second costs a
      cache hit and no download. */
+  /* One card, on the offer screen — asked for, the copy of it was showing the
+     same object twice. It sits with the price and the button it belongs to,
+     which is also the screen that must not be missed; the first screen is the
+     statement and its paragraph. */
   .solution-preview .sol-card{right:auto;left:min(7.74vw,33px);bottom:auto;
-    top:var(--sol-card-top);width:calc(var(--sol-card-h) * 1.598)}
-  .solution-preview .sol-card-2{top:calc(var(--sol-screen) + var(--sol-card-top))}
+    top:calc(var(--sol-lead) + var(--sol-card-top));
+    width:calc(var(--sol-card-h) * 1.598)}
   /* ...and on a phone the screen is shorter than 100vh says it is. The address
      bar is showing most of the time, and vh does not count it: a 667 phone
      shows about 575. This stack — 20vh down, then 244 of copy, then the card,
@@ -1083,10 +1094,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      justify-content, because the base rule only centres this pill's label on
      the cross axis: at auto width there was nothing to centre along the main
      one, and left alone the label would now sit against the leading edge. */
+  /* Asked for: the white button matches the blue one. .closing-cta runs 18 of
+     type inside 16 and 16 of padding, which is the frame's 50-tall button; this
+     was on the base rule's 12 and a clamp that bottoms out at .85rem, so it
+     came out 38 tall with smaller type beside an identical-width pill. */
   .solution-preview .sol-cta{left:min(6.15vw,26px);bottom:auto;
+    padding:16px 24px;font-size:18px;
     width:min(87.69vw,377px);justify-content:center;
-    top:min(calc(var(--sol-screen) + var(--sol-card-top) + var(--sol-card-h) + 24px),
-            calc(var(--sol-screen) * 2 - 62px))}
+    top:min(calc(var(--sol-lead) + var(--sol-card-top) + var(--sol-card-h) + 24px),
+            calc(var(--sol-lead) + var(--sol-screen) - 62px))}
   /* --- SAVE YOUR DATA. GROW ITS VALUE. on the phone: Figma 4045:23128 ---
      the vw paddings and gaps are a few pixels at this width, so set them in
      their own terms */
@@ -1191,13 +1207,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 <!-- ACT 1 : YOUR LIFE CREATES DATA -->
 <section class="act" id="act1" aria-label="Your life creates data">
-  <div class="frame on" data-i="0"><img src="assets/img/website_hero_image_1.jpg" alt="A woman looking at her phone beneath a canopy of flowers against a blue sky"></div>
-  <div class="frame" data-i="1"><img src="assets/img/website_hero_image_2.jpg" alt="A man running through a park with city skyscrapers in the background" loading="lazy"></div>
+  <div class="frame on" data-i="0"><img decoding="async" src="assets/img/website_hero_image_1.jpg" alt="A woman looking at her phone beneath a canopy of flowers against a blue sky"></div>
+  <div class="frame" data-i="1"><img decoding="async" src="assets/img/website_hero_image_2.jpg" alt="A man running through a park with city skyscrapers in the background" loading="lazy"></div>
 
   <!-- every single day frames -->
-  <div class="frame" data-i="9"><img src="assets/img/website_hero_image3.jpg" alt="" loading="lazy"></div>
-  <div class="frame" data-i="10"><img src="assets/img/website_hero_image4.jpg" alt="" loading="lazy"></div>
-  <div class="frame" data-i="11"><img src="assets/img/website_hero_image5.jpg" alt="" loading="lazy"></div>
+  <div class="frame" data-i="9"><img decoding="async" src="assets/img/website_hero_image3.jpg" alt="" loading="lazy"></div>
+  <!-- Swapped with act 2's frame 5, asked for. The statement's long hold lands
+       on its LAST photograph, not its first — measured, the flower-stall tap
+       got .5s at the head of "Every tap. Every step." while the charger sat
+       there for 1.75. Trading the two images puts the hold on the tap. -->
+  <div class="frame" data-i="10"><img decoding="async" src="assets/img/website_hero_image9.jpg" alt="An electric vehicle charging cable plugged into a car" loading="lazy"></div>
+  <div class="frame" data-i="11"><img decoding="async" src="assets/img/website_hero_image5.jpg" alt="" loading="lazy"></div>
   <div class="photo-veil" aria-hidden="true"></div>
 
 
@@ -1236,11 +1256,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   </div>
   <!-- act 2 rides inside act 1 so the sequence plays straight through -->
   <div class="act-layer" id="act2">
-  <div class="frame" data-i="0"><img src="assets/img/website_hero_image6.jpg" alt="A man wearing red headphones and glasses looking down at his phone" loading="lazy"></div>
-  <div class="frame" data-i="4"><img src="assets/img/website_hero_image7.jpg" alt="A woman crossing a city street carrying a dark shopping bag" loading="lazy"></div>
-  <div class="frame" data-i="5"><img src="assets/img/website_hero_image9.jpg" alt="An electric vehicle charging cable plugged into a car" loading="lazy"></div>
-  <div class="frame frame-baby" data-i="6"><img src="assets/img/sept3-baby-aisle.jpg" alt="A mother and young child reaching for groceries in a supermarket aisle" loading="lazy"></div>
-    <div class="frame" data-i="7"><img src="assets/img/what-happens-to-its-value.jpg" alt="A mother reading a picture book with two children by string lights" loading="lazy"></div>
+  <div class="frame" data-i="0"><img decoding="async" src="assets/img/website_hero_image6.jpg" alt="A man wearing red headphones and glasses looking down at his phone" loading="lazy"></div>
+  <div class="frame" data-i="4"><img decoding="async" src="assets/img/website_hero_image7.jpg" alt="A woman crossing a city street carrying a dark shopping bag" loading="lazy"></div>
+  <div class="frame" data-i="5"><img decoding="async" src="assets/img/website_hero_image4.jpg" alt="A man paying by phone at a flower stall" loading="lazy"></div>
+  <div class="frame frame-baby" data-i="6"><img decoding="async" src="assets/img/sept3-baby-aisle.jpg" alt="A mother and young child reaching for groceries in a supermarket aisle" loading="lazy"></div>
+    <div class="frame" data-i="7"><img decoding="async" src="assets/img/what-happens-to-its-value.jpg" alt="A mother reading a picture book with two children by string lights" loading="lazy"></div>
   <div class="photo-veil" aria-hidden="true"></div>
   <div class="line-veil"></div>
 
@@ -1276,16 +1296,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 <!-- ACT 4 : AGE TRACK -->
 <section class="act age-scene" id="ages" aria-label="How your value grows as you age">
   <div class="frames" id="ageFrames">
-    <div class="frame" data-age="0"><img src="assets/img/age-0-newborn.jpg" alt="A mother's hand gently touching her newborn baby lying in a crib"></div>
-    <div class="frame" data-age="2"><img src="assets/img/age-2-toddler.jpg" alt="A toddler smiling while riding a pink tricycle on a sidewalk"></div>
-    <div class="frame" data-age="13"><img src="assets/img/age-13-teenageyears.jpg" alt="A teenage girl browsing lip gloss at a beauty store"></div>
-    <div class="frame" data-age="18"><img src="assets/img/age-18-college.jpg" alt="A college student writing on a tablet with a stylus at her desk"></div>
-    <div class="frame" data-age="25"><img src="assets/img/age-25-firstapartment.jpg" alt="A woman smiling while carrying a moving box up a staircase"></div>
-    <div class="frame" data-age="32"><img src="assets/img/age-32-buildingalife.jpg" alt="A woman running on a beach while holding someone's hand" loading="lazy"></div>
-    <div class="frame" data-age="36"><img src="assets/img/age-36-family.jpg" alt="A mother laughing with her young son on the living room floor" loading="lazy"></div>
-    <div class="frame" data-age="45"><img src="assets/img/age-45-career.jpg" alt="A woman with a shoulder bag walking past a glass office building" loading="lazy"></div>
-    <div class="frame" data-age="58"><img src="assets/img/age-58-enjoyinglife.jpg" alt="A couple relaxing in a pool at a tropical resort" loading="lazy"></div>
-    <div class="frame" data-age="70"><img src="assets/img/age-70-retirement.jpg" alt="A group of friends laughing together at an outdoor dinner table" loading="lazy"></div>
+    <div class="frame" data-age="0"><img decoding="async" src="assets/img/age-0-newborn.jpg" alt="A mother's hand gently touching her newborn baby lying in a crib"></div>
+    <div class="frame" data-age="2"><img decoding="async" src="assets/img/age-2-toddler.jpg" alt="A toddler smiling while riding a pink tricycle on a sidewalk"></div>
+    <div class="frame" data-age="13"><img decoding="async" src="assets/img/age-13-teenageyears.jpg" alt="A teenage girl browsing lip gloss at a beauty store"></div>
+    <div class="frame" data-age="18"><img decoding="async" src="assets/img/age-18-college.jpg" alt="A college student writing on a tablet with a stylus at her desk"></div>
+    <div class="frame" data-age="25"><img decoding="async" src="assets/img/age-25-firstapartment.jpg" alt="A woman smiling while carrying a moving box up a staircase"></div>
+    <div class="frame" data-age="32"><img decoding="async" src="assets/img/age-32-buildingalife.jpg" alt="A woman running on a beach while holding someone's hand" loading="lazy"></div>
+    <div class="frame" data-age="36"><img decoding="async" src="assets/img/age-36-family.jpg" alt="A mother laughing with her young son on the living room floor" loading="lazy"></div>
+    <div class="frame" data-age="45"><img decoding="async" src="assets/img/age-45-career.jpg" alt="A woman with a shoulder bag walking past a glass office building" loading="lazy"></div>
+    <div class="frame" data-age="58"><img decoding="async" src="assets/img/age-58-enjoyinglife.jpg" alt="A couple relaxing in a pool at a tropical resort" loading="lazy"></div>
+    <div class="frame" data-age="70"><img decoding="async" src="assets/img/age-70-retirement.jpg" alt="A group of friends laughing together at an outdoor dinner table" loading="lazy"></div>
   </div>
 
   <div class="num-wrap">
@@ -1361,7 +1381,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <div class="sol-card">
       <div class="sol-card-glow" aria-hidden="true"><img src="assets/img/dsp-card-glow.svg" alt=""></div>
       <div class="sol-card-face">
-        <div class="sol-card-photo"><img src="assets/img/dsp-card-hero.jpg" alt="" loading="lazy"></div>
+        <div class="sol-card-photo"><img decoding="async" src="assets/img/dsp-card-hero.jpg" alt="" loading="lazy"></div>
         <div class="sol-cast sol-cast-warm" aria-hidden="true"></div>
         <div class="sol-cast sol-cast-cool" aria-hidden="true"></div>
         <div class="sol-card-brand">
@@ -1391,7 +1411,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         <article class="step" id="step1">
           <div class="step-card"><picture>
             <source media="(max-width:760px)" srcset="assets/img/how-card-1-mobile.jpg">
-            <img src="assets/img/how-card-1.jpg" alt="A woman stepping out of a rideshare car, with a card reading: You deposited data, Rideshare to 265 Horizon Rd, added to savings plan" loading="lazy">
+            <img decoding="async" src="assets/img/how-card-1.jpg" alt="A woman stepping out of a rideshare car, with a card reading: You deposited data, Rideshare to 265 Horizon Rd, added to savings plan" loading="lazy">
           </picture></div>
           <div class="step-copy">
             <p class="step-eyebrow">Own your data</p>
@@ -1403,7 +1423,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         <article class="step" id="step2">
           <div class="step-card"><picture>
             <source media="(max-width:760px)" srcset="assets/img/how-card-2-mobile.jpg">
-            <img src="assets/img/how-card-2.jpg" alt="Toggles for travel and transportation, finance and investments, retail and food, and entertainment and gaming, each switched on" loading="lazy">
+            <img decoding="async" src="assets/img/how-card-2.jpg" alt="Toggles for travel and transportation, finance and investments, retail and food, and entertainment and gaming, each switched on" loading="lazy">
           </picture></div>
           <div class="step-copy">
             <p class="step-eyebrow">Save your data</p>
@@ -1415,7 +1435,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         <article class="step" id="step3">
           <div class="step-card"><picture>
             <source media="(max-width:760px)" srcset="assets/img/how-card-3-mobile.jpg">
-            <img src="assets/img/how-card-3.jpg" alt="An offer card reading: license your streaming data and earn $, with a view offer button" loading="lazy">
+            <img decoding="async" src="assets/img/how-card-3.jpg" alt="An offer card reading: license your streaming data and earn $, with a view offer button" loading="lazy">
           </picture></div>
           <div class="step-copy">
             <p class="step-eyebrow">Participate in offers</p>
@@ -1427,7 +1447,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         <article class="step" id="step4">
           <div class="step-card"><picture>
             <source media="(max-width:760px)" srcset="assets/img/how-card-4-mobile.jpg">
-            <img src="assets/img/how-card-4.jpg" alt="A woman smiling beside a QR code and a paying-from panel showing $50 available" loading="lazy">
+            <img decoding="async" src="assets/img/how-card-4.jpg" alt="A woman smiling beside a QR code and a paying-from panel showing $50 available" loading="lazy">
           </picture></div>
           <div class="step-copy">
             <p class="step-eyebrow">Pay with data <span class="step-note">(coming soon)</span></p>
@@ -2216,6 +2236,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // blink; this gives it the room to actually read as one image becoming the
   // other — asked for.
   const NEXT_ON_BY_SEG = [NEXT_ON, NEXT_ON, 1.8];
+  // Asked for: the runner and the headphones are gone too quickly — a quarter of
+  // a second more each. Measured at .2 they were one sample in four at 250ms,
+  // which is a glimpse rather than a photograph.
+  //
+  // Keyed by statement and by LEG, because a leg's duration is how long the
+  // frame BEFORE its mark stays up: statement 0's second leg runs the runner,
+  // statement 1's third runs the headphones. Anything not named here takes the
+  // statement's own NEXT_ON.
+  const HOLD_LONGER = {0:{2:NEXT_ON + .25}, 1:{3:NEXT_ON + .25}};
 
   const buildRunPin = phone => {
     if(!phone){
@@ -2271,7 +2300,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // Where a statement waits, and where it goes. Below and clear on the way in;
     // above and clear on the way out; and once it is out it is put straight back
     // below, invisible, ready to arrive again on the next time round.
-    const showBand = (i, immediate) => {
+    // lag is the in-tween's delay, overridable: the opening statement is asked to
+    // arrive WITH its photograph rather than after it, so its own arrival passes 0.
+    const showBand = (i, immediate, lag) => {
       // the copy's own record of which statement is up
       bandIdx = i;
       if(immediate){
@@ -2285,8 +2316,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         if(upIdx >= 0 && upIdx !== i)
           gsap.to(phraseEl[upIdx], {opacity:0, duration:OUT_TIME, ease:'power1.in',
                                     overwrite:true});
+        const d = lag === undefined ? IN_LAG : lag;
         gsap.fromTo(phraseEl[i], {opacity:0},
-          {opacity:1, duration:IN_TIME, delay:IN_LAG, ease:'power1.out',
+          {opacity:1, duration:d ? IN_TIME : .45, delay:d, ease:'power1.out',
            overwrite:true});
         upIdx = i;
       }
@@ -2349,7 +2381,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // left rather than crossing it.
       phraseEl.forEach(el => gsap.set(el, {opacity:0}));
       upIdx = -1;
-      showBand(0, false);
+      // Asked for: "Your life creates data" appears immediately, at the same
+      // time as the first image. IN_LAG is the gap that lets one statement clear
+      // before the next arrives, and on arrival there is nothing to clear — the
+      // screen is empty and the photograph is already there — so the lag is 0
+      // and the fade is short enough to land with it rather than trail it.
+      showBand(0, false, 0);
     };
     const stopAuto = () => {
       if(auto) auto.pause();
@@ -2396,7 +2433,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
           if(lead < marks[k])
             chain.to(tl1, {time:marks[k], duration:FIRST_ON / 2, ease:'none'});
         } else {
-          chain.to(tl1, {time:marks[k], duration:NEXT_ON_BY_SEG[i], ease:'none'});
+          chain.to(tl1, {time:marks[k], ease:'none',
+            duration:(HOLD_LONGER[i] && HOLD_LONGER[i][k]) || NEXT_ON_BY_SEG[i]});
         }
       }
       segTween = chain;
@@ -2942,8 +2980,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // NO TIMELINE, NO TRIGGER, NO PIN. The phone's plan screen is two screens of
     // ordinary document now — see the CSS note by #solution in the 760 block —
     // so there is nothing here to animate and nothing to drive it with. All this
-    // branch does is move the four cards into their own section, which is markup,
-    // and make the second copy of the dSavings card.
+    // branch does is move the four cards into their own section, which is markup.
     //
     // Why it ended up here, recorded so it is not undone by accident: every
     // scroll-driven version of this screen was skippable. A pin can be crossed by
@@ -2957,19 +2994,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // engaged and released right at its lower edge — which is where "it glitches
     // and goes up and down" was being felt, a pin engaging under iOS momentum.
     // There is no pin anywhere on the phone now.
-    const card = solSec.querySelector('.sol-card');
-    // Both Figma phone frames carry the card, and there is one of it. The copy is
-    // inert - no ids inside it are referenced by anything, and the phone runs no
-    // animation over either - so a plain clone is enough. aria-hidden because it
-    // is the same object shown twice, not a second card.
-    const card2 = card && card.cloneNode(true);
-    if(card2){
-      card2.classList.add('sol-card-2');
-      card2.setAttribute('aria-hidden', 'true');
-      card.parentElement.appendChild(card2);
-    }
     return () => {
-      if(card2) card2.remove();
       // the cards go back, and an earlier build left a touch-action on this
       // section; both are the other branch's to set again
       solSec.style.touchAction = '';
