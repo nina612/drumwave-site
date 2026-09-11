@@ -2352,10 +2352,56 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // same for every photograph. The ease of that tween is the ease of the fade,
   // because tl1's own opacity tween underneath is linear — power1.inOut in,
   // power1.inOut out, no overshoot anywhere.
-  const HOLD  = HERO_V === 1 ? 1.8 : 4.0,   // every photograph's time at full
-        FIRST_HOLD = HERO_V === 1 ? 1.6 : 6.0,  // ...except the one the run opens on
-        XFADE = HERO_V === 1 ? .45 : 1.0,   // and the crossfade between any two
+  // --- PER-PHOTOGRAPH PACING ---
+  //
+  // Asked for: the time a photograph gets should depend on what is IN it, not be
+  // one number for all of them. A single clear subject on a defocused ground is
+  // read almost instantly; a frame with several people and a detailed
+  // background is not, and giving both the same beat either rushes the second
+  // or stalls on the first.
+  //
+  // Two classes, and the crossfade goes with the hold — a busy frame needs
+  // longer to resolve on the way in as well as longer to sit.
+  //
+  // V2 is the one that varies by content; V1 keeps one number for every
+  // photograph, which is what makes the two worth comparing — same pictures,
+  // same order, one paced by what is in the frame and one not. Setting v1's two
+  // classes equal leaves it running through this same table with no effect.
+  const HOLD_SIMPLE = HERO_V === 1 ? 1.8 : .5,    // one clear subject
+        HOLD_BUSY   = HERO_V === 1 ? 1.8 : 1.25,  // several, or a detailed ground
+        XF_SIMPLE   = HERO_V === 1 ? .45 : .20,
+        XF_BUSY     = HERO_V === 1 ? .45 : .44,
+        // The opening frame. v2's was 6.0 for "let the page feel settled before
+        // anything moves" — that predates the per-image table and the table does
+        // not carry an exception for the first frame, so it now takes the hero's
+        // own class (busy) plus a little for opening the page. It is one number
+        // to put back if the six seconds mattered more than the consistency.
+        FIRST_HOLD  = HERO_V === 1 ? 1.6 : 1.5,
         LEAD = 1.2;
+  // The authored tween is longer than the crossfade anyone SEES, and the table
+  // in the reply quotes both. An ease-in-out spends its tails below 5% and above
+  // 95% of opacity, where the change is not legible — .684 of the duration is
+  // what reads. .20 gives 137ms and .44 gives 301ms, which is what puts the
+  // RENDERED fades inside the 120-150 and 250-350 asked for.
+  //
+  // Which photograph is which. Keyed by the moment it cuts in, because that is
+  // what the chain already walks; anything not listed falls to simple.
+  const PHOTO = () => [
+    [0,                       'busy',   'hero: a flower canopy filling the top third, plus a figure'],
+    [T_RUN,                   'simple', 'runner: one figure, open park behind'],
+    [T_COFFEE,                'simple', 'coffee: one cup dead centre, background thrown out'],
+    [T_TAP,                   'simple', 'charger: one object, no people, ground defocused'],
+    [T_PKG,                   'simple', 'delivery (v2 only; v1 drops it)'],
+    [ACT1_END,                'simple', 'headphones: single subject, plain ground'],
+    [ACT1_END + HOLD0,        'busy',   'shopping bag: figure against a live street'],
+    [ACT1_END + HOLD0 + SHOP, 'busy',   'flower stall: man, card, terminal, bouquet, shelves'],
+    [ACT1_END + BABY,         'busy',   'supermarket: two people and a wall of shelves'],
+    [ACT1_END + FAMILY,       'busy',   'family: three people, string lights, warm clutter']
+  ];
+  const classOf = t => { const r = PHOTO().find(([m]) => Math.abs(m - t) < 1e-6);
+                         return r ? r[1] : 'simple'; };
+  const holdFor  = t => classOf(t) === 'busy' ? HOLD_BUSY : HOLD_SIMPLE;
+  const xfadeFor = t => classOf(t) === 'busy' ? XF_BUSY   : XF_SIMPLE;
   // "Own and save your data" is the one statement of the three with only two
   // photographs, and the only one that crosses between them on a dissolve
   // rather than a cut. A fifth of a second spent that whole dissolve in a
@@ -2542,10 +2588,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // How long a statement's photographs take, in seconds — hold plus crossfade
     // for every leg. Derived from the same two numbers the chain is built from,
     // so the statement can never drift out of step with the pictures under it.
-    const legHold = (i, k) => (i === 0 && k === 1) ? FIRST_HOLD : HOLD;
+    // A leg's HOLD belongs to the photograph that is up during it — the one that
+    // cut in at the PREVIOUS mark. Its crossfade belongs to the photograph it is
+    // fading INTO, at marks[k], because that is the one being resolved.
+    const legHold  = (i, k) => (i === 0 && k === 1) ? FIRST_HOLD
+                                                    : holdFor(phraseFrames[i][k - 1]);
+    const legXfade = (i, k) => cutAt(phraseFrames[i][k]) ? xfadeFor(phraseFrames[i][k]) : 0;
     const bandRun = i => { let t = 0;
-      for(let k = 1; k < phraseFrames[i].length; k++)
-        t += legHold(i, k) + (cutAt(phraseFrames[i][k]) ? XFADE : 0);
+      for(let k = 1; k < phraseFrames[i].length; k++) t += legHold(i, k) + legXfade(i, k);
       return t; };
 
     let auto = null;
@@ -2649,7 +2699,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       for(let k = 1; k < marks.length; k++){
         const cut = cutAt(marks[k]);
         chain.to(tl1, {time:marks[k], duration:legHold(i, k), ease:'none'});
-        if(cut) chain.to(tl1, {time:marks[k] + cut, duration:XFADE, ease:'power1.inOut'});
+        if(cut) chain.to(tl1, {time:marks[k] + cut, duration:legXfade(i, k),
+                               ease:'power1.inOut'});
       }
       segTween = chain;
     };
