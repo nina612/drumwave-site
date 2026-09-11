@@ -622,6 +622,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    a 1920 container is restated in phone terms, since 1.6667cqw of 390 is 6px.
    ============================================================ */
 @media (max-width:760px){
+  /* --- WHY THE SCROLL WAS NOT SMOOTH ---
+     will-change does not mean "this may change". It means "give this its own
+     compositor layer and keep it there", and the base rules put it on every
+     .frame and every masked line — 23 elements here, 12 of them full-bleed
+     photographs. At 390x844 on a 3x phone one of those layers is 11.8MB, so the
+     page held well over 100MB of GPU memory permanently. iOS Safari has a hard
+     budget for that; past it, it discards layers and re-rasterises them while
+     the finger is still moving, which is the stutter and the apparent jumping.
+     The browser promotes an element on its own for the duration of a tween and
+     drops it after, which is the behaviour wanted. Off here; the wide layout,
+     which scrubs these frames on a machine with room to spare, keeps it.
+     Same change as the personal page. */
+  .frame{will-change:auto}
+  .ln > span{will-change:auto}
   /* --- nav: the hamburger/panel/backdrop system itself now lives in the
      1000px block above (no separate tablet tier); down here it only sets its
      top. 24, the gutter the rest of this page keeps — it was 78 to clear the
@@ -870,7 +884,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      takes the semibold, and the CTA is the green split-button. -->
 <header class="nav" aria-label="dWallet">
   <a class="logo" href="#">
-    <img class="mark" src="assets/img/logo.png" alt="" width="36" height="36">
+    <img decoding="async" class="mark" src="assets/img/logo.png" alt="" width="36" height="36">
     <span class="rule" aria-hidden="true"></span>
     <img class="wordmark" src="assets/img/sept8-dwallet-wordmark.svg" alt="dWallet" width="112" height="26">
   </a>
@@ -892,7 +906,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <div class="nav-menu-panel" id="navMenuPanel">
     <div class="mp-top">
       <a class="logo" href="#">
-        <img class="mark" src="assets/img/logo.png" alt="" width="30" height="30">
+        <img decoding="async" class="mark" src="assets/img/logo.png" alt="" width="30" height="30">
         <span class="rule" aria-hidden="true"></span>
         <img class="wordmark" src="assets/img/sept8-dwallet-wordmark.svg" alt="dWallet" width="86" height="20">
       </a>
@@ -930,18 +944,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
        then 3819:69030/3801:60531 (the trading floor and the developer).
        The headline stands over every one of them, so there is no second copy layer
        and no second act — the frames all live here and cut on a single beat. -->
-  <div class="frame on" data-i="0"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-01-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-01.jpg" alt="A barista pulling a shot at an espresso machine in a cafe" width="1199" height="823"></picture></div>
-  <div class="frame" data-i="1"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-02-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-02.jpg" alt="Ground crew signalling as an airliner passes low overhead at sunset" width="1920" height="1080"></picture></div>
-  <div class="frame" data-i="2"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-03-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-03.jpg" alt="A chef finishing a dish with fresh herbs in a restaurant kitchen" width="1920" height="1080"></picture></div>
-  <div class="frame" data-i="3"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-04-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-04.jpg" alt="An articulated lorry on a highway at golden hour" width="1920" height="1080"></picture></div>
-  <div class="frame" data-i="4"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-05-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-05.jpg" alt="An installer fixing a solar panel on a roof under a clear sky" width="1920" height="1080"></picture></div>
-  <div class="frame" data-i="5"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-06-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-06.jpg" alt="Shipping containers stacked at a port, one lifted by a crane" width="1920" height="1080"></picture></div>
-  <div class="frame" data-i="6"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-07-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-07.jpg" alt="A woman packing a parcel into a cardboard box" width="1920" height="1080"></picture></div>
-  <div class="frame" data-i="7"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-08-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-08.jpg" alt="A worker loading crates of drinks from a pallet" width="1920" height="1080"></picture></div>
-  <div class="frame" data-i="8"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-09-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-09.jpg" alt="A shop worker restocking shelves in a personal care aisle" width="1920" height="1080"></picture></div>
-  <div class="frame" data-i="9"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-10-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-10.jpg" alt="A grocer placing boxes on a shelf in a food hall" width="1920" height="1080"></picture></div>
-  <div class="frame" data-i="10"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-11-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-11.jpg" alt="A film crew working in front of a large LED volume wall" width="1920" height="1080"></picture></div>
-  <div class="frame" data-i="11"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-13-phone.jpg" width="720" height="1560"><img src="assets/img/sept8-run-13.jpg" alt="A developer working at a code editor in a modern office" width="1448" height="1086"></picture></div>
+  <div class="frame on" data-i="0"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-01-phone.jpg" width="720" height="1560"><img decoding="async" src="assets/img/sept8-run-01.jpg" alt="A barista pulling a shot at an espresso machine in a cafe" width="1199" height="823"></picture></div>
+  <div class="frame" data-i="1"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-02-phone.jpg" width="720" height="1560"><img decoding="async" src="assets/img/sept8-run-02.jpg" alt="Ground crew signalling as an airliner passes low overhead at sunset" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="2"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-03-phone.jpg" width="720" height="1560"><img decoding="async" src="assets/img/sept8-run-03.jpg" alt="A chef finishing a dish with fresh herbs in a restaurant kitchen" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="3"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-04-phone.jpg" width="720" height="1560"><img decoding="async" src="assets/img/sept8-run-04.jpg" alt="An articulated lorry on a highway at golden hour" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="4"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-05-phone.jpg" width="720" height="1560"><img decoding="async" src="assets/img/sept8-run-05.jpg" alt="An installer fixing a solar panel on a roof under a clear sky" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="5"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-06-phone.jpg" width="720" height="1560"><img decoding="async" src="assets/img/sept8-run-06.jpg" alt="Shipping containers stacked at a port, one lifted by a crane" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="6"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-07-phone.jpg" width="720" height="1560"><img decoding="async" src="assets/img/sept8-run-07.jpg" alt="A woman packing a parcel into a cardboard box" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="7"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-08-phone.jpg" width="720" height="1560"><img decoding="async" src="assets/img/sept8-run-08.jpg" alt="A worker loading crates of drinks from a pallet" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="8"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-09-phone.jpg" width="720" height="1560"><img decoding="async" src="assets/img/sept8-run-09.jpg" alt="A shop worker restocking shelves in a personal care aisle" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="9"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-10-phone.jpg" width="720" height="1560"><img decoding="async" src="assets/img/sept8-run-10.jpg" alt="A grocer placing boxes on a shelf in a food hall" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="10"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-11-phone.jpg" width="720" height="1560"><img decoding="async" src="assets/img/sept8-run-11.jpg" alt="A film crew working in front of a large LED volume wall" width="1920" height="1080"></picture></div>
+  <div class="frame" data-i="11"><picture><source media="(max-width:760px)" srcset="assets/img/sept8-run-13-phone.jpg" width="720" height="1560"><img decoding="async" src="assets/img/sept8-run-13.jpg" alt="A developer working at a code editor in a modern office" width="1448" height="1086"></picture></div>
   <div class="photo-veil" aria-hidden="true"></div>
 
   <h1 class="hero-h display xl">
@@ -985,8 +999,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     </div>
 
     <div class="biz-stats" id="bizStats" aria-hidden="true">
-      <img class="biz-stats-a" src="assets/img/sept8-biz-stats.jpg" alt="" loading="lazy">
-      <img class="biz-stats-b" src="assets/img/sept8-biz-balance.jpg" alt="" loading="lazy">
+      <img decoding="async" class="biz-stats-a" src="assets/img/sept8-biz-stats.jpg" alt="" loading="lazy">
+      <img decoding="async" class="biz-stats-b" src="assets/img/sept8-biz-balance.jpg" alt="" loading="lazy">
     </div>
 
     <!-- sept-8, framing 2 — Figma 3783:21746, Benefits of a Business dWallet. That
@@ -1005,10 +1019,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
         <div class="biz-ben-cols">
           <article class="biz-ben-col biz-ben-col1">
-            <img class="biz-ben-photo" src="assets/img/sept8-ben-1.jpg" alt="A gallon of whole milk on a sunlit windowsill" loading="lazy">
+            <img decoding="async" class="biz-ben-photo" src="assets/img/sept8-ben-1.jpg" alt="A gallon of whole milk on a sunlit windowsill" loading="lazy">
             <!-- the column's photo is blurred and a sharp window is revealed from
                  x=278 of 638, which is what lets the tags read over the left of it -->
-            <img class="biz-ben-window" src="assets/img/sept8-ben-1-sharp.jpg" alt="" loading="lazy">
+            <img decoding="async" class="biz-ben-window" src="assets/img/sept8-ben-1-sharp.jpg" alt="" loading="lazy">
             <span class="biz-ben-glow" aria-hidden="true"></span>
             <span class="biz-chip biz-chip-blue"  style="left:19.67%;top:20.16%">Customer profile</span>
             <span class="biz-chip biz-chip-dark"  style="left:13.59%;top:26.99%">Store location</span>
@@ -1021,7 +1035,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
           </article>
 
           <article class="biz-ben-col biz-ben-col2">
-            <img class="biz-ben-photo" src="assets/img/sept8-ben-2.jpg" alt="A shopkeeper reaching towards the camera in a store" loading="lazy">
+            <img decoding="async" class="biz-ben-photo" src="assets/img/sept8-ben-2.jpg" alt="A shopkeeper reaching towards the camera in a store" loading="lazy">
             <div class="biz-ben-chart">
               <div class="biz-ben-chart-head">
                 <span class="biz-ben-value">
@@ -1045,7 +1059,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
           </article>
 
           <article class="biz-ben-col biz-ben-col3">
-            <img class="biz-ben-photo" src="assets/img/sept8-ben-3.jpg" alt="A man at an electric vehicle charging point under a blue sky" loading="lazy">
+            <img decoding="async" class="biz-ben-photo" src="assets/img/sept8-ben-3.jpg" alt="A man at an electric vehicle charging point under a blue sky" loading="lazy">
             <div class="biz-ben-earn">
               <p class="biz-ben-earn-title">You’ve earned $25 today<br>with dWallet.</p>
               <div class="biz-ben-earn-body">
@@ -1092,7 +1106,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
            the file; the classes stay on the <img> the timeline animates. -->
       <picture class="ent-dash-clip">
         <source media="(max-width:760px)" srcset="assets/img/sept8-ent-dsp-phone.png" width="1016" height="1257">
-        <img class="ent-dash ent-rise" src="assets/img/sept8-ent-dsp.jpg" alt="The Your Data Savings Plans dashboard, showing balance and data-under-custody charts and a plan called Traveler" loading="lazy">
+        <img decoding="async" class="ent-dash ent-rise" src="assets/img/sept8-ent-dsp.jpg" alt="The Your Data Savings Plans dashboard, showing balance and data-under-custody charts and a plan called Traveler" loading="lazy">
       </picture>
     </div>
   </div>
@@ -1167,7 +1181,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   <footer class="site-footer">
     <div>
-      <div class="foot-logo"><img src="assets/img/logo.png" alt="" width="42" height="42"><img class="foot-wordmark" src="assets/img/sept8-drumwave-wordmark.svg" alt="DrumWave" width="118" height="19"></div>
+      <div class="foot-logo"><img decoding="async" src="assets/img/logo.png" alt="" width="42" height="42"><img class="foot-wordmark" src="assets/img/sept8-drumwave-wordmark.svg" alt="DrumWave" width="118" height="19"></div>
       <p class="foot-tag">Your Business. Your Strategy. Your Data.<sup>&reg;</sup></p>
       <p class="foot-copy">Copyright &copy; 2026 DrumWave Inc. All rights reserved.</p>
       <div class="foot-social">
@@ -1542,8 +1556,44 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
             delay:.08, ease:'power2.inOut'}
     });
   } else {
-    ScrollTrigger.create({trigger:'#act1', start:'top top', end:'+=100%',
-      pin:true, animation:tl1, ...autoPlay});
+    // NO PIN on the phone. Same change, and the same reason, as the personal
+    // page: a ScrollTrigger pin engaging or releasing under iOS momentum takes
+    // the section out of flow and puts a spacer in its place mid-throw, while
+    // the compositor is already somewhere else — which is the page appearing to
+    // jump back. This run plays on its own clock, so the pin was only holding
+    // the reader still while it did; the section is one ordinary screen now and
+    // the run plays while it is on screen.
+    //
+    // end at the section's own bottom rather than +=100%, since there is no
+    // pinned distance to measure any more — the trigger's only job is to say
+    // whether the run is in view, which is what autoPlay's callbacks want.
+    // No `animation:` here, and that is deliberate. Handing the timeline to
+    // ScrollTrigger makes ScrollTrigger own the playhead: it pauses it at build
+    // time and plays it on enter. But a trigger is not active AT its own start —
+    // isActive is false at exactly the start pixel and true one past it — and
+    // this section's start IS scroll 0, where the page loads and where every
+    // reader begins. So onEnter never fired and the run sat on one frame
+    // indefinitely; measured at ten seconds on frame 0. The pin used to hide
+    // this by giving the trigger a range that began before the reader could rest
+    // on its edge.
+    //
+    // So the trigger only answers "is the run on screen", and the timeline is
+    // played and paused from here. Same shape the personal page's run uses.
+    const runTrig = ScrollTrigger.create({
+      trigger:'#act1', start:'top top', end:'bottom top',
+      onEnter:     () => { if(tl1.paused()) restartRun(); },
+      // Coming back up onto the opening gives it back from the top rather than
+      // parking the reader on whatever frame it stopped on. Guarded on paused()
+      // so a refresh, which fires this while the run is still playing under a
+      // reader who never left, cannot throw the playhead back to the first frame.
+      onEnterBack: () => { if(tl1.paused()) restartRun(); },
+      onLeave:     () => tl1.pause(),
+      // start > 1 because this section starts at scroll 0, so leaving backwards
+      // fires once during setup, at the top, for nobody.
+      onLeaveBack: self => { if(self.start > 1) tl1.pause(); }
+    });
+    // Started by hand, for the reason in the note above: nothing else will.
+    restartRun();
   }
 
   /* ---------- THE DATA SAVINGS PLAN : TWO FRAMINGS ON ONE PIN ---------- */
@@ -1745,7 +1795,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // its recorded start (opacity 1) whenever the playhead sits before it — so a
   // refresh or a rewind leaves later photos stacked over the hero. Same cure as the
   // tags: while the run is parked at the top, state the true baseline outright.
-  const resetRun = () => {
+  // A function declaration, not a const: the phone's run reaches this from its
+  // own setup, which runs earlier in this file than this line does. As a const
+  // it was in its dead zone there, restartRun() threw, and the throw took the
+  // whole rest of the script with it — measured, one ScrollTrigger built out of
+  // five and the FAQ never wired.
+  function resetRun(){
     if(tl1.time() >= 0.01) return;
     gsap.set($$('#act1 > .frame'), {opacity:0});
     gsap.set($$('#act1 > .frame[data-i="0"]'), {opacity:1});
