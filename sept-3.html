@@ -719,6 +719,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      only decides where a line would wrap, and at 293 the longer ones do. The
      measure below stays wide enough that each line is the line it was written
      as, which is invisible against the frame and the point of the 73. */
+  /* v1 of the run drops the delivery package, and the way it is dropped matters.
+     display:none was the obvious answer and it was wrong: the timeline hides
+     each photograph a quarter-unit after the NEXT one cuts in, so with the
+     delivery invisible the tap frame was still taken away on its cue and
+     nothing replaced it — measured as a quarter-second of black at 6.5s.
+     Instead the delivery frame is given the tap frame's own photograph (see
+     HERO_V in the script), so the cut still happens on schedule and lands on the
+     picture already showing. Its crop has to come too, or the same image jumps
+     sideways as it changes frame. */
+  .hero-v1 #act1 > .frame[data-i="11"] img{object-position:75% 50%}
+
   /* --- WHY THE SCROLL WAS NEVER SMOOTH, EVEN WITH NOTHING PINNED ---
      will-change does not mean "this may change". It means "give this its own
      compositor layer and keep it there", and the base rules put it on every
@@ -1666,6 +1677,45 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // where the run plays itself unless ?scroll asks otherwise. ?play gets the clock back
   // on this file if it is ever wanted for comparison.
   const SCROLL_RUN = !/(?:^|[?&#])play(?:=|&|$)/.test(location.search + location.hash);
+  // --- TWO VERSIONS OF THE PHONE RUN, so readers can be shown both ---
+  //
+  //   ?hero=1  the slow cut: every photograph paced like the last two, the
+  //            delivery package dropped, and a long rest on the family frame
+  //            before the run starts over
+  //   ?hero=2  what is live today; also what anyone arriving with no parameter
+  //            gets, so the plain link is unchanged
+  //
+  // One file rather than two, because two copies of a two-hundred-kilobyte page
+  // means every later fix has to be made twice and one of them will be missed.
+  // Everything the switch touches is read through HERO_V, and every one of those
+  // reads is inside the PHONE build — phraseFrames drives play() and nothing
+  // else, so the wide layout cannot see any of this.
+  const HERO_V = /(?:^|[?&#])hero=1(?:[&#]|$)/.test(location.search + location.hash) ? 1 : 2;
+  if(HERO_V === 1){
+    document.documentElement.classList.add('hero-v1');
+    // The delivery frame carries the photograph before it, so its cut is
+    // invisible and the tap frame reads as simply holding through. Doing it this
+    // way rather than hiding the frame keeps the timeline untouched — which
+    // matters because the wide layout scrubs that same timeline and must not
+    // change. See the .hero-v1 note in the 760 block for what hiding it cost.
+    //
+    // Scoped to the PHONE, and it has to be: this is the only part of the switch
+    // that touches the page rather than the phone build. The crop above is
+    // inside the 760 block and phraseFrames drives play(), which is the phone's
+    // alone — but an <img> src is an img src at every width, and a reader
+    // opening this link on a desktop would have found the delivery frame
+    // showing the charger. matchMedia puts it back on the way out.
+    const tapImg = document.querySelector('#act1 > .frame[data-i="10"] img'),
+          pkgImg = document.querySelector('#act1 > .frame[data-i="11"] img');
+    if(tapImg && pkgImg){
+      const wasSrc = pkgImg.getAttribute('src'), wasAlt = pkgImg.getAttribute('alt') || '';
+      gsap.matchMedia().add('(max-width: 760px)', () => {
+        pkgImg.setAttribute('src', tapImg.getAttribute('src'));
+        pkgImg.setAttribute('alt', '');
+        return () => { pkgImg.setAttribute('src', wasSrc); pkgImg.setAttribute('alt', wasAlt); };
+      });
+    }
+  }
   // PHONE FLAT.
   //
   // Asked for: on a phone, every animation below the opening run and the age
@@ -2213,10 +2263,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // authored pace — it gives every photograph a fixed time on screen instead
   // (see FIRST_ON/NEXT_ON), so what these mark is where one ends and the next
   // begins, not how long either lasts.
+  // v1 drops T_PKG, the delivery package — asked for, it goes by too fast to
+  // read. Dropping the MARK is only half of it: the chain tweens the playhead
+  // from one mark to the next, so without its own mark the delivery would still
+  // cut in as the leg crossed its moment. The frame is hidden outright in CSS
+  // (see .hero-v1 in the 760 block) so the photograph before it simply holds
+  // through.
   const phraseFrames = [
     [0, T_RUN, T_COFFEE, T_TAP],                                    // hero, runner, coffee
-    [T_TAP, T_PKG, ACT1_END, ACT1_END + HOLD0,                      // tap, delivery, headphones,
-     ACT1_END + HOLD0 + SHOP, ACT1_END + BABY],                     //   bag, charger
+    HERO_V === 1
+      ? [T_TAP, ACT1_END, ACT1_END + HOLD0,                          // tap, headphones,
+         ACT1_END + HOLD0 + SHOP, ACT1_END + BABY]                   //   bag, charger
+      : [T_TAP, T_PKG, ACT1_END, ACT1_END + HOLD0,                   // tap, delivery, headphones,
+         ACT1_END + HOLD0 + SHOP, ACT1_END + BABY],                  //   bag, charger
     [ACT1_END + BABY, ACT1_END + FAMILY, tl1.duration()]            // baby, family
   ];
   const phraseSegs = phraseFrames.map(m => [m[0], m[m.length - 1]]);
@@ -2228,13 +2287,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // at half that second — enough to carry the copy's own entrance, which lives
   // at the head of these stretches. The rest of the stretch is crossed in the
   // other half; nothing changes across it, so it reads as the image holding.
-  const FIRST_ON = 1.0, NEXT_ON = .2, LEAD = 1.2;
+  // v1 paces every transit photograph at 1.8 — the figure the baby and the family
+  // already run at, which is what "similar to the last two images" asks for. It
+  // is a nine-fold slowdown on the .2 v2 uses, so the loop goes from about
+  // eleven seconds to about twenty-three. That is the point of the version, not
+  // an oversight.
+  const FIRST_ON = HERO_V === 1 ? 1.6 : 1.0,
+        NEXT_ON  = HERO_V === 1 ? 1.8 : .2,
+        LEAD = 1.2;
   // "Own and save your data" is the one statement of the three with only two
   // photographs, and the only one that crosses between them on a dissolve
   // rather than a cut. A fifth of a second spent that whole dissolve in a
   // blink; this gives it the room to actually read as one image becoming the
   // other — asked for.
-  const NEXT_ON_BY_SEG = [NEXT_ON, NEXT_ON, 1.8];
+  // v1 is uniform: the third statement's 1.8 is now every statement's.
+  const NEXT_ON_BY_SEG = HERO_V === 1 ? [NEXT_ON, NEXT_ON, NEXT_ON]
+                                      : [NEXT_ON, NEXT_ON, 1.8];
   // Asked for: the runner and the headphones are gone too quickly — a quarter of
   // a second more each. Measured at .2 they were one sample in four at 250ms,
   // which is a glimpse rather than a photograph.
@@ -2243,7 +2311,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // frame BEFORE its mark stays up: statement 0's second leg runs the runner,
   // statement 1's third runs the headphones. Anything not named here takes the
   // statement's own NEXT_ON.
-  const HOLD_LONGER = {0:{2:NEXT_ON + .25}, 1:{3:NEXT_ON + .25}};
+  // Nothing to lengthen in v1: the runner and the headphones were singled out
+  // because .2 was a glimpse, and at 1.8 every frame already holds.
+  const HOLD_LONGER = HERO_V === 1 ? {} : {0:{2:NEXT_ON + .25}, 1:{3:NEXT_ON + .25}};
 
   const buildRunPin = phone => {
     if(!phone){
@@ -2377,7 +2447,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // (The desktop is untouched: it still scrubs across its own pin, where none
     // of the above applies - a mouse does not collapse an address bar.)
     const BAND_HOLD = 1.7;   // a statement stands this long after its photographs have run
-    const LOOP_GAP  = 1.6;   // ...and the last one this long before the run starts over
+    // v1 rests 2.5s longer on the family frame before starting over — asked for.
+    const LOOP_GAP  = HERO_V === 1 ? 4.1 : 1.6;
     // What play(i) costs in seconds: FIRST_ON for the photograph a statement
     // opens on, then NEXT_ON_BY_SEG[i] for each one after it. Derived rather
     // than written down, so changing the pace of the photographs re-times the
