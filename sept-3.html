@@ -2214,12 +2214,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // The one thing that is here is a margin, and it is the only defence the
     // screen needs against the thing that actually caused "it moves by itself":
     // iOS shifting the scroll about ninety pixels on its own when the address
-    // bar collapses. A boundary has to be passed by a quarter of a band - 142px
-    // at this size - before the statement changes, which is comfortably more
-    // than any toolbar moves. Rest anywhere, let Safari shuffle the page about,
-    // and the words stay put. No arithmetic about who caused the scroll, no
-    // window, no flag: just a margin wider than the wobble.
-    const EDGE = .25;
+    // bar collapses. A boundary has to be passed by a fifth of a band - 114px at
+    // this size - before the statement changes. Rest anywhere, let Safari
+    // shuffle the page about, and the words stay put. No arithmetic about who
+    // caused the scroll, no gesture window, no flag: just a margin wider than
+    // the wobble.
+    //
+    // A fifth and not a quarter, because the margin is also a lag: it is how far
+    // past a boundary the reader travels before the words catch up, in whichever
+    // direction they are going. Measured on the running page at .25 it was 152px
+    // of overshoot; .2 brings that to 114, still clear of any toolbar. This is
+    // the one number on this screen with a real trade in it - larger is
+    // steadier, smaller answers quicker - and it is the first place to go if it
+    // ever feels sticky.
+    const EDGE = .2;
     const renderPhrases = pr => {
       const t = clamp01(pr) * BANDS;
       if(bandIdx < 0){ bandIdx = Math.min(BANDS - 1, Math.floor(t)); showBand(bandIdx, true); return; }
