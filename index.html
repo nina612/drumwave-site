@@ -13,7 +13,13 @@
      search engines, which follow it as a redirect); the script covers
      everyone else with no flash of this page. -->
 <meta http-equiv="refresh" content="0; url=sept-3.html">
-<script>location.replace('sept-3.html');</script>
+<!-- The query and hash are carried across, which the meta refresh above cannot do.
+     GitHub Pages serves these files with cache-control: max-age=600 and no way to
+     set a header, so a phone that has the page cached is the normal way a change
+     fails to show up. Appending ?anything to this link is the reliable way to force
+     a fresh copy - and without this line the redirect dropped it, so the short link
+     could not be busted at all. -->
+<script>location.replace('sept-3.html' + location.search + location.hash);</script>
 <style>html{background:#070707}</style>
 </head>
 <body>
