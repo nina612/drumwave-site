@@ -1572,6 +1572,50 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // where the run plays itself unless ?scroll asks otherwise. ?play gets the clock back
   // on this file if it is ever wanted for comparison.
   const SCROLL_RUN = !/(?:^|[?&#])play(?:=|&|$)/.test(location.search + location.hash);
+  // PHONE FLAT.
+  //
+  // Asked for: on a phone, every animation below the opening run and the age
+  // track comes off, and those screens are simply there as the reader arrives
+  // at them. Two things were behind that ask and both are real.
+  //
+  // The first is the glitch - "it reverses back to the top on certain
+  // sections". Three of these screens were PINNED and SCRUBBED on a phone, and
+  // a scrubbed pin has two failure modes a phone hits and a desktop does not.
+  // A pin's length is measured at refresh, and iOS refreshes when its address
+  // bar collapses; the spacer is re-measured under a reader who has not moved,
+  // and the page steps. And a scrub ties the animation to the scroll in both
+  // directions, so the ninety pixels iOS shifts on its own play the screen
+  // BACKWARDS - which is a section reversing toward its start with nobody
+  // touching it. Neither has a fix that keeps the scrub; the scrub is the fix.
+  //
+  // The second is quieter and worth as much: a reveal that never fires leaves
+  // its content at opacity 0. Every `rise` below is content that is invisible
+  // until a ScrollTrigger says otherwise, and on a phone - where the viewport
+  // changes height under the reader and refreshes land mid-scroll - "otherwise"
+  // is one missed callback away. Flat, there is nothing to miss.
+  //
+  // Read once, not live. Crossing 760px mid-session is a rotation into
+  // landscape, and the two outcomes are "the screens are visible with no
+  // reveal" and "the screens are visible, having been revealed" - the same
+  // screen either way, so there is nothing to rebuild. The two PINS are the
+  // exception and they are on gsap.matchMedia, which does rebuild: a pin left
+  // on the wrong side of the breakpoint is a layout, not a flourish.
+  const PHONE_FLAT = window.matchMedia('(max-width:760px)').matches;
+  // Everything PHONE_FLAT holds at its finished state, said in one place so it
+  // can be said again. resetRun calls this first on every ScrollTrigger
+  // refresh, because its own blanket `.ln > span` reset - which exists for the
+  // run's copy - would otherwise put these lines back behind their masks and
+  // leave the screens blank. A function declaration so resetRun, defined far
+  // below, can reach it.
+  function showFlatPhone(){
+    if(!PHONE_FLAT) return;
+    gsap.set('#worth .time-glow-q', {opacity:.32});
+    gsap.set(Array.from(document.querySelectorAll('#worth .worth .ln > span')), {yPercent:0});
+    gsap.set(Array.from(document.querySelectorAll(FLAT_RISE.join(','))), {opacity:1, y:0});
+  }
+  // The blocks that rise into view on a desktop and simply stand on a phone.
+  const FLAT_RISE = ['.closing-copy', '.closing-cta', '#how .faq-head', '#how .faq-row',
+                     '#how .site-footer > *', '#how .disclosures > *', '#howHost .step'];
   // NOT normalizeScroll. It is GSAP's supported way to take momentum off the compositor
   // and onto the main thread, which is the one thing that would let this page guarantee
   // the reader is stopped on a beat however hard they flick — but it replaces the scroll
@@ -2098,6 +2142,127 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // other — asked for.
   const NEXT_ON_BY_SEG = [NEXT_ON, NEXT_ON, 1.8];
 
+  // --- ONE SWIPE, ONE STEP ---
+  //
+  // The phone's rule, in one place, because two screens work by it: the opening
+  // run's three statements and the plan screen's two framings.
+  //
+  // Asked for on the run, and it is the fix for "it all goes at once": every
+  // version before this read the step off the SCROLL POSITION - thirds of a
+  // pin, with a margin either side of each boundary - and a phone flick
+  // carries two to three thousand pixels after the finger leaves. A band was
+  // 568. So one throw crossed the lot. No margin fixes that, because the margin
+  // is measured in the same pixels the flick has too many of.
+  //
+  // A gesture is a gesture whatever its length, so counting them is the only
+  // thing that makes one swipe mean one step. And once the count owns the step,
+  // the scroll must not ALSO own it - two owners is what every earlier
+  // snap/latch pair was. So while there is still a step ahead, the pinned
+  // section carries `touch-action: none` and the page does not scroll at all.
+  // Nothing is preventDefault-ed on touch and nothing calls scrollTo; the
+  // browser is simply told this surface does not pan, so a flick has nowhere to
+  // carry the reader and no momentum to arrive with. The whole family of "it
+  // moved by itself" cannot happen while the page cannot move: an address bar
+  // collapsing, a throw overshooting the end, a settle reversing a swipe - none
+  // of them have a scroll to act on.
+  //
+  // The lock lifts the moment the last step is up, so the swipe after that one
+  // scrolls the page on normally, with the phone's own inertia. Backwards walks
+  // the steps back one per gesture the same way.
+  //
+  // el     the pinned section the lock sits on
+  // count  how many steps it has
+  // onStep (i, immediate) - what the screen does when the step changes
+  const makeSwipeSteps = (el, count, onStep) => {
+    // How far a finger travels before a drag counts as a swipe. Small enough
+    // that a real swipe always passes it on its first move, large enough that a
+    // tap or a thumb settling on the glass does not.
+    const SWIPE_PX = 14;
+    // A trackpad sends a burst of wheel events for one gesture and then keeps
+    // sending them as the momentum decays. A gesture is over after this much
+    // quiet, and everything inside the burst belongs to the swipe that started
+    // it.
+    const WHEEL_GAP = 260;
+    // The phone's nav panel opens over these sections, and a thumb scrolling
+    // inside it is not a swipe at the screen underneath. The panel sits outside
+    // both pinned sections, so the lock never applied to it; this is the other
+    // half of the same point.
+    const menuPanel = $('#navMenuPanel');
+    const menuOpen = () => !!(menuPanel && menuPanel.classList.contains('open'));
+
+    let idx = 0, trig = null;
+    const live = () => !!(trig && trig.isActive) && !menuOpen();
+    const canStep = dir => dir > 0 ? idx < count - 1 : idx > 0;
+    // The page is held still while a step is still ahead of the reader, and
+    // handed back the moment the last one is up. Read by the browser at
+    // touchstart, so it only has to be right between gestures, not during one.
+    const sync = () => {
+      if(el) el.style.touchAction = (trig && trig.isActive && idx < count - 1) ? 'none' : '';
+    };
+    const step = dir => {
+      idx = Math.min(count - 1, Math.max(0, idx + dir));
+      onStep(idx, false);
+      sync();
+    };
+
+    // TOUCH. No preventDefault anywhere: touch-action has already told the
+    // browser this surface does not pan, so these listeners are passive and
+    // only have to decide which way the thumb went.
+    let tY = 0, tLive = false, tSpent = true;
+    const onTouchStart = e => {
+      tLive = live() && e.touches.length === 1;
+      tSpent = false;
+      if(tLive) tY = e.touches[0].clientY;
+    };
+    const onTouchMove = e => {
+      if(!tLive || tSpent || !e.touches.length) return;
+      const dy = tY - e.touches[0].clientY;     // + is a swipe up, which is forward
+      if(Math.abs(dy) < SWIPE_PX) return;
+      tSpent = true;                            // one step per gesture, whatever is left of it
+      const dir = dy > 0 ? 1 : -1;
+      if(canStep(dir)) step(dir);
+    };
+    const onTouchEnd = () => { tLive = false; };
+
+    // WHEEL, for a trackpad or a mouse in a window this narrow. touch-action
+    // says nothing about these, so the lock here is a preventDefault, held for
+    // the whole burst so the momentum cannot step a second time or leak into
+    // the page underneath.
+    let wLast = -1e9, wHeld = false;
+    const onWheel = e => {
+      if(!live()){ wHeld = false; return; }
+      const now = performance.now(), fresh = now - wLast > WHEEL_GAP;
+      wLast = now;
+      if(!fresh){ if(wHeld && e.cancelable) e.preventDefault(); return; }
+      const dir = e.deltaY > 0 ? 1 : -1;
+      wHeld = canStep(dir);
+      if(wHeld){ if(e.cancelable) e.preventDefault(); step(dir); }
+    };
+
+    addEventListener('touchstart', onTouchStart, {passive:true});
+    addEventListener('touchmove',  onTouchMove,  {passive:true});
+    addEventListener('touchend',   onTouchEnd,   {passive:true});
+    addEventListener('touchcancel',onTouchEnd,   {passive:true});
+    addEventListener('wheel',      onWheel,      {passive:false});
+
+    return {
+      // the trigger whose isActive decides whether a gesture here means anything
+      bind: t => { trig = t; sync(); },
+      sync,
+      index: () => idx,
+      // put the screen on a step outright, no transition - arrival, and reset
+      set: i => { idx = Math.min(count - 1, Math.max(0, i)); onStep(idx, true); sync(); },
+      destroy: () => {
+        removeEventListener('touchstart', onTouchStart);
+        removeEventListener('touchmove',  onTouchMove);
+        removeEventListener('touchend',   onTouchEnd);
+        removeEventListener('touchcancel',onTouchEnd);
+        removeEventListener('wheel',      onWheel);
+        if(el) el.style.touchAction = '';
+      }
+    };
+  };
+
   const buildRunPin = phone => {
     if(!phone){
       const runSnap = runStops.map(t => t / tl1.duration()).concat([1]);
@@ -2151,7 +2316,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // durations of the transition rather than distances along the scroll.
     const OUT_TIME = .28, IN_TIME = .46, IN_LAG = .06;
     const IN_RISE  = .34;           // the arriving statement comes from here
-    const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
 
     // Measured once and kept, NOT read live - see the note above. Re-measured
     // only when the WIDTH changes, which is a rotation or a real resize, never
@@ -2169,7 +2333,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
                             : {y: 0, opacity: 1};
     let shown = 0;
     let bandIdx = -1;
+    // Declared up here rather than at its own create(), because the trigger's
+    // own callbacks reach the stepper, which is built before it - a const would
+    // be in its dead zone for those.
+    let trig = null;
     const showBand = (i, immediate) => {
+      // the copy's own record of which statement is up; the stepper owns the
+      // count, this is what a re-measure re-states without asking it
+      bandIdx = i;
       phraseEl.forEach((el, k) => {
         const st = stateFor(i, k);
         if(immediate){ gsap.set(el, st); return; }
@@ -2198,52 +2369,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
     // --- WHICH STATEMENT IS UP ---
     //
-    // The pin is three bands, one a statement, and the statement is whichever
-    // band the scroll is in. That is the whole rule. The reader scrolls up and
-    // down wherever they like, at whatever speed they like, and the words follow
-    // them. Nothing moves the page, nothing holds them anywhere, nothing waits
-    // on the photographs.
-    //
-    // Everything that used to sit here - a snap, a gesture window, a
-    // one-step-per-swipe latch, a settle that pulled a hard flick back - was
-    // added to fix one report and caused the next. A settle that finishes a
-    // swipe is also a forced reverse when the reader meant to keep going; a
-    // gesture window that ignores scrolls it cannot attribute is also a
-    // statement that fails to change when it should. None of them are here now.
-    //
-    // The one thing that is here is a margin, and it is the only defence the
-    // screen needs against the thing that actually caused "it moves by itself":
-    // iOS shifting the scroll about ninety pixels on its own when the address
-    // bar collapses. A boundary has to be passed by a fifth of a band - 114px at
-    // this size - before the statement changes. Rest anywhere, let Safari
-    // shuffle the page about, and the words stay put. No arithmetic about who
-    // caused the scroll, no gesture window, no flag: just a margin wider than
-    // the wobble.
-    //
-    // A fifth and not a quarter, because the margin is also a lag: it is how far
-    // past a boundary the reader travels before the words catch up, in whichever
-    // direction they are going. Measured on the running page at .25 it was 152px
-    // of overshoot; .2 brings that to 114, still clear of any toolbar. This is
-    // the one number on this screen with a real trade in it - larger is
-    // steadier, smaller answers quicker - and it is the first place to go if it
-    // ever feels sticky.
-    const EDGE = .2;
-    const renderPhrases = pr => {
-      const t = clamp01(pr) * BANDS;
-      if(bandIdx < 0){ bandIdx = Math.min(BANDS - 1, Math.floor(t)); showBand(bandIdx, true); return; }
-      let i = bandIdx;
-      if(t > bandIdx + 1 + EDGE)  i = Math.min(BANDS - 1, Math.floor(t));
-      else if(t < bandIdx - EDGE) i = Math.max(0, Math.floor(t));
-      if(i === bandIdx) return;
-      bandIdx = i;
-      showBand(i, false);
-    };
+    // A count of gestures, stepped by makeSwipeSteps above. Nothing here reads
+    // the scroll position: showBand is the whole of what a step does, and the
+    // photographs follow it because showBand calls play().
+    const steps = makeSwipeSteps($('#act1'), phraseEl.length,
+                                 (i, immediate) => showBand(i, immediate));
+
     const play = i => {
       if(i === seg) return;
       seg = i;
       if(segTween) segTween.kill();
       // The statements themselves are not moved from here any more — they are
-      // rendered from the scroll position, see renderPhrases above. This is
+      // rendered from the gesture count, see the stepper above. This is
       // only the photographs now.
       // A chain that walks tl1's playhead photograph by photograph, each leg
       // given the time that photograph is meant to be on screen rather than the
@@ -2265,79 +2402,29 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       }
       segTween = chain;
     };
-    const trig = ScrollTrigger.create({
-      // 160vh a statement, where it has been 200, then 130, then 100.
+    trig = ScrollTrigger.create({
+      // The pin no longer paces anything. It used to be the pace - 200vh a
+      // statement, then 160, 140, 110, 90, 70, each number a trade between
+      // "too many scrolls to switch" and "one flick crosses the lot" - because
+      // the statement was read off the scroll position and so distance was the
+      // only dial there was. The stepper above ended that: a swipe is a swipe
+      // at any length, and inside the run there is no scroll for a flick to
+      // spend.
       //
-      // Shortening it to 100 was a mistake, and it caused both of the things
-      // reported straight afterwards. A hard flick on iOS carries two to three
-      // thousand pixels of momentum after the finger leaves, and the whole run
-      // was 1989 - so one hard swipe crossed all three statements, and a flick
-      // that arrived on the last one kept going past the end of the pin on its
-      // own, which is what "own and save starts scrolling down the page by
-      // itself" is. Nothing on this page moves the reader: there is no snap on
-      // a phone and nothing calls scrollTo. It was their own momentum arriving
-      // somewhere with too little left in front of it.
-      //
-      // At the time, length was the only lever for that: a snap was refused and
-      // normalizeScroll had broken the pinning outright when it was tried (see
-      // the note by SCROLL_RUN). The snap below is now allowed, and catching
-      // momentum is precisely its job - so the pin no longer has to be long
-      // enough to outlast a throw, and 160 has come back down to 110. Fewer
-      // scrolls to change a statement, which is what was asked, and the snap
-      // rather than the distance is what stops a hard flick crossing the lot.
-      //
-      // The reason 160 does not bring back "too slow" is that the handover
-      // above no longer spends the whole zone on the outgoing statement. It is
-      // gone in half of it, so its speed is set by OUT_BY and not by this
-      // number: at 130 the copy moved .46px for every px of thumb and that was
-      // the too-slow complaint; at 160 it moves .75, half again as fast, in a
-      // pin half again as long. Resistance and responsiveness are no longer the
-      // same dial, which is what made every earlier round of this a trade.
-      // 140vh a statement, not 90. With the one-swipe-one-statement latch above,
-      // this number no longer sets the pace - the reader gets one statement per
-      // swipe whatever it is. What it sets is whether an ordinary swipe can
-      // reach the END of the pin, and that matters because the last statement is
-      // forced there: at the bottom of the run the last one must be up whatever
-      // the swipe history says, or the reader could leave having never seen it.
-      // At 90 the whole pin was 2192px and one hard swipe covered it, so the
-      // latch would allow one change and then the end-forcing would make a
-      // second - which is precisely "I swipe on your life creates data and every
-      // tap goes off by itself". At 140 the pin is 3411 and an ordinary swipe
-      // lands well inside it.
-      // 70vh a statement - 568px to change one, 1705px for the run. Half of that,
-      // 284px, is all a swipe needs to move on, which is what "too many scrolls
-      // to switch" was asking for.
-      trigger:'#act1', start:'top top', end:'+=' + (phraseEl.length * 70) + '%',
+      // What is left for this number to do is the runway AFTER the last
+      // statement: the lock lifts once "Own and save your data." is up, and
+      // this is how far the reader then travels with it held before the section
+      // hands over. One unhurried swipe's worth. Longer would be scrolling
+      // against a finished screen, which is the one thing a held frame must not
+      // become.
+      trigger:'#act1', start:'top top', end:'+=70%',
       pin:true,
-      // The snap is back, asked for after the trade was put plainly. It had been
-      // refused three times before, and for a good reason each time - so this is
-      // not the same snap, and the difference is the whole of why it is allowed
-      // back.
-      //
-      // What went wrong before: it was DIRECTIONAL. Directional snapping reads
-      // the heading and takes the next point in that direction, so a reader who
-      // came to rest inside a statement was carried forward to the following
-      // one - measured once as thirty scrollTo calls walking the page from 2587
-      // to 3376 after the flick had already finished. That is a page moving
-      // somewhere the reader had not gone, which is the thing that keeps being
-      // refused, and rightly.
-      //
-      // This one is nearest-point, and the points are the statements' own
-      // resting places - the frames where one is whole and the next has not
-      // started. So the snap can only ever finish a movement the reader began,
-      // never begin one. The furthest it can carry anyone is half a zone: 650px
-      // to the statement they are already most of the way to, or 650 back to the
-      // one they barely left. It cannot reach a statement they were not already
-      // standing in.
-      //
-      // inertia is left on, which is what makes a real flick behave: GSAP snaps
-      // from where the throw would have landed, not from where the finger left,
-      // so a hard swipe that clearly means "next" lands on next and a small
-      // nudge settles back. Short, too - a fifth of a second to half a second -
-      // so it reads as the page settling under the thumb rather than travelling.
-      // No snap in the trigger's own config - see the gesture-gated one built
-      // below it, and the note there for why GSAP's cannot be used here.
-      onUpdate: self => { renderPhrases(self.progress); play(shown); },
+      // No snap, and nothing here reads the progress any more. The statement is
+      // the gesture count; the scroll's only remaining job is to carry the
+      // reader out of the section once the run is done. onUpdate exists solely
+      // to keep the lock in step with the trigger going active and inactive.
+      onUpdate: () => steps.sync(),
+      onEnter: () => steps.sync(), onEnterBack: () => steps.sync(), onLeave: () => steps.sync(),
       // start > 1 for the same reason the run's other triggers test it: this
       // section starts at the very top of the page, so leaving backwards fires
       // once during setup, at scroll 0 — which killed the first statement's
@@ -2351,17 +2438,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       }
     });
 
-    // Nothing listens for touches any more and nothing calls scrollTo. The only
-    // listener left on this screen is the one that re-measures the travel
-    // distance when the window's WIDTH changes - a rotation - and never on the
-    // height-only change an address bar makes.
+    steps.bind(trig);
+
+    // Everything this screen listens for, taken back off again: the stepper's
+    // five, plus the re-measure that fires when the window's WIDTH changes - a
+    // rotation - and never on the height-only change an address bar makes.
     trig._dropSnap = () => {
       removeEventListener('resize', remeasureTravel);
       removeEventListener('orientationchange', remeasureTravel);
+      steps.destroy();
     };
 
-    renderPhrases(trig.progress);
-    play(shown);
+    // The run opens on its first statement whatever the scroll happens to be -
+    // there is nothing above this section for the reader to have come from, and
+    // the statement is no longer derived from a position it could disagree with.
+    steps.set(0);
+    play(0);
     return trig;
   };
 
@@ -2390,22 +2482,32 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     gsap.set('#worth .time-glow-q', {opacity:0});
     gsap.set(worthLn, {yPercent:112});
   };
-  const tl5 = gsap.timeline({
-    defaults:{ease:'none'},
-    paused:true,
-    scrollTrigger:{
+  const tl5 = gsap.timeline({defaults:{ease:'none'}, paused:true});
+  // The pin and the reveal are the desktop's alone now. On a phone the question
+  // is simply printed on its screen, with its disc already lit — no pin to
+  // re-measure under the reader, and no reveal that can fail to fire. See
+  // PHONE_FLAT.
+  gsap.matchMedia()
+    .add('(min-width: 761px)', () => {
       // 45%, not 100. The copy is timed, not scrubbed: it plays on entry and is
       // whole .38s in, whatever the reader does. A full screen of pin after that
       // was 731px on a phone and 855px on a desktop of scrolling against a
       // finished screen — the longest dead stretch on the page. This is the beat
       // that lets the question land, and then the section moves on with the reader.
-      trigger:'#worth', start:'top top', end:'+=45%', pin:true,
-      onEnter:      self => self.animation.play(),
-      onEnterBack:  self => { if(self.animation.paused()) restartWorth(); },
-      onLeave:      self => self.animation.pause(),
-      onLeaveBack:  self => { self.animation.invalidate().pause(0); resetWorth(); }
-    }
-  });
+      const st = ScrollTrigger.create({
+        trigger:'#worth', start:'top top', end:'+=45%', pin:true, animation:tl5,
+        onEnter:      self => self.animation.play(),
+        onEnterBack:  self => { if(self.animation.paused()) restartWorth(); },
+        onLeave:      self => self.animation.pause(),
+        onLeaveBack:  self => { self.animation.invalidate().pause(0); resetWorth(); }
+      });
+      return () => st.kill();
+    })
+    .add('(max-width: 760px)', () => {
+      tl5.pause(0);
+      showFlatPhone();
+      return () => {};
+    });
   function restartWorth(){
     tl5.invalidate().pause(0);
     resetWorth();
@@ -2863,16 +2965,97 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     solHost.appendChild(solHowEl);
     fitSolHow();
     const tl = buildSolTl(false);
-    // 225%, not 300 — the timeline is 2.25 units now and a unit stays one screen,
-    // so the pin ends where the animation does instead of a screen after it.
-    const trig = ScrollTrigger.create({trigger:'#solution', start:'top top',
-      end:'+=' + Math.round(tl.duration() * 100) + '%', pin:true, scrub:true, animation:tl});
-    // the cards lift into view on the way past, the way every other block in the
-    // scrolling part of the page does
-    const lift = gsap.fromTo('#howHost .step', {opacity:0, y:28},
-      {opacity:1, y:0, duration:.6, stagger:.08, ease:'power2.out',
-       scrollTrigger:{trigger:'#howHost', start:'top 82%'}});
-    return () => { trig.kill(); tl.kill(); lift.scrollTrigger && lift.scrollTrigger.kill(); lift.kill(); };
+
+    // NOT SCRUBBED. Asked for, and it is the same complaint the opening run
+    // had: a scrubbed pin plays backwards whenever the scroll goes backwards,
+    // and on a phone the scroll goes backwards without the reader — iOS shifts
+    // it about ninety pixels on its own when the address bar collapses, and a
+    // pin's length is re-measured on the refresh that follows. Both of those
+    // read as the section reversing toward its start with nobody touching it.
+    //
+    // So the two framings are stepped, by the same one-swipe-one-step rule the
+    // opening run works by (see makeSwipeSteps): the reader arrives and
+    // "Introducing the Data Savings Plan" comes up; one swipe and it hands over
+    // to "Open an account, request your data, and earn $25."; the swipe after
+    // that scrolls the page on. The screen cannot move in between, so there is
+    // nothing for a toolbar or a refresh to play backwards.
+    //
+    // The two framings' own resting moments on this timeline. A is whole from
+    // .86 and does not start leaving until 1.10, so 1.0 sits in the middle of
+    // its plateau; B is whole from 1.84 and the timeline holds to 2.25, so 2.0
+    // sits in the middle of its. The tail past 2.0 is left unplayed: it existed
+    // to carry the last framing out of view unchanged under a scrub, and
+    // nothing is scrubbing now.
+    const SOL_AT = [1.0, 2.0];
+    // .8 for the arrival and 1.0 for the handover. The handover has further to
+    // go — A leaves over 1.10 to 1.36 and B arrives over 1.38 to 1.84, one
+    // after the other rather than across each other — so at the arrival's own
+    // pace it would read as the quicker of the two.
+    const SOL_IN = .8, SOL_SWAP = 1.0;
+    let solTween = null;
+    // immediate is the put-away and the rebuild, not a step the reader made:
+    // framing 0 parks at the timeline's start so its reveal is still to come,
+    // framing 1 at its own resting moment.
+    const solGo = (i, immediate) => {
+      if(solTween) solTween.kill();
+      if(immediate){ solTween = null; tl.pause(i === 0 ? 0 : SOL_AT[i]); return; }
+      tl.pause();
+      solTween = gsap.to(tl, {time:SOL_AT[i], duration:i === 0 ? SOL_IN : SOL_SWAP,
+                              ease:'power1.inOut'});
+    };
+    const steps = makeSwipeSteps(solSec, 2, solGo);
+
+    // The first framing's reveal — the entrance this screen has always opened
+    // with — plays when the section is actually reached, and only if the reader
+    // has not already stepped past it. Coming back UP to a screen they left on
+    // the second framing finds it on the second framing, which is where they
+    // left it; only a return from above puts it away (onLeaveBack below).
+    const solArrive = () => {
+      steps.sync();
+      if(steps.index() === 0 && tl.time() < .01) solGo(0, false);
+    };
+    const trig = ScrollTrigger.create({
+      // 120%, where this was 225. The pin no longer carries the animation, so
+      // its length is not the pace of anything. Two things it still decides,
+      // and they pull opposite ways.
+      //
+      // It is the runway AFTER the second framing — the distance the reader
+      // travels with it held once the lock lifts — which wants to be short,
+      // since nothing changes across it.
+      //
+      // And it is what catches a reader arriving on momentum. The lock cannot:
+      // touch-action is read when a gesture STARTS, and a flick thrown on the
+      // age screen above has already started somewhere the lock does not apply,
+      // so its momentum runs on into this section whatever this section says.
+      // If the pin is shorter than that momentum the reader crosses the whole
+      // plan screen without stopping in it. The opening run has no such
+      // problem — it begins at scroll 0, where nobody arrives moving — which is
+      // why 70% is right there and not here.
+      //
+      // 120% is a screen of momentum-catching and about a screen of held card
+      // afterwards. If a flick is still getting past this, it is the number to
+      // raise; if the card outstays its welcome on the way out, the one to cut.
+      // (Missing the screen is not losing it: scrolling back up re-enters the
+      // section and plays its arrival again, see onEnterBack.)
+      trigger:'#solution', start:'top top', end:'+=120%', pin:true,
+      onUpdate: () => steps.sync(),
+      onLeave:  () => steps.sync(),
+      onEnter:     solArrive,
+      onEnterBack: solArrive,
+      // Gone back above the section entirely — put it away, so meeting it again
+      // is an arrival rather than a screen already half spent.
+      onLeaveBack: () => { steps.set(0); if(solTween) solTween.kill(); tl.pause(0); }
+    });
+    steps.bind(trig);
+    // Queued at the timeline's own start. Nothing is shown until the section is
+    // reached: a set() here would spend the reveal before the reader is there.
+    tl.pause(0);
+    if(trig.isActive) solArrive();
+
+    return () => { steps.destroy(); trig.kill(); tl.kill();
+      // the lock is an inline style on a live element, and the cards were moved
+      // into their own section; both are the other branch's to set again
+      solSec.style.touchAction = ''; };
   });
 
 
@@ -2880,10 +3063,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   /* ---------- ACT 7 : HOW IT WORKS + FAQ + FOOTER ---------- */
   // A normal scrolling screen — no pin. Each block just lifts into place as it
   // comes up, so it settles rather than animating on scrub like the acts above.
-  const rise = (target, at, extra={}) => gsap.fromTo(target,
-    {opacity:0, y:28},
-    Object.assign({opacity:1, y:0, duration:.7, ease:'power2.out',
-      scrollTrigger:{ trigger:at, start:'top 82%' }}, extra));
+  // On a phone these do not rise: they are already where they are going, set by
+  // showFlatPhone, and no trigger is created for them at all. See PHONE_FLAT.
+  const rise = (target, at, extra={}) => PHONE_FLAT
+    ? gsap.set(target, {opacity:1, y:0})
+    : gsap.fromTo(target,
+        {opacity:0, y:28},
+        Object.assign({opacity:1, y:0, duration:.7, ease:'power2.out',
+          scrollTrigger:{ trigger:at, start:'top 82%' }}, extra));
 
   /* ---------- SAVE YOUR DATA. GROW ITS VALUE. ---------- */
   // Its own normal-scrolling screen now (see the note by ageST above, where this
@@ -2942,6 +3129,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // reapplied here too or a refresh leaves the queued state peeking below its mask
     gsap.set($$(solHeadSpans), {yPercent:SOL_OUT});
     gsap.set($$('#runSay > .ln > span'), {opacity:1});
+    // LAST, and after the blanket above: that reset reaches every masked line on
+    // the page, and on a phone the question screen's lines are not queued behind
+    // a mask waiting for a reveal — they are simply printed. Restating them here
+    // is what keeps them from being hidden again by a refresh the reader never
+    // caused. (Before the guard it would have been too early: the blanket runs
+    // after it.)
+    showFlatPhone();
   };
   const hideTags = resetRun;
   ScrollTrigger.addEventListener('refresh', hideTags);
