@@ -443,6 +443,123 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    pointing on toward what comes next instead of up the page */
 .age-scene .age-skip-arrow{display:block;width:9px;height:8px;transform:rotate(90deg)}
 
+/* The wide frame's four new pieces, off by default. The base of this stylesheet
+   is the PHONE's layout — every rule above was measured against 4045:23023 —
+   so the new frame is additive and lives entirely in the min-width block below.
+   display:contents on the wrappers, not none: their children (.num-wrap, .ctl)
+   ARE the phone's layout, and contents lets those keep resolving their absolute
+   positions against the section the way they did before there were wrappers. */
+.age-scene .age-lower,.age-scene .age-row,.age-scene .age-readout{display:contents}
+.age-scene .age-contrib,.age-scene .age-badge,.age-scene .age-cap{display:none}
+
+/* ============ AGE PICKER, WIDE FRAME — Figma 4349:36344 ============
+   The instrument redrawn: a contribution picker on the left, the age in a pill
+   over the figure on the right, and a ruler beneath both whose own ticks carry
+   the progress.
+
+   Measured off the 1920x1080 frame and held to it by cap: the gutter is 118
+   (6.15vw), the row's baseline sits 242 off the bottom, the ruler's last row
+   125, and the gap between them 51. Each is written as its vw/vh share with a
+   px ceiling, so the frame is exact at 1920 and proportional below it.
+
+   The phone is untouched by all of this: every rule here is inside min-width
+   761, and the 760 block that follows is unchanged. */
+@media (min-width:761px){
+  .age-scene{--age-gut:min(6.15vw,118px);--age-blue:#0060FF}
+
+  /* the age is in the pill now */
+  .age-scene .stage-tag{display:none}
+
+  .age-scene .age-lower{display:block;position:absolute;
+    left:var(--age-gut);right:var(--age-gut);bottom:clamp(64px,11.57vh,125px);
+    z-index:7;user-select:none}
+
+  .age-scene .age-row{display:flex;align-items:flex-end;justify-content:space-between;
+    gap:40px;margin-bottom:clamp(28px,4.72vh,51px)}
+
+  /* --- left: the contribution picker --- */
+  .age-scene .age-contrib{display:flex;flex-direction:column;gap:16px;flex:0 0 auto}
+  .age-scene .age-contrib-cap{margin:0;font-family:'Open Sans',sans-serif;font-weight:600;
+    font-size:16px;line-height:.99;letter-spacing:.1em;text-transform:uppercase;color:#fff}
+  .age-scene .age-tabs{display:flex;width:343px;max-width:100%;height:48px;padding:4px;
+    background:rgba(0,0,0,.4);border-radius:12px}
+  .age-scene .age-tab{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;
+    border:1px solid transparent;border-radius:8px;background:none;cursor:pointer;
+    font-family:'Titillium Web',sans-serif;font-weight:600;font-size:16px;line-height:1.5;
+    color:#e2e2e2;transition:background .25s,color .25s,border-color .25s}
+  .age-scene .age-tab:hover{color:#fff}
+  /* the frame's own 4% white border on the selected chip: it is what keeps the
+     white block from cutting a hard edge into the black trough around it */
+  .age-scene .age-tab.is-on{background:#fff;border-color:rgba(255,255,255,.04);color:#000}
+  .age-scene .age-tab:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+  /* --- right: the pill, the figure, the caption --- */
+  /* gap 0, not 12: the frame stacks the pill straight onto the figure and only
+     the caption takes the 12. At line-height .99 the figure's box starts within
+     a pixel of its ink, so the pill lands on the digits the way it is drawn. */
+  .age-scene .age-readout{display:flex;flex-direction:column;align-items:flex-end;
+    gap:0;text-align:right;min-width:0}
+  .age-scene .age-badge{display:block;margin:0;padding:16px 20px;border-radius:100px;
+    /* #0060FF under a 20% black wash at 80% opacity, resolved: the wash and the
+       opacity are two layers in the frame and one colour on the screen. */
+    background:rgba(0,76,204,.8);
+    font-family:'Open Sans',sans-serif;font-weight:600;font-size:24px;line-height:.99;
+    letter-spacing:.05em;text-transform:uppercase;color:#fff;white-space:nowrap}
+  .age-scene .num-wrap{position:static;left:auto;right:auto;bottom:auto}
+  .age-scene .age-cap{display:block;margin:12px 0 0;font-family:'Open Sans',sans-serif;
+    font-weight:600;font-size:16px;line-height:.99;letter-spacing:.1em;
+    text-transform:uppercase;color:#fff;text-align:right}
+  /* the phone's copy of the same sentence */
+  .age-scene .ctl-cap{display:none}
+
+  /* --- the ruler --- */
+  .age-scene .ctl{position:static;left:auto;right:auto;bottom:auto}
+  /* 22 tall exactly: 9 of tick, 12 of air, the hairline. The touch band it used
+     to get from being 44 comes back as ::before, which is not its own event
+     target - a press on it arrives as a press on .track and the existing
+     x-mapping, which reads .track's box, is unaffected. */
+  .age-scene .track{height:22px;margin-bottom:0;z-index:2}
+  .age-scene .track::before{content:"";position:absolute;left:0;right:0;top:-11px;bottom:-11px}
+  .age-scene .track .ticks{top:0;height:9px;align-items:flex-end;right:0}
+  /* The ruler carries the progress here — there is no coloured bar in the frame,
+     the ticks themselves change over. One tick a year, 71 of them, with every
+     tenth full height so the majors land exactly under 0, 10, 20 ... 70 in the
+     row below. (The frame spaces its majors every twelfth tick, which lines up
+     with nothing; on a ruler whose labels are decades, tens are what it meant.) */
+  .age-scene .track .ticks i{height:4px;background:#999;opacity:.45}
+  .age-scene .track .ticks i:nth-child(10n+1){height:9px}
+  .age-scene .track .ticks i.hit{background:#fff;opacity:.75}
+  .age-scene .track .rail{top:21px;background:#fff;opacity:.55}
+  .age-scene .track .fill{display:none}
+  /* 30px of solid over a 49px halo — the frame's two circles, r15 inside r24.5
+     at half opacity. box-shadow draws outside the border box, so the ring is the
+     9.5px difference and the two never overlay each other. */
+  .age-scene .track .handle{top:21px;width:30px;height:30px;
+    background:var(--age-blue);box-shadow:0 0 0 9.5px rgba(0,96,255,.5)}
+  .age-scene .ctl .ages{margin-top:28px}
+  .age-scene .ctl .ages span{font-size:16px;letter-spacing:.01em;color:#999}
+  .age-scene .ctl .ages span.cur{color:#fff}
+
+  /* 42 off the frame's 1080 */
+  .age-scene .age-skip{bottom:clamp(20px,3.9vh,42px)}
+}
+
+/* The figure is the one thing here whose width is its content's. "$734,170" —
+   High, at 70 — is eight glyphs of 300px Titillium, and below about 1500 of
+   window that meets the picker coming the other way. Stepping the figure down
+   rather than letting the row collide is what the frame's own proportion does
+   anyway; these are the two widths where it stops fitting. */
+@media (min-width:761px) and (max-width:1500px){
+  .age-scene .bignum{font-size:min(13vw,220px)}
+  .age-scene .age-badge{font-size:20px;padding:13px 17px}
+}
+@media (min-width:761px) and (max-width:1120px){
+  .age-scene .bignum{font-size:min(11.5vw,150px)}
+  .age-scene .age-tabs{width:280px}
+  .age-scene .age-badge{font-size:16px;padding:11px 15px;letter-spacing:.04em}
+  .age-scene .age-contrib-cap,.age-scene .age-cap{font-size:13px}
+}
+
 /* ACT 6 : THE SOLUTION — fades up on black at the end of the #ages pin */
 .solution-preview{position:absolute;inset:0;z-index:9;pointer-events:none}
 .solution-preview .sol-state{position:absolute;left:5.83vw;max-width:49vw;z-index:2}
@@ -1390,15 +1507,54 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <div class="frame" data-age="70"><img decoding="async" src="assets/img/age-70-retirement.jpg" alt="A group of friends laughing together at an outdoor dinner table" loading="lazy"></div>
   </div>
 
-  <div class="num-wrap">
-    <div class="lab mono"><i></i><span>Potential value accumulated</span></div>
-    <div class="bignum display" id="ageBigVal">$0</div>
-  </div>
-
+  <!-- The top-right age readout is the PHONE's now. On the wide frame the age
+       rides in the blue pill directly over the figure instead (4349:36344), so
+       this is hidden there rather than deleted — the phone frame still draws it
+       and #ageNumVal / #ageCapVal are still what renderAge writes to. -->
   <div class="stage-tag">
     <div class="age display" id="ageNumVal">0</div>
     <div class="cap mono" id="ageCapVal">Newborn</div>
   </div>
+
+  <!-- THE WIDE FRAME'S LOWER HALF — Figma 4349:36344.
+       One bottom-anchored block: a row holding the contribution picker on the
+       left and the pill/figure/caption on the right, then the ruler under both.
+       Stacked in normal flow rather than three absolutely-placed pieces, because
+       the figure's width changes with the tier and the caption has to stay under
+       whatever width it takes.
+
+       On the phone none of this is drawn: .age-lower, .age-row and .age-readout
+       are display:contents there, so .num-wrap and .ctl fall back to being the
+       section's own children and every phone rule measured against them still
+       lands. That is why the wrappers carry no phone-visible styling of their
+       own. -->
+  <div class="age-lower">
+    <div class="age-row">
+      <div class="age-contrib">
+        <p class="age-contrib-cap">Your data contribution:</p>
+        <div class="age-tabs" role="group" aria-label="Your data contribution">
+          <button type="button" class="age-tab is-on" data-tier="0" aria-pressed="true">Low</button>
+          <button type="button" class="age-tab"       data-tier="1" aria-pressed="false">Medium</button>
+          <button type="button" class="age-tab"       data-tier="2" aria-pressed="false">High</button>
+        </div>
+      </div>
+
+      <div class="age-readout">
+        <p class="age-badge" id="ageBadge">Age 0: Newborn</p>
+        <div class="num-wrap">
+          <div class="lab mono"><i></i><span>Potential value accumulated</span></div>
+          <div class="bignum display" id="ageBigVal">$0</div>
+        </div>
+        <!-- The same sentence as .ctl-cap below, and deliberately a second
+             element rather than the same one moved: on the phone it heads the
+             ruler inside .ctl, and on the wide frame it sits under the figure on
+             the other side of the screen. Moving the one element would take its
+             height out of .ctl and drop the phone's ruler by that much, off the
+             42px bottom the phone frame measures it at. Only ever one of the two
+             is display:block, so only one reaches the accessibility tree. -->
+        <p class="age-cap">Data value generated from birth to retirement*</p>
+      </div>
+    </div>
 
   <div class="ctl" id="ageCtl">
     <div class="hint mono"><b id="ageDragHint">Drag to move through time</b></div>
@@ -1415,6 +1571,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       <div class="handle" id="ageHandle"></div>
     </div>
     <div class="ages mono" id="ageLabels"></div>
+  </div>
   </div>
 
   <!-- Figma 3898:98620/3361:82763 — a way off the age pin that isn't scrubbing
@@ -3060,29 +3217,50 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     {age:70, val:209763, label:'Retirement'}
   ];
   const AGES = AGE_DATA.map(d => d.age);
+  // YOUR DATA CONTRIBUTION — Figma 4349:36344.
+  //
+  // AGE_DATA above is the published curve and it is what Low shows: the picker
+  // only says how much of your data you are putting in, so the conservative
+  // tier has to be the figure the rest of the page already stands behind
+  // ($209,763 by 70). Medium and High are multiples of it, and they are
+  // multiples rather than three separate curves so the shape of the life — the
+  // steep stretch after 58 — is the same story at every setting.
+  //
+  // These two multipliers are the only numbers here that are not measured. Say
+  // the word and they change on this line alone; nothing else reads them.
+  const AGE_TIERS = [
+    {label:'Low',    mult:1},
+    {label:'Medium', mult:2},
+    {label:'High',   mult:3.5}
+  ];
+  let ageTier = 0;
   const ageFrames = $$('#ageFrames .frame');
   const ageBigVal = $('#ageBigVal'), ageNumVal = $('#ageNumVal'), ageCapVal = $('#ageCapVal');
+  const ageBadge = $('#ageBadge');
   const AGE_MIN = AGES[0], AGE_MAX = AGES[AGES.length-1];
 
   const ageTrack = $('#ageTrack'), ageFill = $('#ageFill'), ageHandle = $('#ageHandle');
   const ageTicksEl = $('#ageTicks'), ageLabelsEl = $('#ageLabels');
-  // Figma rules the track at two densities: a tick a year on the phone frame
-  // (71 across its 352px) and twice that on the desktop one (133 across 1716).
-  // The count changes with the breakpoint, not just the spacing, so the row is
-  // rebuilt rather than restyled.
-  const agePhoneMQ = window.matchMedia('(max-width:760px)');
-  let ageTicks = [];
-  function buildAgeTicks(){
-    const n = (AGE_MAX - AGE_MIN) * (agePhoneMQ.matches ? 1 : 2) + 1;
-    if(ageTicks.length === n) return;
-    ageTicksEl.replaceChildren(...Array.from({length:n}, () => document.createElement('i')));
-    ageTicks = $$('#ageTicks i');
-  }
-  buildAgeTicks();
-  // Evenly spaced, not placed at each age's own fraction of the track: the
-  // design spaces them evenly, and at their real fractions 0 and 2 land 3% apart
-  // and collide.
-  AGES.forEach((a,i) => { const s=document.createElement('span'); s.textContent=a; s.style.left=(i/(AGES.length-1)*100)+'%'; ageLabelsEl.appendChild(s); });
+  // ONE TICK A YEAR, AT BOTH SIZES.
+  //
+  // The wide frame used to run two a year, 141 of them, against the phone's 71.
+  // 4349:36344 draws about 24px between ticks across its 1683 — 71 — and the
+  // density is the point: every tenth tick is full height and has to land under
+  // its own decade in the label row. At two a year the majors fall between the
+  // labels. So the count is the same at both sizes now and only the tick's
+  // height and colour change, which is CSS and needs no rebuild.
+  const AGE_TICK_N = AGE_MAX - AGE_MIN + 1;
+  ageTicksEl.replaceChildren(...Array.from({length:AGE_TICK_N}, () => document.createElement('i')));
+  const ageTicks = $$('#ageTicks i');
+  // THE RULER IS A DECADE SCALE NOW, not the ten milestones spaced evenly.
+  // Evenly-spaced milestones were a workaround: at their true fractions 0 and 2
+  // sit 3% apart and collide. The frame's answer is better — label the decades,
+  // which are linear, so a label's position and the age under it agree. The
+  // phone shows only the first and last of these, as it did, so 0 and 70 are
+  // still exactly what it draws.
+  const AGE_LABELS = [0,10,20,30,40,50,60,70];
+  AGE_LABELS.forEach(a => { const s=document.createElement('span'); s.textContent=a;
+    s.style.left=((a-AGE_MIN)/(AGE_MAX-AGE_MIN)*100)+'%'; ageLabelsEl.appendChild(s); });
   const ageLabelSpans = $$('#ageLabels span');
   let ageCurrent = AGE_MIN;
 
@@ -3113,9 +3291,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       const local = i===si ? u : (i===si+1 ? 0 : 1);
       img.style.transform = `scale(${1.06 - 0.06*local}) translateX(${(-1.5 + 3*local)}%)`;
     });
-    ageBigVal.textContent = '$' + Math.round(ageValueAt(age)).toLocaleString('en-US');
+    ageBigVal.textContent = '$' +
+      Math.round(ageValueAt(age) * AGE_TIERS[ageTier].mult).toLocaleString('en-US');
+    const stage = (next && x > .5) ? AGE_DATA[si+1].label : AGE_DATA[si].label;
     ageNumVal.textContent = Math.round(age);
-    ageCapVal.textContent = (next && x > .5) ? AGE_DATA[si+1].label : AGE_DATA[si].label;
+    ageCapVal.textContent = stage;
+    // the pill carries both on the wide frame — the same age and the same stage
+    // the top-right pair carries on the phone, so they can never disagree
+    ageBadge.textContent = 'Age ' + Math.round(age) + ': ' + stage;
 
     ageCurrent = age;
     const t = (age - AGE_MIN) / (AGE_MAX - AGE_MIN);
@@ -3123,10 +3306,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     ageHandle.style.left = (t*100)+'%';
     ageTrack.setAttribute('aria-valuenow', Math.round(age));
     ageTicks.forEach((tk,i)=> tk.classList.toggle('hit', AGE_MIN + i/(ageTicks.length-1)*(AGE_MAX-AGE_MIN) <= Math.round(age) && t > 0));
-    ageLabelSpans.forEach((l,i)=> l.classList.toggle('cur', age >= AGES[i]));
+    ageLabelSpans.forEach((l,i)=> l.classList.toggle('cur', age >= AGE_LABELS[i]));
   }
   renderAge(AGE_MIN);
-  agePhoneMQ.addEventListener('change', () => { buildAgeTicks(); renderAge(ageCurrent); });
+
+  // The picker. It changes the figure and nothing else: the photograph, the age
+  // and the stage are the reader's position in a life, not their contribution.
+  const ageTabs = $$('.age-tab');
+  ageTabs.forEach(btn => btn.addEventListener('click', () => {
+    ageTier = +btn.dataset.tier;
+    ageTabs.forEach(b => { const on = b === btn;
+      b.classList.toggle('is-on', on); b.setAttribute('aria-pressed', on); });
+    renderAge(ageCurrent);
+  }));
 
 
   // The age track's pin used to run 200% past the last figure purely to hold a tail
