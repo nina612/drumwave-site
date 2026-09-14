@@ -494,19 +494,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .age-scene .age-tab:focus-visible{outline:2px solid #fff;outline-offset:2px}
 
   /* --- right: the pill, the figure, the caption --- */
-  /* gap 0, not 12: the frame stacks the pill straight onto the figure and only
-     the caption takes the 12. At line-height .99 the figure's box starts within
-     a pixel of its ink, so the pill lands on the digits the way it is drawn. */
+  /* The frame stacks the pill straight onto the figure and gives the caption 12.
+     Opened up from there, asked for: at line-height .99 the figure's box is its
+     ink, so the frame's own numbers put the pill on the digits and the caption
+     almost on the descenders, and the three read as one block rather than three
+     things. The gaps are margins on the two outer pieces rather than a gap on
+     the column, because the pair above and the pair below want different room —
+     the pill is a solid shape and needs less air than a line of 16px caps. */
   .age-scene .age-readout{display:flex;flex-direction:column;align-items:flex-end;
     gap:0;text-align:right;min-width:0}
-  .age-scene .age-badge{display:block;margin:0;padding:16px 20px;border-radius:100px;
+  .age-scene .age-badge{display:block;margin:0 0 24px;padding:16px 20px;border-radius:100px;
     /* #0060FF under a 20% black wash at 80% opacity, resolved: the wash and the
        opacity are two layers in the frame and one colour on the screen. */
     background:rgba(0,76,204,.8);
     font-family:'Open Sans',sans-serif;font-weight:600;font-size:24px;line-height:.99;
     letter-spacing:.05em;text-transform:uppercase;color:#fff;white-space:nowrap}
   .age-scene .num-wrap{position:static;left:auto;right:auto;bottom:auto}
-  .age-scene .age-cap{display:block;margin:12px 0 0;font-family:'Open Sans',sans-serif;
+  .age-scene .age-cap{display:block;margin:32px 0 0;font-family:'Open Sans',sans-serif;
     font-weight:600;font-size:16px;line-height:.99;letter-spacing:.1em;
     text-transform:uppercase;color:#fff;text-align:right}
   /* the phone's copy of the same sentence */
@@ -551,12 +555,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    anyway; these are the two widths where it stops fitting. */
 @media (min-width:761px) and (max-width:1500px){
   .age-scene .bignum{font-size:min(13vw,220px)}
-  .age-scene .age-badge{font-size:20px;padding:13px 17px}
+  .age-scene .age-badge{font-size:20px;padding:13px 17px;margin-bottom:18px}
+  .age-scene .age-cap{margin-top:24px}
 }
 @media (min-width:761px) and (max-width:1120px){
   .age-scene .bignum{font-size:min(11.5vw,150px)}
   .age-scene .age-tabs{width:280px}
-  .age-scene .age-badge{font-size:16px;padding:11px 15px;letter-spacing:.04em}
+  .age-scene .age-badge{font-size:16px;padding:11px 15px;letter-spacing:.04em;margin-bottom:12px}
+  .age-scene .age-cap{margin-top:16px}
   .age-scene .age-contrib-cap,.age-scene .age-cap{font-size:13px}
 }
 
@@ -3368,7 +3374,21 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // scrolling away: carry on from where it stopped, rather than from zero. It
   // finished, or the reader took the handle: leave the figure alone entirely.
   let ageStarted = false;
+  // THE CLOCK IS THE PHONE'S. On the wide frame nothing moves until the reader
+  // moves it — asked for.
+  //
+  // It is a breakpoint and not a one-time constant because the two frames want
+  // opposite things for the same reason. The phone gives the picker a 360px
+  // ruler under a thumb and no cursor to suggest it drags, so the years running
+  // on their own is how anyone finds out the screen is about anything. The wide
+  // frame hands the reader a 30px handle, a grab cursor and a contribution
+  // picker beside it — three invitations — and a figure that counts itself up
+  // past all of them reads as a video rather than an instrument.
+  const ageAutoMQ = window.matchMedia('(max-width:760px)');
+  // and if the window crosses the breakpoint mid-count, the count stops with it
+  ageAutoMQ.addEventListener('change', e => { if(!e.matches) ageAuto.pause(); });
   const ageEnter = () => {
+    if(!ageAutoMQ.matches) return;        // wide frame: the reader drives, or nothing does
     if(ageTaken) return;                  // theirs now; the clock does not take it back
     if(ageAuto.progress() >= 1) return;   // already run its course; it stays at the end
     if(!ageStarted){
