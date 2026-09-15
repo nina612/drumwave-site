@@ -3743,17 +3743,26 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // the pin instead, front-loaded - asked for: slower while the reader works
   // out what the screen is, quicker once they have. Read them as ratios.
   //
-  //            0-3  3-13  13-18  18-23  23-32  32-36  36-45  45-52  52-70
-  // now @2800  252   392    280    280    308    252    308    252    476
-  // was @2400  103   343    171    171    309    137    309    240    617
+  //             0-3  3-13  13-18  18-23  23-32  32-36  36-45  45-52  52-70
+  // now  @3400  544   544    340    340    340    272    340    272    408
+  // first @2800 252   392    280    280    308    252    308    252    476
+  // orig  @2400 103   343    171    171    309    137    309    240    617
   //
-  // 2.4x on the opening, 0.8x on the tail, the middle left alone. Per year that
-  // is 84px at the start against 26px at the end.
+  // SECOND PASS, and it needed one. The first put 252px on the opening, which
+  // sounds generous until it is counted in gestures: a wheel notch is about
+  // 100px and a trackpad flick is several hundred, so the baby was still one
+  // flick wide. 544 is five and a bit notches, and more to the point the
+  // photograph is FULLY present for the first 40% of its stretch before the
+  // dissolve begins - 218px now against 41 originally, which is the number that
+  // actually decides whether it is seen.
   //
-  // The pin goes 2400 -> 2800 so the opening is bought with new scroll rather
-  // than taken off the end. The end still gets quicker, just not as sharply as
-  // it would have had to.
-  const AGE_SEG_SHARE = [9, 14, 10, 10, 11, 9, 11, 9, 17];
+  // 181px a year at the start against 23 at the end: the opening is now eight
+  // times slower per year than the close, where it was three.
+  //
+  // The pin goes 2800 -> 3400. Both times the opening has been bought with new
+  // scroll rather than taken off the end, because the end is the part that
+  // earns its length - it is where the figure actually climbs.
+  const AGE_SEG_SHARE = [16, 16, 10, 10, 10, 8, 10, 8, 12];
   const AGE_SEG_SUM = AGE_SEG_SHARE.reduce((a, b) => a + b, 0);
   const AGE_SEG_CUM = AGE_SEG_SHARE.reduce((acc, w) => {
     acc.push(acc[acc.length - 1] + w / AGE_SEG_SUM); return acc; }, [0]);
@@ -3770,7 +3779,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   }
   gsap.matchMedia().add('(min-width:761px)', () => {
     const scrubST = ScrollTrigger.create({
-      trigger:'#ages', start:'top top', end:'+=2800',
+      trigger:'#ages', start:'top top', end:'+=3400',
       pin:true, pinSpacing:true, scrub:.8, invalidateOnRefresh:true,
       onUpdate: self => {
         if(ageDragging || ageTaken) return;
