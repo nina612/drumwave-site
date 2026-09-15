@@ -3759,8 +3759,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   }
   // true while the tween below is driving the scroll itself
   let ageGliding = false;
-  // armed by taking the handle, spent by the one glide that answers it
+  // armed by taking the handle, spent by the one scroll that answers it
   let ageReleaseArmed = false;
+  // Set by a real input - a wheel, a touch drag, a scrolling key. NOT by the
+  // scroll position changing, which is the distinction the whole thing turns
+  // on: snap settling and momentum both move the scroll without the reader
+  // asking, and it was those that were firing the release.
+  let ageUserScrolled = false;
+  addEventListener('wheel',     () => { ageUserScrolled = true; }, {passive:true});
+  addEventListener('touchmove', () => { ageUserScrolled = true; }, {passive:true});
+  addEventListener('keydown', e => {
+    if(/^(Arrow|Page|Home|End)/.test(e.key) || e.key === ' ') ageUserScrolled = true;
+  });
   // where the scrub had reached a frame before the reader left the pin, and
   // when the reader came into it — together these say whether the years were
   // travelled or flown over
@@ -3804,9 +3814,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   gsap.matchMedia().add('(min-width:761px)', () => {
     const scrubST = ScrollTrigger.create({
       trigger:'#ages', start:'top top', end:'+=' + AGE_PIN_PX,
-      pin:true, pinSpacing:true, scrub:.8, invalidateOnRefresh:true,
+      // .4, not .8. The catch-up is there so a trackpad's inertia does not
+      // shiver the figure, but .8 of it is most of a second in which the
+      // timeline is still moving after the reader has stopped - which reads as
+      // the page carrying on without them. .4 still smooths the jitter and
+      // tracks the gesture about twice as closely.
+      pin:true, pinSpacing:true, scrub:.4, invalidateOnRefresh:true,
+      // and the settle is a detent rather than a journey: about half the time
+      // it took, and reaching for it sooner.
       snap:{snapTo:AGE_SNAP(), directional:true,
-            duration:{min:.25, max:.6}, delay:.12, ease:'power2.inOut'},
+            duration:{min:.15, max:.3}, delay:.08, ease:'power2.out'},
       // Reaching the end of the seventy years is the third way out, and it had
       // none of this: the pin simply let go and the reader scrolled a whole
       // viewport into the plan by hand. Asked for: one scroll. onLeave is the
@@ -3845,6 +3862,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         // for the rest of the visit, and they could never be inside it again.
         if(ageTaken){
           if(!ageReleaseArmed) return;
+          // WAIT FOR A SCROLL THEY ACTUALLY MADE.
+          //
+          // Letting go of the dot does not leave the page still: the snap may
+          // be mid-settle from before the reader reached for it. That settle
+          // arrives in this callback as scroll updates indistinguishable from
+          // any other, and the release fired on them - so the reader finished
+          // moving the handle and was thrown out of the section WITHOUT having
+          // scrolled. That is what losing control of the picker is.
+          //
+          // A timer was the first attempt and it is the wrong instrument: I set
+          // 400ms and measured it still firing, because the settle plus the
+          // ticker's trailing updates run past it, and any number I picked would
+          // be a guess about someone else's hardware.
+          //
+          // An input event is not a guess. Snap and momentum move the SCROLL;
+          // only a person produces a wheel, a touchmove or an arrow key. So the
+          // release waits for one of those, and no amount of settling counts.
+          if(!ageUserScrolled) return;
           const to = self.direction === 1 ? self.end : self.start;
           if(Math.abs(window.scrollY - to) > 2){
             ageReleaseArmed = false;
@@ -3886,7 +3921,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const r = ageTrack.getBoundingClientRect();
     return clamp((e.clientX - r.left)/r.width, 0, 1);
   }
-  const ageTake = () => { ageTaken = true; ageReleaseArmed = true; };
+  const ageTake = () => { ageTaken = true; ageReleaseArmed = true; ageUserScrolled = false; };
   let ageHinted = false;
   // the age first, the capture after it and inside a guard: capture is the one
   // call here that can throw (it does whenever the pointer is not one the browser
@@ -3933,7 +3968,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     agePend = {id:e.pointerId, x:e.clientX, y:e.clientY};
   });
   ageTrack.addEventListener('pointermove', e => {
-    if(ageDragging){ renderAge(AGE_MIN + ageTFromEvent(e)*(AGE_MAX-AGE_MIN)); return; }
+    if(ageDragging){ ageUserScrolled = false;
+                     renderAge(AGE_MIN + ageTFromEvent(e)*(AGE_MAX-AGE_MIN)); return; }
     if(!agePend || e.pointerId !== agePend.id) return;
     const dx = e.clientX - agePend.x, dy = e.clientY - agePend.y;
     if(Math.abs(dx) > 6 && Math.abs(dx) > Math.abs(dy)){ agePend = null; ageGrab(e, ageTFromEvent(e)); }
