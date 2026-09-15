@@ -509,7 +509,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   /* --- left: the contribution picker --- */
   .age-scene .age-contrib{flex:0 0 auto}
   .age-scene .age-contrib-cap{font-size:16px}
-  .age-scene .age-tabs{width:346px;max-width:100%}
+  /* 343. The component's own content box measures 346.035 and overhangs its
+     frame by three — 4349:36453 is 343 wide and that is what the screen shows. */
+  .age-scene .age-tabs{width:343px;max-width:100%}
   /* :not(.is-on), and behind a real-hover query. Written as a bare
      .age-tab:hover this was specificity 0,3,0 — exactly what .age-tab.is-on
      carries — and it sat later in the sheet, so it WON: the moment you clicked
@@ -529,16 +531,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   }
 
   /* --- right: the pill, the figure, the caption --- */
-  /* The frame stacks the pill straight onto the figure and gives the caption 12.
-     Opened up from there, asked for: at line-height .99 the figure's box is its
-     ink, so the frame's own numbers put the pill on the digits and the caption
-     almost on the descenders, and the three read as one block rather than three
-     things. The gaps are margins on the two outer pieces rather than a gap on
-     the column, because the pair above and the pair below want different room —
-     the pill is a solid shape and needs less air than a line of 16px caps. */
+  /* BACK TO THE FRAME'S OWN 0 AND 12.
+     These were opened to 24 and 32 when the pill still read "AGE 70:
+     RETIREMENT" and crowded the digits under it. The pill is four characters
+     now — "AGE 35" — and 4349:36463 stacks it straight onto the figure with
+     nothing between, then 12 to the caption. Restoring those two numbers also
+     restores the frame's geometry exactly: 56 of pill, 297 of figure, 12, and
+     16 of caption is the 381 that puts the row's top on the 457 the frame
+     draws it at. */
   .age-scene .age-readout{align-items:flex-end;text-align:right}
-  .age-scene .age-badge{display:block;margin-bottom:24px;font-size:24px;letter-spacing:.05em}
-  .age-scene .age-cap{display:block;margin:32px 0 0;font-family:'Open Sans',sans-serif;
+  .age-scene .age-badge{display:block;margin-bottom:0;font-size:24px;letter-spacing:.05em}
+  .age-scene .age-cap{display:block;margin:12px 0 0;font-family:'Open Sans',sans-serif;
     font-weight:600;font-size:16px;line-height:.99;letter-spacing:.1em;
     text-transform:uppercase;color:#fff;text-align:right}
   /* the phone's copy of the same sentence */
@@ -582,14 +585,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    anyway; these are the two widths where it stops fitting. */
 @media (min-width:761px) and (max-width:1500px){
   .age-scene .bignum{font-size:min(13vw,220px)}
-  .age-scene .age-badge{font-size:20px;padding:13px 17px;margin-bottom:18px}
-  .age-scene .age-cap{margin-top:24px}
+  .age-scene .age-badge{font-size:20px;padding:13px 17px}
+  .age-scene .age-cap{margin-top:12px}
 }
 @media (min-width:761px) and (max-width:1120px){
   .age-scene .bignum{font-size:min(11.5vw,150px)}
   .age-scene .age-tabs{width:280px}
-  .age-scene .age-badge{font-size:16px;padding:11px 15px;letter-spacing:.04em;margin-bottom:12px}
-  .age-scene .age-cap{margin-top:16px}
+  .age-scene .age-badge{font-size:16px;padding:11px 15px;letter-spacing:.04em}
+  .age-scene .age-cap{margin-top:12px}
   .age-scene .age-contrib-cap,.age-scene .age-cap{font-size:13px}
 }
 
