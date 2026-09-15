@@ -3326,13 +3326,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   if(!SCROLL_RUN) loopWhileHere(tl1, restartRun);
 
   /* ---------- ACT 4 : AGE TRACK ---------- */
-  // THE PUBLISHED BALANCE, YEAR BY YEAR — the Low contribution scenario.
-  // One figure per age, indexed by age, so the balance is a LOOKUP rather than
-  // a curve fitted through ten points. It used to be the latter, and a fitted
-  // curve is only ever right at the points it was fitted to: between them it
-  // invented figures that were plausible and wrong. Age 35 read $22,495 where
-  // the table says $22,355.
-  const AGE_BALANCE = [
+  // THE PUBLISHED BALANCE, YEAR BY YEAR, PER SCENARIO.
+  // One figure per age, indexed by age, so a balance is a LOOKUP. It used to be
+  // a curve fitted through ten milestones, and a fitted curve is only ever right
+  // at the points it was fitted to: between them it invented figures that were
+  // plausible and wrong. Age 35 read $22,495 where Low says $22,355.
+  const AGE_LOW = [
     150,    312,    487,    675,    877,    1093,   1326,   1576,   1844,   2131,
     2439,   2768,   3120,   3497,   3900,   4330,   4790,   5281,   5805,   6364,
     6961,   7597,   8276,   8999,   9769,   10590,  11465,  12396,  13387,  14443,
@@ -3342,9 +3341,29 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     114512, 121829, 129593, 137831, 146571, 155845, 165684, 176121, 186689, 197890,
     209763
   ];
+  const AGE_MID = [
+    220,    456,    711,    985,    1280,   1597,   1937,   2302,   2694,   3113,
+    3562,   4043,   4558,   5108,   5696,   6325,   6997,   7714,   8479,   9296,
+    10168,  11097,  12088,  13144,  14270,  15469,  16746,  18106,  19556,  21096,
+    22736,  24482,  26340,  28316,  30417,  32652,  35029,  37555,  40241,  43096,
+    46130,  49354,  52779,  56419,  60285,  64392,  68755,  73388,  78308,  83533,
+    89080,  94971,  101224, 107863, 114910, 122390, 130329, 138756, 147699, 157190,
+    167262, 177950, 189290, 201323, 214090, 227636, 242006, 257252, 272687, 289049,
+    306392
+  ];
+  const AGE_HIGH = [
+    289,    600,    935,    1296,   1684,   2101,   2548,   3028,   3543,   4095,
+    4686,   5318,   5995,   6719,   7493,   8320,   9203,   10146,  11153,  12228,
+    13374,  14597,  15900,  17289,  18770,  20347,  22027,  23816,  25721,  27749,
+    29907,  32203,  34647,  37246,  40010,  42950,  46076,  49399,  52932,  56687,
+    60678,  64919,  69425,  74212,  79298,  84700,  90438,  96533,  103004, 109877,
+    117174, 124922, 133148, 141880, 151149, 160989, 171432, 182516, 194280, 206764,
+    220012, 234071, 248988, 264815, 281609, 299426, 318329, 338383, 358686, 380208,
+    403020
+  ];
   // The milestones, which are now only about what is on SCREEN: where the
   // photograph changes and what the stage is called. The figures they used to
-  // carry are all in AGE_BALANCE at the same ages and agree to the dollar, so
+  // carry are all in AGE_LOW at the same ages and agree to the dollar, so
   // holding them here as well would be two sources for one number.
   //
   // data-age on the frames below repeats these ages, because the stylesheet
@@ -3366,19 +3385,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   const AGES = AGE_DATA.map(d => d.age);
   // YOUR DATA CONTRIBUTION — Figma 4349:36344.
   //
-  // AGE_DATA above is the published curve and it is what Low shows: the picker
-  // only says how much of your data you are putting in, so the conservative
-  // tier has to be the figure the rest of the page already stands behind
-  // ($209,763 by 70). Medium and High are multiples of it, and they are
-  // multiples rather than three separate curves so the shape of the life — the
-  // steep stretch after 58 — is the same story at every setting.
+  // A tier is a TABLE now, not a multiplier on one, and all three are published
+  // figures year by year. NOTHING ON THIS SCREEN IS INVENTED ANY MORE — the
+  // multipliers that stood in for Medium and High (2 and 3.5) are gone.
   //
-  // These two multipliers are the only numbers here that are not measured. Say
-  // the word and they change on this line alone; nothing else reads them.
+  // They were never going to be right. The tiers are not a constant apart:
+  // Medium over Low runs 1.4667 at birth and 1.4606 by 70, High over Low 1.927
+  // and 1.921. Close enough that a multiplier looked plausible, far enough that
+  // it was wrong everywhere in between — and 3.5 for High was not close at all.
+  // It would have read $734,171 at 70 where the table says $403,020.
   const AGE_TIERS = [
-    {label:'Low',    mult:1},
-    {label:'Medium', mult:2},
-    {label:'High',   mult:3.5}
+    {label:'Low',    table:AGE_LOW},
+    {label:'Medium', table:AGE_MID},
+    {label:'High',   table:AGE_HIGH}
   ];
   let ageTier = 0;
   const ageFrames = $$('#ageFrames .frame');
@@ -3426,7 +3445,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // year at a time, which is what the ruler beneath it has always done — one
   // tick, one year.
   function ageValueAt(age){
-    return AGE_BALANCE[clamp(Math.round(age), AGE_MIN, AGE_MAX)];
+    return AGE_TIERS[ageTier].table[clamp(Math.round(age), AGE_MIN, AGE_MAX)];
   }
   const smooth = u => u*u*u*(u*(u*6-15)+10);
   function renderAge(age){
@@ -3446,8 +3465,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       const local = i===si ? u : (i===si+1 ? 0 : 1);
       img.style.transform = `scale(${1.06 - 0.06*local}) translateX(${(-1.5 + 3*local)}%)`;
     });
-    ageBigVal.textContent = '$' +
-      Math.round(ageValueAt(age) * AGE_TIERS[ageTier].mult).toLocaleString('en-US');
+    ageBigVal.textContent = '$' + ageValueAt(age).toLocaleString('en-US');
     const stage = (next && x > .5) ? AGE_DATA[si+1].label : AGE_DATA[si].label;
     ageNumVal.textContent = Math.round(age);
     ageCapVal.textContent = stage;
