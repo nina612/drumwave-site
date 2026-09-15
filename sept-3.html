@@ -3715,8 +3715,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         // for leaving either. And the two ends are snap points already, so snap
         // settles where this puts them rather than fighting it.
         if(ageTaken){
-          const to = self.direction === 1 ? self.end : self.start;
-          if(Math.abs(self.scroll() - to) > 2) self.scroll(to);
+          // DOWN GOES TO THE NEXT SECTION, not to the end of this one.
+          //
+          // It went to self.end first, and self.end is where the pin lets go -
+          // which leaves #solution's top exactly on the fold. Measured: after
+          // taking the handle, even a 600px flick finished at 7000 of 7000 with
+          // the next section at 900 on a 900 viewport. Still the age screen.
+          // The scroll was spent reaching the release point and there was none
+          // left to travel with.
+          //
+          // The same mistake #ageSkip made twice, and the same fix: ask where
+          // #solution STARTS rather than where #ages stops. It also means the
+          // two now do exactly the same thing, which they should - "I am done
+          // here" is one intention however it is expressed.
+          const sol = document.querySelector('#solution');
+          const to = self.direction === 1
+            ? Math.round(sol.getBoundingClientRect().top + window.scrollY)
+            : self.start;
+          if(Math.abs(window.scrollY - to) > 2) self.scroll(to);
           return;
         }
         renderAge(ageFromScroll(self.progress));
