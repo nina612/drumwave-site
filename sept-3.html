@@ -2035,17 +2035,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // reads is inside the PHONE build — phraseFrames drives play() and nothing
   // else, so the wide layout cannot see any of this.
   const HERO_V = /(?:^|[?&#])hero=1(?:[&#]|$)/.test(location.search + location.hash) ? 1 : 2;
-  // V2 HOLDS STILL — asked for: "make version 2 not auto animate at all".
+  // WHAT THE VERSION SWITCH ACTUALLY CONTROLS NOW.
   //
-  // The two places the phone's run moves itself are startAuto, which walks the
-  // statements, and play, which walks the photographs under whichever statement
-  // is up. This switches both off, so v2 comes to rest on the opening statement
-  // over the opening photograph and stays there.
+  // It began as two pacings of the opening hero run and it still is that. What
+  // it ALSO carries, asked for, is whether the age timeline runs itself:
   //
-  // Only the phone. buildRunPin returns for the wide layout before either of
-  // those exists — it scrubs tl1 off its own pin — so nothing here can reach it,
-  // which is the same reason the v1 image swap had to be scoped by hand.
-  const HERO_AUTO = HERO_V !== 2;
+  //   v1 - the timeline plays on its own, 45 seconds for seventy years, and the
+  //        reader can take the dot at any point to stop it and drive.
+  //   v2 - the timeline does nothing until it is driven. No clock at all; the
+  //        picker is the only thing that moves it.
+  //
+  // The phone only. The wide frame runs the timeline off the scroll at both
+  // versions - that was asked for separately and is not what this switches.
+  const TIMELINE_AUTO = HERO_V !== 2;
   // ---- WHICH VERSION AM I ACTUALLY LOOKING AT? ----
   //
   // "They both look the same" has now been reported three times over three
@@ -2071,7 +2073,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         'font:600 12px/1 -apple-system,system-ui,sans-serif;letter-spacing:.08em;' +
         'pointer-events:none;border:1px solid rgba(255,255,255,.22)');
       const t = document.lastModified.replace(/:\d\d$/, '').replace(/\/\d{4}/, '');
-      tag.textContent = 'V' + HERO_V + ' \u00b7 ' + (HERO_AUTO ? 'AUTO' : 'STILL') + ' \u00b7 ' + t;
+      tag.textContent = 'V' + HERO_V + ' \u00b7 TIMELINE ' +
+                        (TIMELINE_AUTO ? 'AUTO' : 'MANUAL') + ' \u00b7 ' + t;
       document.body.appendChild(tag);
     });
   }
@@ -3071,9 +3074,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     };
     const startAuto = () => {
       if(auto) auto.kill();
-      auto = null;
-      // v2: no clock, so the statement that toFirst put up is the one that stays
-      if(!HERO_AUTO) return;
 
       // Reduced motion: the run still tells its three statements — it is the
       // page's opening argument, not decoration — but each one cuts into place
@@ -3116,9 +3116,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // it, so the first photograph is already whole when the hold begins.
       const marks = phraseFrames[i];
       tl1.pause(Math.min(marks[0] + cutAt(marks[0]), tl1.duration()));
-      // The playhead is placed either way, so the right photograph is up and
-      // whole. What v2 does not get is the chain that walks it on from there.
-      if(!HERO_AUTO) return;
       const chain = gsap.timeline();
       // The first statement gets a beat to itself before anything moves.
       if(i === 0 && HEAD_LEAD) chain.to({}, {duration:HEAD_LEAD});
@@ -3456,6 +3453,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // and if the window crosses the breakpoint mid-count, the count stops with it
   ageAutoMQ.addEventListener('change', e => { if(!e.matches) ageAuto.pause(); });
   const ageEnter = () => {
+    if(!TIMELINE_AUTO) return;            // v2: the picker is the only thing that moves it
     if(!ageAutoMQ.matches) return;        // wide frame: the reader drives, or nothing does
     if(ageTaken) return;                  // theirs now; the clock does not take it back
     if(ageAuto.progress() >= 1) return;   // already run its course; it stays at the end
