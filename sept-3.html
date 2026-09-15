@@ -1043,17 +1043,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   /* the age track's photographs, cropped the same way and for the same reason */
   #ages .frame[data-age="3"] img{object-position:47% 50%}   /* the toddler */
   #ages .frame[data-age="23"] img{object-position:32% 50%}  /* her, and the box */
-  /* THE CHILD CENTRED, asked for. 66% was "between the two faces", which is a
-     wide-frame idea: the phone only ever sees 513 of this photograph's 1920
-     px — 27% of it — and 66% put that window on 928-1442, which is the
-     mother's outstretched arm and the back of the child's hair. Neither face.
-     The child's head runs 1230-1900 and centres on 1570, so the window has to
-     sit at 1294-1807, which is 93%.
-     It does mean the mother leaves the phone's frame entirely: her face is at
-     850 and the window starts 444px to the right of it. At 27% of the width
-     there is no position that holds both — they are 720px apart in a 513px
-     window — so centring the child is choosing the child. */
-  #ages .frame[data-age="36"] img{object-position:93% 50%}
+  /* THE MOTHER, SHOWCASED — asked for, and it is a straight swap of one face
+     for the other rather than a compromise, because the geometry does not allow
+     one. The phone sees 513 of this photograph's 1920px, and the two faces are
+     720px apart: her face ends at 950 and the child's head does not begin until
+     1230, so no 513px window holds both. 93% centred the child and put her
+     444px off the left edge; 42% centres her — window 591-1104, her face
+     700-950 sitting across the middle of it, her hair filling the frame.
+     The child is out of frame on the phone now, as she was before. The wide
+     frame still shows the whole photograph and both of them. */
+  #ages .frame[data-age="36"] img{object-position:42% 50%}
   #ages .frame[data-age="45"] img{object-position:27% 50%}  /* her, not the building */
   #ages .frame[data-age="52"] img{object-position:92% 50%}  /* her face whole, clear of the edge */
   /* The newborn is the one frame asked to sit wider. It cannot: cover fits the
@@ -2182,51 +2181,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // reads is inside the PHONE build — phraseFrames drives play() and nothing
   // else, so the wide layout cannot see any of this.
   const HERO_V = /(?:^|[?&#])hero=1(?:[&#]|$)/.test(location.search + location.hash) ? 1 : 2;
-  // WHAT THE VERSION SWITCH ACTUALLY CONTROLS NOW.
-  //
-  // It began as two pacings of the opening hero run and it still is that. What
-  // it ALSO carries, asked for, is whether the age timeline runs itself:
-  //
-  //   v1 - the timeline plays on its own, 45 seconds for seventy years, and the
-  //        reader can take the dot at any point to stop it and drive.
-  //   v2 - the timeline does nothing until it is driven. No clock at all; the
-  //        picker is the only thing that moves it.
-  //
-  // The phone only. The wide frame runs the timeline off the scroll at both
-  // versions - that was asked for separately and is not what this switches.
-  const TIMELINE_AUTO = HERO_V !== 2;
-  // ---- WHICH VERSION AM I ACTUALLY LOOKING AT? ----
-  //
-  // "They both look the same" has now been reported three times over three
-  // different causes, and every time the code measured correct here and on the
-  // live site. The thing that keeps costing days is that the question is
-  // unanswerable from a photograph of a phone: v1 and v2 differ only in TIMING,
-  // so a still frame of the right version and a still frame of a stale cached
-  // one are the same picture.
-  //
-  // So the page says so itself. Only when the link carries hero= — which the
-  // two test stubs always do and the real site never does — so nothing shows
-  // for a reader.
-  //
-  // document.lastModified is the point of it. It is the Last-Modified of the
-  // response THIS document came from, so a phone serving a cached copy prints
-  // the old file's time while a fresh one prints the new. A stale build stops
-  // being invisible and becomes a timestamp that disagrees with mine.
-  if(/(?:^|[?&#])hero=/.test(location.search + location.hash)){
-    addEventListener('DOMContentLoaded', () => {
-      const tag = document.createElement('div');
-      // top left, not bottom: at the bottom it sat straight on the ruler's own
-      // 0 and 70 and hid the thing being compared
-      tag.setAttribute('style', 'position:fixed;z-index:99998;left:10px;top:96px;' +
-        'padding:7px 11px;border-radius:999px;background:rgba(0,0,0,.78);color:#fff;' +
-        'font:600 12px/1 -apple-system,system-ui,sans-serif;letter-spacing:.08em;' +
-        'pointer-events:none;border:1px solid rgba(255,255,255,.22)');
-      const t = document.lastModified.replace(/:\d\d$/, '').replace(/\/\d{4}/, '');
-      tag.textContent = 'V' + HERO_V + ' \u00b7 TIMELINE ' +
-                        (TIMELINE_AUTO ? 'AUTO' : 'MANUAL') + ' \u00b7 ' + t;
-      document.body.appendChild(tag);
-    });
-  }
+  // The switch is back to what it began as: two pacings of the OPENING HERO RUN
+  // and nothing else. It briefly also decided whether the age timeline ran
+  // itself; that is settled now — the timeline is manual — so it carries no part
+  // of it, and ?hero=1 can no longer bring the clock back.
   if(HERO_V === 1){
     document.documentElement.classList.add('hero-v1');
     // The delivery frame carries the photograph before it, so its cut is
@@ -3598,116 +3556,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // same thing — the first touch stops the clock and leaves the reader driving.
   let ageDragging = false;
   let ageTaken    = false;      // the reader has taken the handle
-  const ageProxy  = {v: AGE_MIN};
-  // Seconds for the whole seventy years, and this is the phone's clock alone now
-  // — the wide frame runs off the scroll instead.
+  // THE PHONE'S TIMELINE IS MANUAL. Final, asked for — it is what v2 was, and
+  // it is now simply what the page does.
   //
-  // Six read as hurried, twelve was the answer for a while, thirty was the
-  // answer to "slow it down significantly", and forty-five is the answer to
-  // being asked again. 1.6 years a second against the 5.8 it started at.
+  // Everything that ran it on a clock is GONE rather than switched off: a
+  // 45-second tween on a proxy age, the three-state ageEnter that decided
+  // whether to start it, resume it or leave it alone, its own ScrollTrigger to
+  // fire that, and the breakpoint listener that stopped it when a window
+  // crossed 761. None of it was reachable any more — the phone drives by hand
+  // and the wide frame drives off the scroll — and a page with this much timing
+  // history in it does not need a dead clock in the middle of it.
   //
-  // What it buys is the PHOTOGRAPHS. Ten of them across the run means one every
-  // four and a half seconds at this pace, where it was one every 1.2 — long
-  // enough to see a life in each rather than a slideshow going past. What it
-  // costs is the far end, and the answer to that is now in the reader's hand
-  // rather than in this number: the dot stops the run on a press, so anyone who
-  // wants the end of it can take the dot and go there themselves.
-  //
-  // A longer count costs no one any scrolling, which is what makes this a free
-  // dial: nothing is pinned on this screen, so the length of the count is not
-  // the length of the section. The reader leaves whenever they like and the
-  // clock stops with them. What it costs is the far end — five seconds of
-  // attention now reaches about twelve rather than thirty — and against that is
-  // the ruler, which shows the whole seventy at a glance whatever the figure is
-  // doing, and the handle, which is faster than the clock for anyone who wants
-  // the end of it.
-  const AGE_RUN   = 45;
-  const ageAuto = gsap.to(ageProxy, {
-    v: AGE_MAX, duration: AGE_RUN, ease: 'none', paused: true,
-    onUpdate: () => { if(!ageDragging && !ageTaken) renderAge(ageProxy.v); }
-  });
-  // Once for the page, not once for every arrival at the section. It used to
-  // start the seventy years again from nothing every time the screen came back
-  // into view, so scrolling up a little and back down - which is a thing people
-  // do constantly - replayed a count the reader had already watched. Asked for:
-  // once it has run, it stays where it got to.
-  //
-  // Three states, and only the first of them starts anything. It has never run:
-  // begin at nothing and play. It began and was interrupted by the reader
-  // scrolling away: carry on from where it stopped, rather than from zero. It
-  // finished, or the reader took the handle: leave the figure alone entirely.
-  let ageStarted = false;
-  // THE CLOCK IS THE PHONE'S. On the wide frame nothing moves until the reader
-  // moves it — asked for.
-  //
-  // It is a breakpoint and not a one-time constant because the two frames want
-  // opposite things for the same reason. The phone gives the picker a 360px
-  // ruler under a thumb and no cursor to suggest it drags, so the years running
-  // on their own is how anyone finds out the screen is about anything. The wide
-  // frame hands the reader a 30px handle, a grab cursor and a contribution
-  // picker beside it — three invitations — and a figure that counts itself up
-  // past all of them reads as a video rather than an instrument.
-  const ageAutoMQ = window.matchMedia('(max-width:760px)');
-  // and if the window crosses the breakpoint mid-count, the count stops with it
-  ageAutoMQ.addEventListener('change', e => { if(!e.matches) ageAuto.pause(); });
-  const ageEnter = () => {
-    if(!TIMELINE_AUTO) return;            // v2: the picker is the only thing that moves it
-    if(!ageAutoMQ.matches) return;        // wide frame: the reader drives, or nothing does
-    if(ageTaken) return;                  // theirs now; the clock does not take it back
-    if(ageAuto.progress() >= 1) return;   // already run its course; it stays at the end
-    if(!ageStarted){
-      ageStarted = true;
-      ageProxy.v = AGE_MIN; renderAge(AGE_MIN);
-      // Reduced motion used to jump straight to the answer. A figure counting up
-      // is not motion across the screen, and on a phone with Reduce Motion
-      // switched on - which plenty are - landing on $209,763 with nothing having
-      // happened is exactly what "it will not autoplay" looks like. The years
-      // still run, in a quarter of the time.
-      ageAuto.invalidate().pause(0).timeScale(RM ? 4 : 1);
-    }
-    ageAuto.play();
-  };
-  const ageST = ScrollTrigger.create({
-    // The count starts as this screen becomes the reader's view, not when it
-    // first appears at the bottom: at 40% down the years were already running
-    // while two fifths of the section was still below the fold, so by the time
-    // it could be read the figure was a third spent.
-    // 5% and not 'top top', though, and the 5% is the whole point. A trigger is
-    // not active AT its own start — measured: isActive is false at exactly the
-    // start and true one pixel past it — and "scroll until the screen fills,
-    // then stop" comes to rest on exactly that pixel. Resting there, onEnter
-    // never fired and the figure sat on 0 indefinitely, which is precisely the
-    // stuck-looking thing this change was meant to remove. Starting 5% earlier
-    // puts that natural resting place safely inside the range; it costs 42px of
-    // scroll, about a fifth of a second, so the reader still meets it at 2.
-    // THE CLOCK STARTS WHEN THE PICKER DOES, not when the section does.
-    //
-    // 'top 5%' was right while the section was exactly one screen: its top
-    // arriving was the block arriving. At 115svh they are 15% of a screen apart,
-    // and starting on the top would spend the first seconds of a 45-second run
-    // on a figure that is still below the fold.
-    //
-    // So the phone waits for the section's BOTTOM, which is what the block is
-    // anchored to. The +=10% is the same guard the 5% was: a trigger is not
-    // active at its own start, and "scroll until the block appears, then stop"
-    // comes to rest on exactly that pixel, so the range has to open a little
-    // before it.
-    //
-    // The wide frame keeps 'top 5%' exactly. It never reads this - ageEnter
-    // returns on the breakpoint before it gets here - but its pin wraps #ages
-    // in a spacer, which would make 'bottom' mean something else entirely.
-    start: () => ageAutoMQ.matches ? 'bottom bottom+=10%' : 'top 5%',
-    trigger:'#ages', end:'bottom top',
-    onEnter:     ageEnter,
-    onEnterBack: ageEnter,
-    // Leaving only stops the clock. It used to re-arm the whole thing and, going
-    // up, put the figure back to nothing as well - which is what made a small
-    // scroll upward wipe the count and start it over. Nothing is reset here now;
-    // the figure keeps whatever it had, and coming back either resumes it or
-    // leaves it, per ageEnter above.
-    onLeave:     () => ageAuto.pause(),
-    onLeaveBack: () => ageAuto.pause()
-  });
+  // ageTaken stays. It has no clock to stop now, but it is still what tells the
+  // wide frame's scrub to keep its hands off once the reader has the handle.
 
   // ---- THE WIDE FRAME RUNS OFF THE SCROLL ----
   //
@@ -3762,13 +3623,34 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // The pin goes 2800 -> 3400. Both times the opening has been bought with new
   // scroll rather than taken off the end, because the end is the part that
   // earns its length - it is where the figure actually climbs.
-  const AGE_SEG_SHARE = [16, 16, 10, 10, 10, 8, 10, 8, 12];
+  //
+  // AND THE END HOLDS. Reported: "it feels like it goes so fast and the user is
+  // onto the next page". Two things were true and only one of them was pacing.
+  // The pacing part: 52-70 is eighteen years, the steepest climb in the whole
+  // table ($69,300 to $209,763), and it had the least scroll per year of any
+  // stretch. Its share goes 12 -> 14.
+  //
+  // The other part is that reaching 70 WAS leaving. The age hit its end exactly
+  // where the pin let go, so the last frame of the story and the first of the
+  // next screen were the same gesture. So the pin is longer than the run now:
+  // 3400 of years and 600 more of holding on 70. The reader arrives at the end,
+  // the screen stays on it while they scroll, and then the page moves on —
+  // which is what was asked for.
+  //
+  // It is a hold rather than a pause: the page is pinned either way, so nothing
+  // stops responding. What stops is the timeline, which has finished.
+  const AGE_SEG_SHARE = [16, 16, 10, 10, 10, 8, 10, 8, 14];
+  const AGE_RUN_PX  = 3400;   // the years
+  const AGE_HOLD_PX = 600;    // and then the end of them, held
+  const AGE_PIN_PX  = AGE_RUN_PX + AGE_HOLD_PX;
   const AGE_SEG_SUM = AGE_SEG_SHARE.reduce((a, b) => a + b, 0);
   const AGE_SEG_CUM = AGE_SEG_SHARE.reduce((acc, w) => {
     acc.push(acc[acc.length - 1] + w / AGE_SEG_SUM); return acc; }, [0]);
   // progress through the pin -> the age it stands for
   function ageFromScroll(p){
-    p = clamp(p, 0, 1);
+    // the run occupies the first AGE_RUN_PX of the pin; the rest is the hold,
+    // which this clamp turns into "70, still 70, still 70"
+    p = clamp(p * AGE_PIN_PX / AGE_RUN_PX, 0, 1);
     for(let i = 0; i < AGE_SEG_SHARE.length; i++){
       if(p <= AGE_SEG_CUM[i + 1] || i === AGE_SEG_SHARE.length - 1){
         const u = clamp((p - AGE_SEG_CUM[i]) / (AGE_SEG_CUM[i + 1] - AGE_SEG_CUM[i]), 0, 1);
@@ -3779,7 +3661,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   }
   gsap.matchMedia().add('(min-width:761px)', () => {
     const scrubST = ScrollTrigger.create({
-      trigger:'#ages', start:'top top', end:'+=3400',
+      trigger:'#ages', start:'top top', end:'+=' + AGE_PIN_PX,
       pin:true, pinSpacing:true, scrub:.8, invalidateOnRefresh:true,
       onUpdate: self => {
         if(ageDragging || ageTaken) return;
@@ -3818,7 +3700,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const r = ageTrack.getBoundingClientRect();
     return clamp((e.clientX - r.left)/r.width, 0, 1);
   }
-  const ageTake = () => { ageTaken = true; ageAuto.pause(); };
+  const ageTake = () => { ageTaken = true; };
   let ageHinted = false;
   // the age first, the capture after it and inside a guard: capture is the one
   // call here that can throw (it does whenever the pointer is not one the browser
