@@ -514,6 +514,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   font-family:'Open Sans',sans-serif;font-weight:600;line-height:.99;
   text-transform:uppercase;color:#fff;white-space:nowrap}
 .age-scene .age-cap{display:none}
+/* THE HIGH SCENARIO'S DISCLAIMER. Off unless the picker is on High — that is
+   the only tier whose figures rest on a law that has not been written.
+   Open Sans at the weight the disclosures block uses, not the tracked-out caps
+   of the captions around it: this is a sentence to be read, not a label. */
+.age-scene .age-note{display:none;margin:0;font-family:'Open Sans',sans-serif;
+  font-weight:400;line-height:1.45;color:#9a9a9a;text-align:right}
+.age-scene.tier-high .age-note{display:block}
 
 /* A HAZE BEHIND THE CAPTIONS, not a bar.
    These three lines are the only type on this screen with nothing between them
@@ -655,6 +662,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   /* 42 off the frame's 1080 */
   .age-scene .age-skip{bottom:clamp(20px,3.9vh,42px)}
+
+  /* There is a band between the ruler's labels and the skip control — measured,
+     69px at 1080 and 41px at 715 — and the note lives in it, so nothing else on
+     the screen moves when it appears. Its offset is derived rather than picked:
+     the block's own bottom, less the skip's, less 26 of clearance, which keeps
+     it off both however tall the window is.
+     Full width so it sets as one line wherever there is room for one; it wraps
+     to two on a narrow window, which the band still takes. */
+  .age-scene .age-note{position:absolute;left:0;right:0;font-size:11px;
+    bottom:calc(-1 * (clamp(64px,11.57vh,125px) - clamp(20px,3.9vh,42px) - 26px))}
 }
 
 /* The figure is the one thing here whose width is its content's. "$734,170" —
@@ -1227,6 +1244,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      where svh is not understood. */
   #ages{height:115vh;height:115svh}
   .age-scene .age-lower{left:24px;right:24px;bottom:36px}
+  /* No band to put it in here — the labels already sit on the frame's 36 — so
+     on the phone it is the last thing in the block, and choosing High lifts the
+     block by its height. That movement is the price of not permanently spending
+     photograph on a note that is usually not shown. */
+  .age-scene .age-note{font-size:10px;margin-top:14px}
   /* THE PICKER IS ITS OWN GROUPING — and this is the second attempt at it, so
      it is worth writing down why the first one did not take.
      I only moved the gap: 20 -> 32. But a group does not read from the size of
@@ -1790,6 +1812,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     </div>
     <div class="ages mono" id="ageLabels"></div>
   </div>
+
+    <!-- Shown only while High is the chosen contribution. High is the one
+         scenario whose figures depend on a law that does not exist, so it is
+         the one that has to say so. -->
+    <p class="age-note">This figure assumes a future legislative change creating a right to payment. No law in the United States requires any company to pay you for data about you.</p>
   </div>
 
   <!-- Figma 3898:98620/3361:82763 — a way off the age pin that isn't scrubbing
@@ -2056,7 +2083,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <p>1. The Data Savings Plan is not a security, deposit account, savings account, or investment product of any kind. It has not been registered with, and is not endorsed or approved by, the U.S. Securities and Exchange Commission (SEC), any state securities regulator, or any banking regulator. DrumWave Inc. is not a bank, broker-dealer, or investment adviser, and does not provide investment, financial, or tax advice.</p>
     <p>2. Upon completing the required actions described in the Offer Activation Terms, DrumWave will pay you a fixed amount of $25.00. It is not payment for a data sale or license to any specific company; it compensates you for completing the required steps.</p>
     <p>3. Separately from it, any additional amounts you may earn arise solely from other Offers you may receive while enrolled in the Plan. These are subject to your prior authorization for each specific use, and there is no promise, guarantee, or expectation of a fixed, increasing, or predetermined return from those Offers. The amount you actually receive from this separate component depends on demand from companies during the Plan&rsquo;s term; it may be lower than any amount shown or estimated, and may be zero.</p>
-    <p>4. Therefore, any estimate, chart, simulation, or illustration of value shown on this website is hypothetical and for illustrative purposes only. It does not represent any actual participant, does not constitute a projection or forecast, and is not a promise or guarantee of any future amount.</p>
+    <p>4. Therefore, the figures on this website are merely illustrations, and any estimations presented should not be taken as a promise, guarantee, projection, or forecast of any real money or future amount that DrumWave or anyone else will pay a real person. Real life differs from the assumptions (for example, uninterrupted contributions for a lifetime, with no withdrawals, fees, or taxes) and methodology (for example, compounding over assumed investment return and not data value) underlying the different proposed scenarios, and small changes significantly alter the result. You may request the basis for the website&rsquo;s figures, illustrations and estimations from DrumWave using the details below, but your own results, if any, will differ.</p>
     <p>5. This service is not directed and/or available to individuals under 18, and DrumWave does not knowingly collect personal information from individuals under 18. If you believe an individual under 18 has provided us with personal information, contact us using the information below.</p>
     <p>6. Read DrumWave&rsquo;s dWallet Terms, Terms and Conditions of Use of the Data Savings Plan, Offer Activation Terms, and Privacy Policy before enrolling.</p>
     <p class="disc-contact">Questions: <a href="mailto:support@drumwave.com">support@drumwave.com</a><span class="disc-dot">.</span></p>
@@ -3584,12 +3611,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // The picker. It changes the figure and nothing else: the photograph, the age
   // and the stage are the reader's position in a life, not their contribution.
   const ageTabs = $$('.age-tab');
+  // High is the only scenario resting on a law that does not exist yet, so it
+  // is the only one that carries the disclaimer. The class goes on the section
+  // rather than the note so the stylesheet decides where the note lives at each
+  // size - the wide frame has a band for it, the phone does not.
+  const ageScene = document.querySelector('.age-scene');
+  const ageTierClass = () => ageScene.classList.toggle('tier-high', AGE_TIERS[ageTier].label === 'High');
   ageTabs.forEach(btn => btn.addEventListener('click', () => {
     ageTier = +btn.dataset.tier;
     ageTabs.forEach(b => { const on = b === btn;
       b.classList.toggle('is-on', on); b.setAttribute('aria-pressed', on); });
+    ageTierClass();
     renderAge(ageCurrent);
   }));
+  ageTierClass();
 
 
   // The age track's pin used to run 200% past the last figure purely to hold a tail
