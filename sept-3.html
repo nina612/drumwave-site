@@ -572,6 +572,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   .age-scene .age-lower{left:var(--age-gut);right:var(--age-gut);
     bottom:clamp(64px,11.57vh,125px)}
+  /* HIGH IS TWO GLYPHS LONGER THAN EVERY OTHER SCENARIO, and that is a size
+     question, not a rounding one. Low tops out at $209,763 and Medium at
+     $306,392 — eight glyphs, which is what every figure measurement on this
+     page was fitted to. High reaches $1,018,268: ten. Measured, the figure runs
+     4.28x its own font-size at ten where eight ran 3.90, so at 1440 the widest
+     High figure came to 960px against 880 of room beside the picker.
+     Only High needs the smaller size, so only High gets it — Low and Medium
+     keep the frame's 300. The rule is room/4.32: room beside the 343 picker is
+     0.877 x width - 383, which gives 20vw - 94px with a margin on it. */
+  .age-scene.tier-high .bignum{font-size:min(20vw - 94px, 300px)}
 
   .age-scene .age-row{display:flex;align-items:flex-end;justify-content:space-between;
     gap:40px;margin-bottom:clamp(28px,4.72vh,51px)}
@@ -688,12 +698,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      margin, so the increase is the full 20% wherever there is room for it and
      tapers only where there is not. */
   .age-scene .bignum{font-size:min(15.6vw, 24vw - 110px, 264px)}
+  .age-scene.tier-high .bignum{font-size:min(20vw - 94px, 264px)}
   .age-scene .age-badge{font-size:20px;--pill-inset:15.6px}
   .age-scene .age-cap{margin-top:12px}
 }
 @media (min-width:761px) and (max-width:1120px){
   /* the same +20% and the same guard, against this band's 280 picker */
   .age-scene .bignum{font-size:min(13.8vw, 24vw - 92px, 180px)}
+  /* this band's picker is 280, not 343, so the room is 0.877 x width - 320 */
+  .age-scene.tier-high .bignum{font-size:min(20vw - 78px, 180px)}
   .age-scene .age-tabs{width:280px}
   .age-scene .age-badge{font-size:16px;letter-spacing:.04em;--pill-inset:13.05px}
   .age-scene .age-cap{margin-top:12px}
@@ -1301,6 +1314,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      so the cap is the frame's own number now and the vw term only takes over
      below about 386 of screen, where 86 would not fit. */
   .age-scene .bignum{font-size:min(25.6vw - 13px, 86px);font-weight:300}
+  /* ten glyphs in a column of 100vw - 48: (100vw-48)/4.32, with a margin */
+  .age-scene.tier-high .bignum{font-size:min(22.8vw - 14px, 86px)}
   /* The age readout that used to sit up here, clear of the nav pill, is gone:
      the blue pill over the figure carries the same age and the same stage, off
      the same line of renderAge, and 4360:63768 has no second copy of it.
@@ -3479,14 +3494,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     306392
   ];
   const AGE_HIGH = [
-    289,    600,    935,    1296,   1684,   2101,   2548,   3028,   3543,   4095,
-    4686,   5318,   5995,   6719,   7493,   8320,   9203,   10146,  11153,  12228,
-    13374,  14597,  15900,  17289,  18770,  20347,  22027,  23816,  25721,  27749,
-    29907,  32203,  34647,  37246,  40010,  42950,  46076,  49399,  52932,  56687,
-    60678,  64919,  69425,  74212,  79298,  84700,  90438,  96533,  103004, 109877,
-    117174, 124922, 133148, 141880, 151149, 160989, 171432, 182516, 194280, 206764,
-    220012, 234071, 248988, 264815, 281609, 299426, 318329, 338383, 358686, 380208,
-    403020
+    289,     619,     997,     1425,    1911,    2460,    3079,    3775,    4557,    5432,
+    6411,    7505,    8724,    10082,   11593,   13271,   15134,   17198,   19486,   22017,
+    24816,   27809,   31009,   34429,   38082,   41983,   46146,   50590,   55330,   60385,
+    65774,   71519,   77641,   84163,   91110,   98508,   106385,  114769,  123693,  133189,
+    143291,  154038,  165469,  177625,  190550,  204291,  218899,  234425,  250926,  268461,
+    287093,  306888,  327917,  350254,  373980,  399178,  425938,  454354,  484527,  516562,
+    550572,  586678,  625005,  665688,  708869,  754700,  803339,  854958,  906255,  960631,
+    1018268
   ];
   // The milestones, which are now only about what is on SCREEN: where the
   // photograph changes and what the stage is called. The figures they used to
@@ -3516,11 +3531,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // figures year by year. NOTHING ON THIS SCREEN IS INVENTED ANY MORE — the
   // multipliers that stood in for Medium and High (2 and 3.5) are gone.
   //
-  // They were never going to be right. The tiers are not a constant apart:
-  // Medium over Low runs 1.4667 at birth and 1.4606 by 70, High over Low 1.927
-  // and 1.921. Close enough that a multiplier looked plausible, far enough that
-  // it was wrong everywhere in between — and 3.5 for High was not close at all.
-  // It would have read $734,171 at 70 where the table says $403,020.
+  // They were never going to be right, and High says so loudest. Medium over Low
+  // is near enough constant — 1.4667 at birth, 1.4606 by 70 — but High over Low
+  // runs 1.93 at birth and 4.85 by 70: it is a different curve, not a louder one.
+  // No single number could have produced it, and the 3.5 that once stood in for
+  // it would read $734,171 at 70 where the table says $1,018,268.
   const AGE_TIERS = [
     {label:'Low',    table:AGE_LOW},
     {label:'Medium', table:AGE_MID},
