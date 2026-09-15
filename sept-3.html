@@ -461,6 +461,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .age-scene .age-readout{display:flex;flex-direction:column;min-width:0}
 /* #0060FF under a 20% black wash at 80% opacity, resolved: the wash and the
    opacity are two layers in the frame and one colour on the screen. */
+.age-scene .age-badge-stage{display:none}
 .age-scene .age-badge{margin:0;padding:16px 20px;border-radius:100px;background:rgba(0,76,204,.8);
   font-family:'Open Sans',sans-serif;font-weight:600;line-height:.99;
   text-transform:uppercase;color:#fff;white-space:nowrap}
@@ -516,6 +517,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      the pill is a solid shape and needs less air than a line of 16px caps. */
   .age-scene .age-readout{align-items:flex-end;text-align:right}
   .age-scene .age-badge{display:block;margin-bottom:24px;font-size:24px;letter-spacing:.05em}
+  .age-scene .age-badge-stage{display:inline}
   .age-scene .age-cap{display:block;margin:32px 0 0;font-family:'Open Sans',sans-serif;
     font-weight:600;font-size:16px;line-height:.99;letter-spacing:.1em;
     text-transform:uppercase;color:#fff;text-align:right}
@@ -1076,18 +1078,30 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      scaled to vh so it stays the drawn spacing on a real phone, which is
      shorter than the frame. The extra over 214 is room for the drag line,
      which the frame doesn't carry. */
-  /* ---- 4360:63768 ----
-     One block off the bottom holding all four pieces in a column: the picker,
-     the pill, the figure, then the ruler. The frame's 387x1080 gives the
-     numbers - 24 of gutter (not 15 any more), 42 off the bottom, and between
-     the figure's baseline at 895 and the ruler's caption at 924 a gap of 29. */
-  .age-scene .age-lower{left:24px;right:24px;bottom:42px}
-  .age-scene .age-row{display:flex;flex-direction:column;gap:28px;margin-bottom:29px}
+  /* ---- 4406:29779 ----
+     The same column as before, re-measured against a 393x844 frame rather than
+     the 387x1080 one: a shorter screen, so the block sits 36 off the bottom
+     instead of 42 and the air between its parts is redistributed — more between
+     the picker and the pill (48, where it was 28), less everywhere else.
+
+     The gutter stays a symmetric 24. The frame draws 24 on the left and 30 on
+     the right, which is what you get when content authored at 387 is pasted onto
+     a 393 artboard; centred is what it means. */
+  .age-scene .age-lower{left:24px;right:24px;bottom:36px}
+  .age-scene .age-row{display:flex;flex-direction:column;gap:48px;margin-bottom:20px}
   .age-scene .age-contrib-cap{font-size:14px}
+  /* 291 of the column's 339, not all of it — the picker is no longer full
+     bleed, and the trough is a light wash now rather than black. */
+  .age-scene .age-tabs{width:291px;max-width:100%;height:41px;padding:3px;border-radius:10px;
+    background:rgba(181,181,181,.4)}
+  .age-scene .age-tab{font-size:14px;border-radius:7px;border-width:1px}
+  /* white, not #e2e2e2: on a pale wash the lighter grey stopped reading */
+  .age-scene .age-tab{color:#fff}
+  .age-scene .age-tab.is-on{color:#000}
   .age-scene .age-readout{align-items:flex-start;text-align:left}
-  /* 15 under the pill, and the pill only as wide as its words */
+  /* 8 under the pill now, and the pill only as wide as its words */
   .age-scene .age-badge{display:inline-block;align-self:flex-start;
-    margin-bottom:15px;font-size:14px;letter-spacing:.05em}
+    margin-bottom:8px;font-size:14px;letter-spacing:.05em}
   /* Light, not the wide frame's ExtraLight: 4360:63768 draws this one at 300
      and 4349:36344 draws its own at 200, which is the right way round — a
      hairline that reads at 300px on a desktop disappears at a third of it.
@@ -1101,8 +1115,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      past the margin.
      One size rather than fitting each figure to the width: the count runs from
      $0 to six digits, and a figure that shrinks a step at every comma is more
-     distracting during the run than 14px of missing height is at rest. */
-  .age-scene .bignum{font-size:min(25.6vw - 13px, 92px);font-weight:300}
+     distracting during the run than a few px of missing height is at rest.
+     4406:29779 draws 86 against "$403,020" — eight glyphs, the real worst case —
+     so the cap is the frame's own number now and the vw term only takes over
+     below about 386 of screen, where 86 would not fit. */
+  .age-scene .bignum{font-size:min(25.6vw - 13px, 86px);font-weight:300}
   /* The age readout that used to sit up here, clear of the nav pill, is gone:
      the blue pill over the figure carries the same age and the same stage, off
      the same line of renderAge, and 4360:63768 has no second copy of it.
@@ -1139,6 +1156,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   /* the last tick lands on the right edge now: 4360:63768 runs 72 of them
      across the full 338, where 4045:23023 stopped its ruler 4.7 short */
   .age-scene .track .ticks{right:0}
+  /* THE SCRIM MOVED UP WITH THE COPY. 4406:29779 runs its wash from 405 of 844
+     — a hair under halfway — to the bottom, holding at half black rather than
+     the .7 the old one closed on. It has to: the picker's caption now starts at
+     422, and the scrim it used to sit on did not begin until 60% down, which
+     left "YOUR DATA CONTRIBUTION" on bare photograph.
+     Stated from the bottom, which is how a gradient on a full-height frame has
+     to be written: solid to 30%, gone by 52%. */
+  .age-scene .frame::after{background:linear-gradient(to top,
+    rgba(0,0,0,.5) 30%, rgba(0,0,0,0) 52%)}
   /* the drag line is off here: 4045:23023 is the phone frame for this screen
      and it carries the caption, the ruler and the two labels, nothing else.
      Taking it out is also what returns the figure to the frame's 214 below —
@@ -1147,6 +1173,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      the markup because the first-drag reveal still targets it, and tweening the
      opacity of something display:none costs nothing. */
   .age-scene .ctl-cap br{display:block}
+  /* 14/1.2 and 24 of air under it, against the 16/1.06 and 32 of the frame
+     before — the shorter screen buys its room back here */
+  .age-scene .ctl-cap{font-size:14px;line-height:1.2;margin-bottom:24px}
   .age-scene .ctl .ages span:not(:first-child):not(:last-child){display:none}
   /* asked for: no blue cast behind these three on the phone — 3870:45302 sets
      all of them on flat black. The introducing screen's pair is tweened open
@@ -1555,7 +1584,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       </div>
 
       <div class="age-readout">
-        <p class="age-badge" id="ageBadge">Age 0: Newborn</p>
+        <!-- 4406:29779 sets the pill to the age alone ("AGE 35"); 4349:36344
+             keeps the stage with it ("AGE 35: BUILDING A LIFE"). Two spans, one
+             write each, and the breakpoint decides which are drawn — rather than
+             two strings in the script, which would have put a layout decision
+             where nothing else about layout lives. -->
+        <p class="age-badge"><span id="ageBadgeAge">Age 0</span><span
+           class="age-badge-stage" id="ageBadgeStage">: Newborn</span></p>
         <div class="num-wrap">
           <div class="lab mono"><i></i><span>Potential value accumulated</span></div>
           <div class="bignum display" id="ageBigVal">$0</div>
@@ -2068,7 +2103,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   if(/(?:^|[?&#])hero=/.test(location.search + location.hash)){
     addEventListener('DOMContentLoaded', () => {
       const tag = document.createElement('div');
-      tag.setAttribute('style', 'position:fixed;z-index:99998;left:10px;bottom:10px;' +
+      // top left, not bottom: at the bottom it sat straight on the ruler's own
+      // 0 and 70 and hid the thing being compared
+      tag.setAttribute('style', 'position:fixed;z-index:99998;left:10px;top:96px;' +
         'padding:7px 11px;border-radius:999px;background:rgba(0,0,0,.78);color:#fff;' +
         'font:600 12px/1 -apple-system,system-ui,sans-serif;letter-spacing:.08em;' +
         'pointer-events:none;border:1px solid rgba(255,255,255,.22)');
@@ -3294,7 +3331,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   let ageTier = 0;
   const ageFrames = $$('#ageFrames .frame');
   const ageBigVal = $('#ageBigVal'), ageNumVal = $('#ageNumVal'), ageCapVal = $('#ageCapVal');
-  const ageBadge = $('#ageBadge');
+  const ageBadgeAge = $('#ageBadgeAge'), ageBadgeStage = $('#ageBadgeStage');
   const AGE_MIN = AGES[0], AGE_MAX = AGES[AGES.length-1];
 
   const ageTrack = $('#ageTrack'), ageFill = $('#ageFill'), ageHandle = $('#ageHandle');
@@ -3354,9 +3391,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const stage = (next && x > .5) ? AGE_DATA[si+1].label : AGE_DATA[si].label;
     ageNumVal.textContent = Math.round(age);
     ageCapVal.textContent = stage;
-    // the pill carries both on the wide frame — the same age and the same stage
-    // the top-right pair carries on the phone, so they can never disagree
-    ageBadge.textContent = 'Age ' + Math.round(age) + ': ' + stage;
+    // Both are always written; only the wide frame draws the second. Writing it
+    // either way is what keeps the two from disagreeing if the reader turns the
+    // phone and the breakpoint changes under them.
+    ageBadgeAge.textContent   = 'Age ' + Math.round(age);
+    ageBadgeStage.textContent = ': ' + stage;
 
     ageCurrent = age;
     const t = (age - AGE_MIN) / (AGE_MAX - AGE_MIN);
