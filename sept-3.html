@@ -428,12 +428,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    row, so this clears them rather than overlapping. */
 .age-scene .age-skip{position:absolute;right:4.53vw;bottom:1.94vh;z-index:8;
   display:flex;align-items:center;gap:8px;background:none;border:0;padding:0;cursor:pointer;
-  color:#E3E3E3;font-family:'Open Sans',sans-serif;font-weight:600;font-size:16px;
-  letter-spacing:.1em;text-transform:uppercase;opacity:.5;transition:opacity .25s}
-.age-scene .age-skip:hover{opacity:.85}
-/* the source glyph is two stacked up-chevrons; turned 90° it reads as
-   pointing on toward what comes next instead of up the page */
-.age-scene .age-skip-arrow{display:block;width:9px;height:8px;transform:rotate(90deg)}
+  /* asked for: more visible. White rather than #E3E3E3, .85 rather than .5, and
+     a shadow under it — it sits over the lower corner of a photograph, and the
+     scrim there is doing the work for the ruler above it rather than for this. */
+  color:#fff;font-family:'Open Sans',sans-serif;font-weight:600;font-size:16px;
+  letter-spacing:.1em;text-transform:uppercase;opacity:.85;
+  text-shadow:0 1px 4px rgba(0,0,0,.55);transition:opacity .25s}
+.age-scene .age-skip:hover{opacity:1}
+/* the source glyph is two stacked up-chevrons; a half turn points them down the
+   page, which is the direction the control actually goes — asked for. A quarter
+   turn had them pointing sideways at nothing. */
+.age-scene .age-skip-arrow{display:block;width:10px;height:9px;transform:rotate(180deg)}
 
 /* ---- THE PIECES BOTH FRAMES SHARE ----
    4349:36344 and 4360:63768 draw one instrument at two sizes. The picker, the
@@ -3607,9 +3612,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     onLeaveBack: () => ageAuto.pause()
   });
 
-  // Held outside the matchMedia because #ageSkip needs to ask it where the pin
-  // lets go; null whenever the phone's layout is the one in force.
-  let ageScrubST = null;
   // ---- THE WIDE FRAME RUNS OFF THE SCROLL ----
   //
   // Asked for: the years advance as the reader scrolls, slowly, and stop when
@@ -3632,7 +3634,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // The handle still wins outright: ageTaken is the same latch the clock uses,
   // so the first drag hands the screen over and the scroll stops writing to it.
   gsap.matchMedia().add('(min-width:761px)', () => {
-    ageScrubST = ScrollTrigger.create({
+    const scrubST = ScrollTrigger.create({
       trigger:'#ages', start:'top top', end:'+=2400',
       pin:true, pinSpacing:true, scrub:.8, invalidateOnRefresh:true,
       onUpdate: self => {
@@ -3640,20 +3642,28 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         renderAge(AGE_MIN + self.progress * (AGE_MAX - AGE_MIN));
       }
     });
-    return () => { ageScrubST.kill(); ageScrubST = null; };
+    return () => scrubST.kill();
   });
   // Figma 3898:98620/3361:82763 — past the screen in one jump rather than
   // watching all seventy years first. There is no pin to fight any more, so
   // this is simply the bottom of a one-screen section.
+  // SKIP TO THE NEXT SECTION — to the next section, that is.
+  //
+  // This has now been wrong twice in two different ways, and both times because
+  // it was described in terms of the section being LEFT rather than the one
+  // being GONE TO. First it summed #ages' own offsetTop and height, which the
+  // pin's spacer broke by becoming the offsetParent and making offsetTop 0.
+  // Then it went to the pin's end — correct as far as it went, and measured
+  // landing there exactly, but the pin lets go with #solution's top still on
+  // the bottom edge of the screen: 900 of top on a 900 viewport. The control
+  // said "skip to next section" and delivered the last frame of this one.
+  //
+  // Asking where #solution starts answers the question the label asks, and it
+  // is one expression that is right at both breakpoints - with a pin and
+  // without one - because it reads the layout rather than reasoning about it.
   $('#ageSkip').addEventListener('click', () => {
-    // Past the pin, not past the section. Once ScrollTrigger pins #ages it wraps
-    // it in a spacer and becomes its offsetParent, so the section's own
-    // offsetTop reads 0 and the old sum landed one screen down from the top of
-    // the page instead of at the end of this one. The trigger's end IS the
-    // scroll position where the pin lets go, which is the thing being skipped.
-    if(ageScrubST){ window.scrollTo(0, ageScrubST.end); return; }
-    const sec = document.querySelector('#ages');
-    window.scrollTo(0, sec.offsetTop + sec.offsetHeight);
+    const sol = document.querySelector('#solution');
+    window.scrollTo(0, Math.round(sol.getBoundingClientRect().top + window.scrollY));
   });
 
   // Drag: the handle owns the age directly. It used to move the scrollbar and let
