@@ -449,11 +449,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .age-scene .age-contrib{display:flex;flex-direction:column;gap:16px}
 .age-scene .age-contrib-cap{margin:0;font-family:'Open Sans',sans-serif;font-weight:600;
   line-height:.99;letter-spacing:.1em;text-transform:uppercase;color:#fff}
-.age-scene .age-tabs{display:flex;height:48px;padding:4px;background:rgba(0,0,0,.4);border-radius:12px}
+/* LOW / MEDIUM / HIGH — Figma 4349:36453 (4413:29239).
+   A pale wash with a real blur behind it rather than the flat black trough this
+   started as: rgba(181,181,181,.2) over backdrop-filter:blur(2.96px), which is
+   what makes a 20% white read as frosted glass instead of as haze. The numbers
+   are the component's own and they are not round - 49 of height, 12.196 of
+   radius, 4.065 of padding, 16.261 of type - so they are written as given and
+   the phone scales them by the 0.845 its own frame uses, rather than either
+   size rounding separately and drifting apart.
+
+   backdrop-filter is the one thing here with no fallback worth writing: where it
+   is unsupported the wash simply stays flat, which is the trough as it was. */
+.age-scene .age-tabs{display:flex;height:49px;padding:4.065px;border-radius:12.196px;
+  background:rgba(181,181,181,.2);
+  -webkit-backdrop-filter:blur(2.96px);backdrop-filter:blur(2.96px)}
 .age-scene .age-tab{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;
-  border:1px solid transparent;border-radius:8px;background:none;cursor:pointer;
-  font-family:'Titillium Web',sans-serif;font-weight:600;font-size:16px;line-height:1.5;
-  color:#e2e2e2;transition:background .25s,color .25s,border-color .25s}
+  border:1.016px solid transparent;border-radius:8.13px;background:none;cursor:pointer;
+  font-family:'Titillium Web',sans-serif;font-weight:600;font-size:16.261px;line-height:1.5;
+  color:#fff;transition:background .25s,color .25s,border-color .25s}
 /* the frame's own 4% white border on the selected chip: it is what keeps the
    white block from cutting a hard edge into the black trough around it */
 .age-scene .age-tab.is-on{background:#fff;border-color:rgba(255,255,255,.04);color:#000}
@@ -490,7 +503,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   /* --- left: the contribution picker --- */
   .age-scene .age-contrib{flex:0 0 auto}
   .age-scene .age-contrib-cap{font-size:16px}
-  .age-scene .age-tabs{width:343px;max-width:100%}
+  .age-scene .age-tabs{width:346px;max-width:100%}
   /* :not(.is-on), and behind a real-hover query. Written as a bare
      .age-tab:hover this was specificity 0,3,0 — exactly what .age-tab.is-on
      carries — and it sat later in the sheet, so it WON: the moment you clicked
@@ -502,8 +515,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      longer a rule that can paint white on white, whatever order the sheet ends
      up in. The hover query is the second half of it — a device with no pointer
      to hover with should not be running hover styles at all. */
+  /* The unselected labels are already white, so hover has no colour left to
+     change; it lifts the chip instead. Not drawn in 4349:36453 - Figma draws a
+     rest state - but a control with a cursor over it should say so. */
   @media (hover:hover) and (pointer:fine){
-    .age-scene .age-tab:not(.is-on):hover{color:#fff}
+    .age-scene .age-tab:not(.is-on):hover{background:rgba(255,255,255,.12)}
   }
 
   /* --- right: the pill, the figure, the caption --- */
@@ -1088,14 +1104,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .age-scene .age-lower{left:24px;right:24px;bottom:36px}
   .age-scene .age-row{display:flex;flex-direction:column;gap:48px;margin-bottom:20px}
   .age-scene .age-contrib-cap{font-size:14px}
-  /* 291 of the column's 339, not all of it — the picker is no longer full
-     bleed, and the trough is a light wash now rather than black. */
-  .age-scene .age-tabs{width:291px;max-width:100%;height:41px;padding:3px;border-radius:10px;
-    background:rgba(181,181,181,.4)}
-  .age-scene .age-tab{font-size:14px;border-radius:7px;border-width:1px}
-  /* white, not #e2e2e2: on a pale wash the lighter grey stopped reading */
-  .age-scene .age-tab{color:#fff}
-  .age-scene .age-tab.is-on{color:#000}
+  /* 291 of the column's 339, not full bleed. Every number here is the
+     component's own times 0.845, which is the ratio 4406:29779 scales it by -
+     41.204/49, 10.301/12.196, 3.434/4.065, 13.735/16.261 all agree on it. The
+     wash, the blur and the colours come from the base and are not repeated. */
+  .age-scene .age-tabs{width:291px;max-width:100%;height:41.2px;padding:3.434px;
+    border-radius:10.301px}
+  .age-scene .age-tab{font-size:13.735px;border-radius:6.867px;border-width:.858px}
   .age-scene .age-readout{align-items:flex-start;text-align:left}
   /* 8 under the pill now, and the pill only as wide as its words */
   .age-scene .age-badge{display:inline-block;align-self:flex-start;
