@@ -1156,6 +1156,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      The gutter stays a symmetric 24. The frame draws 24 on the left and 30 on
      the right, which is what you get when content authored at 387 is pasted onto
      a 393 artboard; centred is what it means. */
+  /* A TALLER SECTION THAN THE ONE SCREEN EVERY OTHER ACT GETS — asked for.
+     115svh, so the reader meets about 15% of a screen of photograph on its own
+     before the block rises into view. It does not put more picture on screen at
+     the moment the picker is there — a viewport is a viewport — it gives the
+     photograph a stretch of its own first, which is the thing a 100svh section
+     cannot do.
+     Both units, in the .act order: svh is the right one and vh is what answers
+     where svh is not understood. */
+  #ages{height:115vh;height:115svh}
   .age-scene .age-lower{left:24px;right:24px;bottom:36px}
   /* 40 and 16 rather than the frame's 48 and 20 — taking the offer to shift
      everything down. With the 17 from the ticks that is 29px more photograph,
@@ -3653,7 +3662,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // stuck-looking thing this change was meant to remove. Starting 5% earlier
     // puts that natural resting place safely inside the range; it costs 42px of
     // scroll, about a fifth of a second, so the reader still meets it at 2.
-    trigger:'#ages', start:'top 5%', end:'bottom top',
+    // THE CLOCK STARTS WHEN THE PICKER DOES, not when the section does.
+    //
+    // 'top 5%' was right while the section was exactly one screen: its top
+    // arriving was the block arriving. At 115svh they are 15% of a screen apart,
+    // and starting on the top would spend the first seconds of a 45-second run
+    // on a figure that is still below the fold.
+    //
+    // So the phone waits for the section's BOTTOM, which is what the block is
+    // anchored to. The +=10% is the same guard the 5% was: a trigger is not
+    // active at its own start, and "scroll until the block appears, then stop"
+    // comes to rest on exactly that pixel, so the range has to open a little
+    // before it.
+    //
+    // The wide frame keeps 'top 5%' exactly. It never reads this - ageEnter
+    // returns on the breakpoint before it gets here - but its pin wraps #ages
+    // in a spacer, which would make 'bottom' mean something else entirely.
+    start: () => ageAutoMQ.matches ? 'bottom bottom+=10%' : 'top 5%',
+    trigger:'#ages', end:'bottom top',
     onEnter:     ageEnter,
     onEnterBack: ageEnter,
     // Leaving only stops the clock. It used to re-arm the whole thing and, going
