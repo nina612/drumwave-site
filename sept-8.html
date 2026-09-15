@@ -231,11 +231,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      Reported as the text getting cut off at the bottom on bigger screens, and
      it is bigger screens exactly because 7.29vw reaches its 140px cap there.
      So the second term is the ceiling: 96vh less the painted height of the
-     block, which is 3 lines x 1.03 plus the .08em .ln paints below the last
-     baseline = 3.17em. min() takes whichever is higher up the page, so the
+     block, which is 3 lines x .98 plus the .08em .ln paints below the last
+     baseline = 3.02em. min() takes whichever is higher up the page, so the
      designed position holds wherever it fits and the headline only rises when
      it would otherwise be cut. At 1440x900 and 1920x1080 nothing moves. */
-  position:absolute;left:6.3vw;top:min(calc(54.5vh + .05em),calc(96vh - 3.17em));bottom:auto;max-width:92vw;color:#fff;
+  position:absolute;left:6.3vw;top:min(calc(54.5vh + .05em),calc(96vh - 3.02em));bottom:auto;max-width:92vw;color:#fff;
   /* 7.29vw is 140/1920, so the cap is reached at exactly the frame it was drawn on.
      The floor stays at the 3rem it has always been: the spec is for the wide screen,
      and letting it set the phone's size too would have shrunk the headline there
@@ -253,10 +253,26 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      1.1px between them, which on 105px type is a near miss rather than
      clearance, and any shift in a metric (another engine, the fallback face
      while Titillium loads, a zoom level) takes it negative. That is what made
-     the overlap intermittent rather than constant. 1.03 gives 9.5px, and it is
-     the same ratio sept-3's three big statements were moved to for the same
-     reason. A ratio, so it holds at every width. */
-  font-weight:400;line-height:1.03;letter-spacing:-.03em;
+     the overlap intermittent rather than constant. 1.03 gave 9.5px.
+
+     .98 NOW, asked for - tighter, against a reference showing the lines nearly
+     touching. Re-measured from the live ink rather than the line boxes, at
+     1440x900 on 105px type: the binding pair is the p of "power" under the b of
+     "business.", whose 75.4px ascent is the tallest of the three lines.
+
+       lh    gap
+       1.03  9.5px   (what this was)
+       1.00  6.3px
+        .98  4.2px   (this)
+        .96  2.1px
+        .95  1.1px   (the intermittent overlap, on record above)
+        .94  0.0px   (collides)
+
+     So .98 is as tight as this pair goes while keeping clearance that survives
+     another engine or the fallback face - roughly four times the margin that
+     failed before, and within ~2px of the reference on 105px type. Below .96
+     there is nothing left to spend. A ratio, so it holds at every width. */
+  font-weight:400;line-height:.98;letter-spacing:-.03em;
 }
 /* the phone break is the default-hidden one, the same pattern sept-3's #worth
    uses; the 760px block does the swap */
@@ -562,7 +578,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .faq-row .faq-a p{margin:0 0 1.4em}
 .faq-row .faq-a p:last-child{margin-bottom:0}
 /* not click-to-open while the artboard writes no answers */
+/* only the wide column opens - the phone six have no answers written for them,
+   so they must not offer a control that reveals nothing */
 .faq-row{cursor:default}
+.faq-list-wide .faq-row{cursor:pointer}
 /* the phone question set, swapped in at the breakpoint (Figma 3783:23109) */
 .faq-list-phone{display:none}
 .faq-row:focus-visible{outline:2px solid #278EFF;outline-offset:3px}
@@ -1169,30 +1188,79 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       <p class="faq-label">FAQS</p>
       <h2 class="faq-title">Questions? We&rsquo;ve got answers.</h2>
     </div>
+    <!-- Figma 4598:88251 gives this column its answers. Every desktop row now
+         carries one, so the +/- is a real control here as it is on sept-3,
+         rather than the painted-on affordance it was. The node draws all eight
+         open at once, which is a spec of the open state rather than a landing
+         state; the first is open on arrival, same as personal.
+         The phone column below is a DIFFERENT six questions and the design
+         writes no answers for them, so it stays shut and stays inert. -->
     <div class="faq-list faq-list-wide">
-      <div class="faq-row">
-        <div class="faq-text"><p class="faq-q">What is a Business dWallet?</p></div><i>+</i>
+      <div class="faq-row open">
+        <div class="faq-text">
+          <p class="faq-q">What is a Business dWallet?</p>
+          <div class="faq-a">
+          <p>Business dWallet is a data wallet that enables a business to own, save, and manage the value of its data. With a Business dWallet, companies can enrich their products and services with data, turning every SKU into a traceable digital record with product-level data ownership and richer context with every transaction. This enables businesses&rsquo; customers to gain shared custody of their data and receive value, and it enables businesses to reach a targeted group of individuals in the marketplace. All of this comes with a secure way to certify, manage, and license data.</p>
+          </div>
+        </div><i>&minus;</i>
       </div>
       <div class="faq-row">
-        <div class="faq-text"><p class="faq-q">How do I enrich my products and services with data?</p></div><i>+</i>
+        <div class="faq-text">
+          <p class="faq-q">How to enrich products and services with data?</p>
+          <div class="faq-a">
+          <p>It&rsquo;s as easy as importing the product information and confirming the suggestions in DrumWave&rsquo;s automated tool selected for the company&rsquo;s data. The business has full control over the products uploaded into the ecosystem and can manage them at any time, making them available or hiding them.</p>
+          <p>Once the products are enriched with data, customers get the product as usual, plus the data that comes with it. With each transaction, the value of the data accumulates in their Data Savings Plan.</p>
+          </div>
+        </div><i>+</i>
       </div>
       <div class="faq-row">
-        <div class="faq-text"><p class="faq-q">How does a business benefit?</p></div><i>+</i>
+        <div class="faq-text">
+          <p class="faq-q">How does a business benefit?</p>
+          <div class="faq-a">
+          <p>A business gains on several fronts. Products enriched with certified data carry richer context in every transaction, and every SKU becomes a traceable digital record. The data a business already generates becomes a resource it can save, value, and license in the marketplace, creating a new revenue stream. And the gains go beyond revenue: by giving customers a share of the value their data creates, a business builds trust and stronger relationships.</p>
+          </div>
+        </div><i>+</i>
       </div>
       <div class="faq-row">
-        <div class="faq-text"><p class="faq-q">How does a business earn revenue?</p></div><i>+</i>
+        <div class="faq-text">
+          <p class="faq-q">How does a business earn revenue?</p>
+          <div class="faq-a">
+          <p>Businesses earn revenue as the data contributed is licensed for the cases authorized by the chosen Data Savings Plan. Data never leaves the system, so licensing happens as often as its value is used in offers and licensing deals.</p>
+          </div>
+        </div><i>+</i>
       </div>
       <div class="faq-row">
-        <div class="faq-text"><p class="faq-q">How does this benefit a business’s customers?</p></div><i>+</i>
+        <div class="faq-text">
+          <p class="faq-q">How does this benefit businesses&rsquo; customers?</p>
+          <div class="faq-a">
+          <p>Every purchase does more for the customers. Each transaction adds Data Certificates to their Data Savings Plan, and consumers receive cash benefits when choosing to license their data or accept an offer. Customers earn from the relationship they already have with the business, and that builds trust and gives them a reason to keep coming back.</p>
+          </div>
+        </div><i>+</i>
       </div>
       <div class="faq-row">
-        <div class="faq-text"><p class="faq-q">What is an Enterprise Account?</p></div><i>+</i>
+        <div class="faq-text">
+          <p class="faq-q">What is an Enterprise Account?</p>
+          <div class="faq-a">
+          <p>Like banks in the financial system, Enterprise Accounts are authorized and audited businesses providing data monetization services within DrumWave&rsquo;s Ecosystem. It&rsquo;s an entity that issues dWallets and distributes and manages Data Savings Plans. An Enterprise Account provides individuals and organizations the infrastructure to participate in the New Data Economy at scale, supporting transactions that move money and data value simultaneously.</p>
+          </div>
+        </div><i>+</i>
       </div>
       <div class="faq-row">
-        <div class="faq-text"><p class="faq-q">Does DrumWave sell my data?</p></div><i>+</i>
+        <div class="faq-text">
+          <p class="faq-q">Does DrumWave sell my data?</p>
+          <div class="faq-a">
+          <p>No. Your data stays where it already is. DrumWave never holds your data, only the value it generates, like a bank that holds your money but does not own it.</p>
+          <p>Your Data Savings Plan holds Data Certificates that represent your data and its value. Nothing happens with them without your approval.</p>
+          </div>
+        </div><i>+</i>
       </div>
       <div class="faq-row">
-        <div class="faq-text"><p class="faq-q">Is my data safe?</p></div><i>+</i>
+        <div class="faq-text">
+          <p class="faq-q">Is my data safe?</p>
+          <div class="faq-a">
+          <p>Yes. DrumWave protects your business data using robust industry-standard security protocols and encryption methods, ensuring your information never leaves our secure system. We maintain strict compliance with global data standards, including GDPR, CCPA, LGPD, and SOC 2.</p>
+          </div>
+        </div><i>+</i>
       </div>
     </div>
 
@@ -1821,9 +1889,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // Every row carries an answer now, so the +/- is a real control rather than a
   // painted-on affordance. Rows open independently — the design shows them all open
   // at once — and the first is open on arrival.
-  // sept-8: Figma 3783:22367 draws the rows collapsed with no answers written, so
-  // there is nothing to open. The rows stay plain text rather than advertising a
-  // control that would do nothing — wire the toggle back up when the copy exists.
+  // sept-8: Figma 4598:88251 writes the answers, so the toggle is wired up — this
+  // is the "when the copy exists" the note above was holding out for. Scoped to
+  // .faq-list-wide, because the phone column is a different six questions that the
+  // design still leaves unanswered; a control there would reveal an empty panel.
+  $$('#how .faq-list-wide .faq-row').forEach(row => {
+    const mark = row.querySelector('i');
+    row.setAttribute('role', 'button');
+    row.setAttribute('tabindex', '0');
+    row.setAttribute('aria-expanded', row.classList.contains('open') ? 'true' : 'false');
+    const toggle = () => {
+      const open = row.classList.toggle('open');
+      row.setAttribute('aria-expanded', open ? 'true' : 'false');
+      mark.innerHTML = open ? '&minus;' : '+';
+    };
+    row.addEventListener('click', toggle);
+    row.addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar'){ e.preventDefault(); toggle(); }
+    });
+  });
 
   rise('#how .faq-head', '#how .faq');
   // both question sets are in the DOM; offsetParent is null for the one the
