@@ -567,6 +567,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .faq-row .faq-text{flex:1;min-width:0}
 .faq-row .faq-q{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:clamp(1rem,1.04vw,1.25rem);line-height:1.1;letter-spacing:-.03em;color:#E3E3E3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .faq-row i{flex:none;width:24px;font-family:'Open Sans',sans-serif;font-style:normal;font-size:18px;text-align:center;color:#6E7680}
+/* .faq-long is the phone's shortening: whole sentences, hidden, never reworded */
 /* Figma 3157-69704: the open row sits its question and answer in a column, tops
    aligned rather than centred, and carries a little more height than a shut one */
 .faq-row.open{align-items:flex-start;padding:30px 28px}
@@ -577,13 +578,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    blank line, which is a margin here rather than an empty paragraph */
 .faq-row .faq-a p{margin:0 0 1.4em}
 .faq-row .faq-a p:last-child{margin-bottom:0}
-/* not click-to-open while the artboard writes no answers */
-/* only the wide column opens - the phone six have no answers written for them,
-   so they must not offer a control that reveals nothing */
-.faq-row{cursor:default}
-.faq-list-wide .faq-row{cursor:pointer}
-/* the phone question set, swapped in at the breakpoint (Figma 3783:23109) */
-.faq-list-phone{display:none}
+/* THE PHONE SET IS GONE. Figma 3783:23109 drew six different questions for the
+   phone and wrote no answers for any of them, so that column shipped inert - a +
+   that did nothing on tap. Asked for: drop it and carry the answered eight at
+   every width instead. One list now, and it opens on a phone the same as it does
+   on a desktop. */
+.faq-row{cursor:pointer}
 .faq-row:focus-visible{outline:2px solid #278EFF;outline-offset:3px}
 
 /* Figma 3157-69704: the disclosures block — text at x164 on a 1464 measure, 18px
@@ -914,8 +914,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .faq{flex-direction:column;gap:40px;width:auto;max-width:428px;padding:min(21.282vw,92px) min(6.2vw,27px) min(14vw,60px);margin-inline:auto}
   .faq-title{max-width:none;font-size:clamp(2rem,8.7vw,2.4rem)}
   .faq-list{width:100%}
-  .faq-list-wide{display:none}
-  .faq-list-phone{display:flex}
   /* Figma 3783:23110..15 — 342-wide rows, 24/16 padding, 16px SemiBold at -0.48
      tracking, a 24 toggle hard against the right padding and no gap before it.
      Padding is 23/15, not the board's 24/16: Figma strokes inside the frame
@@ -926,6 +924,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      Height then falls out of the content box, max(text, toggle): one line gives
      24 and two 44, i.e. the 72/72/72/92/92/72 the board draws. */
   .faq-row{gap:0;padding:23px 15px}
+  /* .faq-row.open is two classes and outweighed the one-class rule above, so an
+     open row was taking the DESKTOP 30/28 on a 375 screen - 28px of side padding
+     out of 345, against the 15 every shut row beside it uses. It never showed
+     while the phone set was the one on screen, because nothing there opened.
+     +2 vertical over the shut row, which is the same step the wide build makes
+     from 28 to 30. */
+  .faq-row.open{padding:25px 15px}
+  /* the phone's shortening: whole sentences dropped, never reworded */
+  .faq-long{display:none}
   .faq-row .faq-q{white-space:normal;font-size:16px;line-height:1.375;letter-spacing:-.48px}
   .faq-row i{width:24px;height:24px;line-height:24px}
   .site-footer{grid-template-columns:1fr;gap:32px;padding-bottom:min(9vw,39px)}
@@ -1188,19 +1195,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       <p class="faq-label">FAQS</p>
       <h2 class="faq-title">Questions? We&rsquo;ve got answers.</h2>
     </div>
-    <!-- Figma 4598:88251 gives this column its answers. Every desktop row now
-         carries one, so the +/- is a real control here as it is on sept-3,
-         rather than the painted-on affordance it was. The node draws all eight
-         open at once, which is a spec of the open state rather than a landing
-         state; the first is open on arrival, same as personal.
-         The phone column below is a DIFFERENT six questions and the design
-         writes no answers for them, so it stays shut and stays inert. -->
-    <div class="faq-list faq-list-wide">
+    <!-- Figma 4598:88251 gives this column its answers. Every row carries one, so
+         the +/- is a real control here as it is on sept-3. The node draws all
+         eight open at once, which is a spec of the open state rather than a
+         landing state; the first is open on arrival, same as personal.
+         SHORTENED FOR THE PHONE BY OMISSION, NOT BY REWRITING. Asked for, once
+         these eight became the only set at every width: the longest answers ran
+         fifteen lines on a 375 screen. .faq-long marks the sentences the phone
+         drops, so the desktop copy stays exactly what was approved and the phone
+         never states a claim in words nobody signed off. Answers 7 and 8 keep
+         every sentence - they are the promise about what happens to your data
+         and the compliance list, and neither is what made this long. -->
+    <div class="faq-list">
       <div class="faq-row open">
         <div class="faq-text">
           <p class="faq-q">What is a Business dWallet?</p>
           <div class="faq-a">
-          <p>Business dWallet is a data wallet that enables a business to own, save, and manage the value of its data. With a Business dWallet, companies can enrich their products and services with data, turning every SKU into a traceable digital record with product-level data ownership and richer context with every transaction. This enables businesses&rsquo; customers to gain shared custody of their data and receive value, and it enables businesses to reach a targeted group of individuals in the marketplace. All of this comes with a secure way to certify, manage, and license data.</p>
+          <p>Business dWallet is a data wallet that enables a business to own, save, and manage the value of its data. With a Business dWallet, companies can enrich their products and services with data, turning every SKU into a traceable digital record with product-level data ownership and richer context with every transaction.<span class="faq-long"> This enables businesses&rsquo; customers to gain shared custody of their data and receive value, and it enables businesses to reach a targeted group of individuals in the marketplace.</span><span class="faq-long"> All of this comes with a secure way to certify, manage, and license data.</span></p>
           </div>
         </div><i>&minus;</i>
       </div>
@@ -1208,7 +1219,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         <div class="faq-text">
           <p class="faq-q">How to enrich products and services with data?</p>
           <div class="faq-a">
-          <p>It&rsquo;s as easy as importing the product information and confirming the suggestions in DrumWave&rsquo;s automated tool selected for the company&rsquo;s data. The business has full control over the products uploaded into the ecosystem and can manage them at any time, making them available or hiding them.</p>
+          <p>It&rsquo;s as easy as importing the product information and confirming the suggestions in DrumWave&rsquo;s automated tool selected for the company&rsquo;s data.<span class="faq-long"> The business has full control over the products uploaded into the ecosystem and can manage them at any time, making them available or hiding them.</span></p>
           <p>Once the products are enriched with data, customers get the product as usual, plus the data that comes with it. With each transaction, the value of the data accumulates in their Data Savings Plan.</p>
           </div>
         </div><i>+</i>
@@ -1217,7 +1228,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         <div class="faq-text">
           <p class="faq-q">How does a business benefit?</p>
           <div class="faq-a">
-          <p>A business gains on several fronts. Products enriched with certified data carry richer context in every transaction, and every SKU becomes a traceable digital record. The data a business already generates becomes a resource it can save, value, and license in the marketplace, creating a new revenue stream. And the gains go beyond revenue: by giving customers a share of the value their data creates, a business builds trust and stronger relationships.</p>
+          <p><span class="faq-long">A business gains on several fronts. Products enriched with certified data carry richer context in every transaction, and every SKU becomes a traceable digital record. </span>The data a business already generates becomes a resource it can save, value, and license in the marketplace, creating a new revenue stream. And the gains go beyond revenue: by giving customers a share of the value their data creates, a business builds trust and stronger relationships.</p>
           </div>
         </div><i>+</i>
       </div>
@@ -1233,7 +1244,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         <div class="faq-text">
           <p class="faq-q">How does this benefit businesses&rsquo; customers?</p>
           <div class="faq-a">
-          <p>Every purchase does more for the customers. Each transaction adds Data Certificates to their Data Savings Plan, and consumers receive cash benefits when choosing to license their data or accept an offer. Customers earn from the relationship they already have with the business, and that builds trust and gives them a reason to keep coming back.</p>
+          <p>Every purchase does more for the customers. Each transaction adds Data Certificates to their Data Savings Plan, and consumers receive cash benefits when choosing to license their data or accept an offer.<span class="faq-long"> Customers earn from the relationship they already have with the business, and that builds trust and gives them a reason to keep coming back.</span></p>
           </div>
         </div><i>+</i>
       </div>
@@ -1241,7 +1252,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         <div class="faq-text">
           <p class="faq-q">What is an Enterprise Account?</p>
           <div class="faq-a">
-          <p>Like banks in the financial system, Enterprise Accounts are authorized and audited businesses providing data monetization services within DrumWave&rsquo;s Ecosystem. It&rsquo;s an entity that issues dWallets and distributes and manages Data Savings Plans. An Enterprise Account provides individuals and organizations the infrastructure to participate in the New Data Economy at scale, supporting transactions that move money and data value simultaneously.</p>
+          <p>Like banks in the financial system, Enterprise Accounts are authorized and audited businesses providing data monetization services within DrumWave&rsquo;s Ecosystem. It&rsquo;s an entity that issues dWallets and distributes and manages Data Savings Plans.<span class="faq-long"> An Enterprise Account provides individuals and organizations the infrastructure to participate in the New Data Economy at scale, supporting transactions that move money and data value simultaneously.</span></p>
           </div>
         </div><i>+</i>
       </div>
@@ -1264,31 +1275,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       </div>
     </div>
 
-    <!-- sept-8 phone, Figma 3783:23109: the phone board asks six different
-         questions from the desktop eight, so both sets ship and the breakpoint
-         shows one. display:none takes the other out of the accessibility tree
-         too, so only the visible set is ever announced. Nothing opens here
-         either — 3783:23110..15 are drawn collapsed with no answers written. -->
-    <div class="faq-list faq-list-phone">
-      <div class="faq-row">
-        <div class="faq-text"><p class="faq-q">Is a Data Savings Account a bank account?</p></div><i>+</i>
-      </div>
-      <div class="faq-row">
-        <div class="faq-text"><p class="faq-q">What data exactly?</p></div><i>+</i>
-      </div>
-      <div class="faq-row">
-        <div class="faq-text"><p class="faq-q">How much is my data worth?</p></div><i>+</i>
-      </div>
-      <div class="faq-row">
-        <div class="faq-text"><p class="faq-q">Why would a company pay for something it currently gets free?</p></div><i>+</i>
-      </div>
-      <div class="faq-row">
-        <div class="faq-text"><p class="faq-q">What does an enterprise need to launch a Data Savings Plan?</p></div><i>+</i>
-      </div>
-      <div class="faq-row">
-        <div class="faq-text"><p class="faq-q">Is my data safe with dWallet?</p></div><i>+</i>
-      </div>
-    </div>
   </div>
 
   <footer class="site-footer">
@@ -1890,10 +1876,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // painted-on affordance. Rows open independently — the design shows them all open
   // at once — and the first is open on arrival.
   // sept-8: Figma 4598:88251 writes the answers, so the toggle is wired up — this
-  // is the "when the copy exists" the note above was holding out for. Scoped to
-  // .faq-list-wide, because the phone column is a different six questions that the
-  // design still leaves unanswered; a control there would reveal an empty panel.
-  $$('#how .faq-list-wide .faq-row').forEach(row => {
+  // is the "when the copy exists" the note above was holding out for. No longer
+  // scoped to one column: the phone-only six are gone and these eight are the
+  // whole FAQ at every width.
+  $$('#how .faq-row').forEach(row => {
     const mark = row.querySelector('i');
     row.setAttribute('role', 'button');
     row.setAttribute('tabindex', '0');
