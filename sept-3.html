@@ -538,7 +538,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   /* --- left: the contribution picker --- */
   .age-scene .age-contrib{flex:0 0 auto}
-  .age-scene .age-contrib-cap{font-size:16px}
+  /* The same frosting the phone's captions got, and for the same reason: these
+     two are the only type on this screen with nothing between them and the
+     photograph. 2.96px here rather than 2.5 — the wide frame's blur, so the
+     picker, the pill and these read as one material at each size.
+     Padding grows the blurred box past the glyphs; an equal negative margin
+     gives the space straight back, so the type does not move. */
+  .age-scene .age-contrib-cap{font-size:16px;
+    padding:4px 10px;margin:-4px -10px;border-radius:8px;
+    -webkit-backdrop-filter:blur(2.96px);backdrop-filter:blur(2.96px)}
   /* 343. The component's own content box measures 346.035 and overhangs its
      frame by three — 4349:36453 is 343 wide and that is what the screen shows. */
   .age-scene .age-tabs{width:343px;max-width:100%}
@@ -587,7 +595,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      already under. .64 keeps a third of a stop in hand. */
   .age-scene .age-badge{display:block;margin-bottom:0;font-size:24px;letter-spacing:.05em;
     --pill-inset:19.1px;background:rgba(0,76,204,.64)}
-  .age-scene .age-cap{display:block;margin:12px 0 0;font-family:'Open Sans',sans-serif;
+  /* 8 of margin plus 4 of padding is the 12 this had, so the caption still sits
+     12 below the figure */
+  .age-scene .age-cap{display:block;margin:8px -10px -4px;padding:4px 10px;
+    border-radius:8px;-webkit-backdrop-filter:blur(2.96px);backdrop-filter:blur(2.96px);
+    font-family:'Open Sans',sans-serif;
     font-weight:600;font-size:16px;line-height:.99;letter-spacing:.1em;
     text-transform:uppercase;color:#fff;text-align:right}
   /* the phone's copy of the same sentence */
@@ -639,14 +651,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      tapers only where there is not. */
   .age-scene .bignum{font-size:min(15.6vw, 24vw - 110px, 264px)}
   .age-scene .age-badge{font-size:20px;--pill-inset:15.6px}
-  .age-scene .age-cap{margin-top:12px}
+  .age-scene .age-cap{margin-top:8px}   /* 8 + the 4 of padding is the 12 the type keeps */
 }
 @media (min-width:761px) and (max-width:1120px){
   /* the same +20% and the same guard, against this band's 280 picker */
   .age-scene .bignum{font-size:min(13.8vw, 24vw - 92px, 180px)}
   .age-scene .age-tabs{width:280px}
   .age-scene .age-badge{font-size:16px;letter-spacing:.04em;--pill-inset:13.05px}
-  .age-scene .age-cap{margin-top:12px}
+  .age-scene .age-cap{margin-top:8px}   /* 8 + the 4 of padding is the 12 the type keeps */
   .age-scene .age-contrib-cap,.age-scene .age-cap{font-size:13px}
 }
 
@@ -3736,18 +3748,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // viewport is the part that travels, and it gets the whole .7s. Tweening both
   // spends most of the duration on a still screen and then throws the visible
   // part past at the end, which was measured and was still a cut.
-  function glideToSolution(){
+  function glideTo(sel, up){
     if(ageGliding) return;
-    const sol = document.querySelector('#solution');
-    const to  = Math.round(sol.getBoundingClientRect().top + window.scrollY);
+    const el = document.querySelector(sel);
+    const to = Math.round(el.getBoundingClientRect().top + window.scrollY);
     if(Math.abs(window.scrollY - to) <= 2) return;
     ageGliding = true;
-    window.scrollTo(0, Math.max(window.scrollY, to - window.innerHeight));
+    // Cross the invisible distance in one frame, then travel the visible
+    // viewport. Going down that means starting where the next section sits on
+    // the fold; going up, where the previous one sits just above the top edge.
+    // Math.max / Math.min so neither can ever send a reader the wrong way.
+    window.scrollTo(0, up ? Math.min(window.scrollY, to + window.innerHeight)
+                          : Math.max(window.scrollY, to - window.innerHeight));
     const at = {y: window.scrollY};
     gsap.to(at, {y: to, duration:.7, ease:'power2.inOut', overwrite:true,
       onUpdate:   () => window.scrollTo(0, at.y),
       onComplete: () => { ageGliding = false; }});
   }
+  const glideToSolution = () => glideTo('#solution', false);
   gsap.matchMedia().add('(min-width:761px)', () => {
     const scrubST = ScrollTrigger.create({
       trigger:'#ages', start:'top top', end:'+=' + AGE_PIN_PX,
@@ -3800,13 +3818,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
           // the tween - this callback fires on every frame of the scroll the
           // tween is producing, and without it each frame would start another.
           if(ageGliding) return;
-          // UP is all invisible: everything between here and the pin's start is
-          // covered by pinned, fixed content, so crossing it takes one frame and
-          // shows nothing. The reader's own scroll then reveals what is above.
-          if(self.direction !== 1){
-            if(Math.abs(window.scrollY - self.start) > 2) window.scrollTo(0, Math.round(self.start));
-            return;
-          }
+          // UP GOES TO THE SECTION ABOVE, not to the top of this one. It used
+          // to stop at self.start, which is the top of the age screen - so a
+          // reader who had taken the handle and wanted to go back still had to
+          // scroll a further viewport by hand to reach "how much is your data
+          // worth". Asked for: up or down, they get taken to the respective
+          // section. #worth is that section, and it is the exact mirror of
+          // #solution below.
+          if(self.direction !== 1){ glideTo('#worth', true); return; }
           // DOWN is two distances, and only the second one is visible. From here
           // to self.end the section is still pinned and nothing moves; from
           // self.end to #solution's top the section actually travels up the
