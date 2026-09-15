@@ -474,7 +474,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .age-scene .age-readout{display:flex;flex-direction:column;min-width:0}
 /* #0060FF under a 20% black wash at 80% opacity, resolved: the wash and the
    opacity are two layers in the frame and one colour on the screen. */
+/* The pill is the other translucent surface on this screen, so it takes the
+   same frosting the picker does — asked for. 4406:29993 puts a blur under the
+   tab bar only, but the pill is 80% blue over the same photograph and without
+   it the two surfaces sitting eight pixels apart read as different materials.
+   Everything else here is type, which has no surface to blur through. */
 .age-scene .age-badge{margin:0;padding:16px 20px;border-radius:100px;background:rgba(0,76,204,.8);
+  -webkit-backdrop-filter:blur(2.96px);backdrop-filter:blur(2.96px);
   font-family:'Open Sans',sans-serif;font-weight:600;line-height:.99;
   text-transform:uppercase;color:#fff;white-space:nowrap}
 .age-scene .age-cap{display:none}
@@ -1109,8 +1115,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      41.204/49, 10.301/12.196, 3.434/4.065, 13.735/16.261 all agree on it. The
      wash, the blur and the colours come from the base and are not repeated. */
   .age-scene .age-tabs{width:291px;max-width:100%;height:41.2px;padding:3.434px;
-    border-radius:10.301px}
+    border-radius:10.301px;
+    /* 2.5, which is the wide frame's 2.96 at the same 0.845 — 4406:30092 says
+       so itself, so the blur scales with the component rather than being the
+       one value that does not */
+    -webkit-backdrop-filter:blur(2.5px);backdrop-filter:blur(2.5px)}
   .age-scene .age-tab{font-size:13.735px;border-radius:6.867px;border-width:.858px}
+  .age-scene .age-badge{-webkit-backdrop-filter:blur(2.5px);backdrop-filter:blur(2.5px)}
   .age-scene .age-readout{align-items:flex-start;text-align:left}
   /* 8 under the pill now, and the pill only as wide as its words */
   .age-scene .age-badge{display:inline-block;align-self:flex-start;
