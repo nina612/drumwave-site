@@ -461,7 +461,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .age-scene .age-readout{display:flex;flex-direction:column;min-width:0}
 /* #0060FF under a 20% black wash at 80% opacity, resolved: the wash and the
    opacity are two layers in the frame and one colour on the screen. */
-.age-scene .age-badge-stage{display:none}
 .age-scene .age-badge{margin:0;padding:16px 20px;border-radius:100px;background:rgba(0,76,204,.8);
   font-family:'Open Sans',sans-serif;font-weight:600;line-height:.99;
   text-transform:uppercase;color:#fff;white-space:nowrap}
@@ -517,7 +516,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      the pill is a solid shape and needs less air than a line of 16px caps. */
   .age-scene .age-readout{align-items:flex-end;text-align:right}
   .age-scene .age-badge{display:block;margin-bottom:24px;font-size:24px;letter-spacing:.05em}
-  .age-scene .age-badge-stage{display:inline}
   .age-scene .age-cap{display:block;margin:32px 0 0;font-family:'Open Sans',sans-serif;
     font-weight:600;font-size:16px;line-height:.99;letter-spacing:.1em;
     text-transform:uppercase;color:#fff;text-align:right}
@@ -1584,13 +1582,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       </div>
 
       <div class="age-readout">
-        <!-- 4406:29779 sets the pill to the age alone ("AGE 35"); 4349:36344
-             keeps the stage with it ("AGE 35: BUILDING A LIFE"). Two spans, one
-             write each, and the breakpoint decides which are drawn — rather than
-             two strings in the script, which would have put a layout decision
-             where nothing else about layout lives. -->
-        <p class="age-badge"><span id="ageBadgeAge">Age 0</span><span
-           class="age-badge-stage" id="ageBadgeStage">: Newborn</span></p>
+        <!-- The age alone, at both sizes — asked for. It briefly carried the
+             life stage with it on the wide frame ("Age 35: Building a life"),
+             which is why this was two spans; with the stage gone from both the
+             split has nothing left to decide, so it is one element again. The
+             stage itself is still computed — #ageCapVal holds it — it is simply
+             not said twice. -->
+        <p class="age-badge" id="ageBadge">Age 0</p>
         <div class="num-wrap">
           <div class="lab mono"><i></i><span>Potential value accumulated</span></div>
           <div class="bignum display" id="ageBigVal">$0</div>
@@ -3331,7 +3329,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   let ageTier = 0;
   const ageFrames = $$('#ageFrames .frame');
   const ageBigVal = $('#ageBigVal'), ageNumVal = $('#ageNumVal'), ageCapVal = $('#ageCapVal');
-  const ageBadgeAge = $('#ageBadgeAge'), ageBadgeStage = $('#ageBadgeStage');
+  const ageBadge = $('#ageBadge');
   const AGE_MIN = AGES[0], AGE_MAX = AGES[AGES.length-1];
 
   const ageTrack = $('#ageTrack'), ageFill = $('#ageFill'), ageHandle = $('#ageHandle');
@@ -3391,11 +3389,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const stage = (next && x > .5) ? AGE_DATA[si+1].label : AGE_DATA[si].label;
     ageNumVal.textContent = Math.round(age);
     ageCapVal.textContent = stage;
-    // Both are always written; only the wide frame draws the second. Writing it
-    // either way is what keeps the two from disagreeing if the reader turns the
-    // phone and the breakpoint changes under them.
-    ageBadgeAge.textContent   = 'Age ' + Math.round(age);
-    ageBadgeStage.textContent = ': ' + stage;
+    ageBadge.textContent = 'Age ' + Math.round(age);
 
     ageCurrent = age;
     const t = (age - AGE_MIN) / (AGE_MAX - AGE_MIN);
