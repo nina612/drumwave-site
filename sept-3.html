@@ -3821,8 +3821,27 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // on: snap settling and momentum both move the scroll without the reader
   // asking, and it was those that were firing the release.
   let ageUserScrolled = false;
-  addEventListener('wheel',     () => { ageUserScrolled = true; }, {passive:true});
-  addEventListener('touchmove', () => { ageUserScrolled = true; }, {passive:true});
+  // ...and WHICH WAY they asked to go, taken from the input itself rather than
+  // from the trigger. self.direction is derived from the scroll position, so it
+  // flickers on the small reversals that momentum and snap produce - and with a
+  // 3200px pin, one flicker means the release throws the reader to the opposite
+  // end of the section. The wheel's own sign cannot flicker: it is what the
+  // person did.
+  let ageScrollDir = 0;
+  addEventListener('wheel', e => {
+    ageUserScrolled = true;
+    ageScrollDir = Math.sign(e.deltaY) || ageScrollDir;
+  }, {passive:true});
+  let ageTouchY = null;
+  addEventListener('touchstart', e => { ageTouchY = e.touches[0].clientY; }, {passive:true});
+  addEventListener('touchmove', e => {
+    ageUserScrolled = true;
+    if(ageTouchY !== null){
+      const d = ageTouchY - e.touches[0].clientY;
+      if(Math.abs(d) > 2) ageScrollDir = Math.sign(d);
+    }
+    ageTouchY = e.touches[0].clientY;
+  }, {passive:true});
   addEventListener('keydown', e => {
     if(/^(Arrow|Page|Home|End)/.test(e.key) || e.key === ' ') ageUserScrolled = true;
   });
@@ -3942,13 +3961,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
           // only a person produces a wheel, a touchmove or an arrow key. So the
           // release waits for one of those, and no amount of settling counts.
           if(!ageUserScrolled) return;
-          const to = self.direction === 1 ? self.end : self.start;
-          if(Math.abs(window.scrollY - to) > 2){
-            // spent by this scroll; the next release needs a new one, so the
-            // momentum still arriving from this gesture cannot fire it again
-            ageUserScrolled = false;
-            window.scrollTo(0, Math.round(to));
-          }
+          // The reader's own direction, not the trigger's - see ageScrollDir.
+          const up = (ageScrollDir || self.direction) < 0;
+          const to = up ? self.start : self.end;
+          // ONWARD ONLY. The test used to be a plain distance, which is
+          // symmetrical - so it would just as happily drag someone BACKWARDS
+          // into the section they were leaving. Going up it can only ever move
+          // the scroll up, and going down only down.
+          if(up ? window.scrollY <= to + 2 : window.scrollY >= to - 2) return;
+          // spent by this scroll; the next release needs a new one, so the
+          // momentum still arriving from this gesture cannot fire it again
+          ageUserScrolled = false;
+          const y = Math.round(to);
+          // Out of ScrollTrigger's own update before moving the scroll. Setting
+          // it from inside the callback that is reacting to it is re-entrant,
+          // and re-entrancy is what a lurch looks like.
+          requestAnimationFrame(() => window.scrollTo(0, y));
           return;
         }
         renderAge(ageFromScroll(self.progress));
