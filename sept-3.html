@@ -432,7 +432,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      a shadow under it — it sits over the lower corner of a photograph, and the
      scrim there is doing the work for the ruler above it rather than for this. */
   color:#fff;font-family:'Open Sans',sans-serif;font-weight:600;font-size:16px;
-  letter-spacing:.1em;text-transform:uppercase;opacity:.85;
+  letter-spacing:.1em;text-transform:uppercase;opacity:.95;
   text-shadow:0 1px 4px rgba(0,0,0,.55);transition:opacity .25s}
 .age-scene .age-skip:hover{opacity:1}
 /* the source glyph is two stacked up-chevrons; a half turn points them down the
@@ -491,7 +491,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    and 6.01:1 at .72, against the 4.5 its 14px phone type needs; it is still
    4.5 at somewhere past .64. The blue is dark enough that transparency costs
    almost nothing here, which is why the value can move for the look of it. */
-.age-scene .age-badge{margin:0;padding:16px 20px;border-radius:100px;background:rgba(0,76,204,.72);
+/* EQUAL PADDING MEANS EQUAL INK-TO-EDGE, which is not equal padding — asked for.
+   Measured at 20px with the frame's own 13/17: the four gaps from the pill's
+   edge to the actual glyphs came out top 15.92, bottom 15.20, left 17.00 and
+   right 19.05. Three separate reasons, none of them the padding:
+     - the line box leaves .146em above the caps and .110em below the baseline,
+       because it is built for ascenders and descenders and "AGE 35" has neither;
+     - CSS adds letter-spacing after the LAST character as well as between, so
+       the trailing .05em is dead space inside the box — that is the 2px that
+       made the right side visibly wider than the left.
+   Those three offsets are properties of the type, so they scale with font-size
+   and are constant in em. Subtracting each from one inset gives four gaps that
+   are equal by construction, at every size, with one number per breakpoint.
+   --pill-inset IS the visual gap. It is set to the average of the vertical gaps
+   each breakpoint already had, so every pill keeps the height it was measured
+   at against its frame and only the width comes in. */
+.age-scene .age-badge{--pill-inset:17.8px;
+  margin:0;border-radius:100px;background:rgba(0,76,204,.72);
+  padding:calc(var(--pill-inset) - .146em) calc(var(--pill-inset) - .103em)
+          calc(var(--pill-inset) - .110em) var(--pill-inset);
   -webkit-backdrop-filter:blur(2.96px);backdrop-filter:blur(2.96px);
   font-family:'Open Sans',sans-serif;font-weight:600;line-height:.99;
   text-transform:uppercase;color:#fff;white-space:nowrap}
@@ -552,7 +570,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      16 of caption is the 381 that puts the row's top on the 457 the frame
      draws it at. */
   .age-scene .age-readout{align-items:flex-end;text-align:right}
-  .age-scene .age-badge{display:block;margin-bottom:0;font-size:24px;letter-spacing:.05em}
+  .age-scene .age-badge{display:block;margin-bottom:0;font-size:24px;letter-spacing:.05em;
+    --pill-inset:19.1px}
   .age-scene .age-cap{display:block;margin:12px 0 0;font-family:'Open Sans',sans-serif;
     font-weight:600;font-size:16px;line-height:.99;letter-spacing:.1em;
     text-transform:uppercase;color:#fff;text-align:right}
@@ -597,13 +616,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    anyway; these are the two widths where it stops fitting. */
 @media (min-width:761px) and (max-width:1500px){
   .age-scene .bignum{font-size:min(13vw,220px)}
-  .age-scene .age-badge{font-size:20px;padding:13px 17px}
+  .age-scene .age-badge{font-size:20px;--pill-inset:15.6px}
   .age-scene .age-cap{margin-top:12px}
 }
 @media (min-width:761px) and (max-width:1120px){
   .age-scene .bignum{font-size:min(11.5vw,150px)}
   .age-scene .age-tabs{width:280px}
-  .age-scene .age-badge{font-size:16px;padding:11px 15px;letter-spacing:.04em}
+  .age-scene .age-badge{font-size:16px;letter-spacing:.04em;--pill-inset:13.05px}
   .age-scene .age-cap{margin-top:12px}
   .age-scene .age-contrib-cap,.age-scene .age-cap{font-size:13px}
 }
@@ -1140,7 +1159,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .age-scene .age-readout{align-items:flex-start;text-align:left}
   /* 8 under the pill now, and the pill only as wide as its words */
   .age-scene .age-badge{display:inline-block;align-self:flex-start;
-    margin-bottom:8px;font-size:14px;letter-spacing:.05em}
+    margin-bottom:8px;font-size:14px;letter-spacing:.05em}   /* --pill-inset: the base's 17.8 */
   /* Light, not the wide frame's ExtraLight: 4360:63768 draws this one at 300
      and 4349:36344 draws its own at 200, which is the right way round — a
      hairline that reads at 300px on a desktop disappears at a third of it.
