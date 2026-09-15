@@ -995,11 +995,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   #act1 .act-layer .frame[data-i="5"] img{object-position:77% 50%}  /* the lit charge port */
   #act1 .act-layer .frame[data-i="7"] img{object-position:62% 50%}  /* the mother and her son */
   /* the age track's photographs, cropped the same way and for the same reason */
-  #ages .frame[data-age="2"] img{object-position:47% 50%}   /* the toddler */
-  #ages .frame[data-age="25"] img{object-position:32% 50%}  /* her, and the box */
+  #ages .frame[data-age="3"] img{object-position:47% 50%}   /* the toddler */
+  #ages .frame[data-age="23"] img{object-position:32% 50%}  /* her, and the box */
   #ages .frame[data-age="36"] img{object-position:66% 50%}  /* between the two faces */
   #ages .frame[data-age="45"] img{object-position:27% 50%}  /* her, not the building */
-  #ages .frame[data-age="58"] img{object-position:92% 50%}  /* her face whole, clear of the edge */
+  #ages .frame[data-age="52"] img{object-position:92% 50%}  /* her face whole, clear of the edge */
   /* The newborn is the one frame asked to sit wider. It cannot: cover fits the
      height of a 4:3 photograph on a portrait screen exactly, so there is no
      slack to give back and anything wider letterboxes. What there is, is the
@@ -1567,14 +1567,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 <section class="act age-scene" id="ages" aria-label="How your value grows as you age">
   <div class="frames" id="ageFrames">
     <div class="frame" data-age="0"><img decoding="async" src="assets/img/age-0-newborn.jpg" alt="A mother's hand gently touching her newborn baby lying in a crib"></div>
-    <div class="frame" data-age="2"><img decoding="async" src="assets/img/age-2-toddler.jpg" alt="A toddler smiling while riding a pink tricycle on a sidewalk"></div>
+    <div class="frame" data-age="3"><img decoding="async" src="assets/img/age-2-toddler.jpg" alt="A toddler smiling while riding a pink tricycle on a sidewalk"></div>
     <div class="frame" data-age="13"><img decoding="async" src="assets/img/age-13-teenageyears.jpg" alt="A teenage girl browsing lip gloss at a beauty store"></div>
     <div class="frame" data-age="18"><img decoding="async" src="assets/img/age-18-college.jpg" alt="A college student writing on a tablet with a stylus at her desk"></div>
-    <div class="frame" data-age="25"><img decoding="async" src="assets/img/age-25-firstapartment.jpg" alt="A woman smiling while carrying a moving box up a staircase"></div>
+    <div class="frame" data-age="23"><img decoding="async" src="assets/img/age-25-firstapartment.jpg" alt="A woman smiling while carrying a moving box up a staircase"></div>
     <div class="frame" data-age="32"><img decoding="async" src="assets/img/age-32-buildingalife.jpg" alt="A woman running on a beach while holding someone's hand" loading="lazy"></div>
     <div class="frame" data-age="36"><img decoding="async" src="assets/img/age-36-family.jpg" alt="A mother laughing with her young son on the living room floor" loading="lazy"></div>
     <div class="frame" data-age="45"><img decoding="async" src="assets/img/age-45-career.jpg" alt="A woman with a shoulder bag walking past a glass office building" loading="lazy"></div>
-    <div class="frame" data-age="58"><img decoding="async" src="assets/img/age-58-enjoyinglife.jpg" alt="A couple relaxing in a pool at a tropical resort" loading="lazy"></div>
+    <div class="frame" data-age="52"><img decoding="async" src="assets/img/age-58-enjoyinglife.jpg" alt="A couple relaxing in a pool at a tropical resort" loading="lazy"></div>
     <div class="frame" data-age="70"><img decoding="async" src="assets/img/age-70-retirement.jpg" alt="A group of friends laughing together at an outdoor dinner table" loading="lazy"></div>
   </div>
 
@@ -1620,7 +1620,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         <p class="age-badge" id="ageBadge">Age 0</p>
         <div class="num-wrap">
           <div class="lab mono"><i></i><span>Potential value accumulated</span></div>
-          <div class="bignum display" id="ageBigVal">$0</div>
+          <div class="bignum display" id="ageBigVal">$150</div>
         </div>
         <!-- The same sentence as .ctl-cap below, and deliberately a second
              element rather than the same one moved: on the phone it heads the
@@ -3326,16 +3326,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   if(!SCROLL_RUN) loopWhileHere(tl1, restartRun);
 
   /* ---------- ACT 4 : AGE TRACK ---------- */
+  // The published table, matched to the source chart. Four of these moved: the
+  // figure at birth is 150 rather than nothing, and three of the ages shifted —
+  // 2 to 3, 25 to 23, 58 to 52. The values at those three did not move with
+  // them, so each is the same figure reached at a different age.
+  //
+  // data-age on the frames below carries the same numbers, because the
+  // stylesheet crops three of those photographs by it. The FILENAMES still say
+  // age-2, age-25 and age-58; they are names, not data, and renaming a file
+  // that four other things point at to gain nothing is not worth the risk.
   const AGE_DATA = [
-    {age:0,  val:0,      label:'Newborn'},
-    {age:2,  val:675,    label:'Toddler'},
+    {age:0,  val:150,    label:'Newborn'},
+    {age:3,  val:675,    label:'Toddler'},
     {age:13, val:3497,   label:'Teenage years'},
     {age:18, val:5805,   label:'College'},
-    {age:25, val:8999,   label:'First apartment'},
+    {age:23, val:8999,   label:'First apartment'},
     {age:32, val:18033,  label:'Building a life'},
     {age:36, val:23982,  label:'Family'},
     {age:45, val:44085,  label:'Career'},
-    {age:58, val:69300,  label:'Enjoying life'},
+    {age:52, val:69300,  label:'Enjoying life'},
     {age:70, val:209763, label:'Retirement'}
   ];
   const AGES = AGE_DATA.map(d => d.age);
