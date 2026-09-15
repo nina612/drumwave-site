@@ -222,12 +222,28 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   /* 54.5vh, not 51.67 — asked for: sit it a little lower on a wide screen. At
      900 tall that is 25px down, and it still leaves a clear margin under the
      last line rather than crowding the bottom edge. */
-  position:absolute;left:6.3vw;top:calc(54.5vh + .05em);bottom:auto;max-width:92vw;color:#fff;
+  /* THE TOP IS A CEILING AS WELL AS A POSITION.
+     54.5vh is where the headline was drawn to sit, and on the frame it was
+     drawn on - 1920x1080 - it clears the bottom edge by 41px. But the size is
+     set from the WIDTH and the position from the HEIGHT, so a screen that is
+     wide and not tall gets the full 140px type with less room under it: at
+     1920x900 the last line painted 41px past the fold, and 2200x950 lost 19px.
+     Reported as the text getting cut off at the bottom on bigger screens, and
+     it is bigger screens exactly because 7.29vw reaches its 140px cap there.
+     So the second term is the ceiling: 96vh less the painted height of the
+     block, which is 3 lines x 1.03 plus the .08em .ln paints below the last
+     baseline = 3.17em. min() takes whichever is higher up the page, so the
+     designed position holds wherever it fits and the headline only rises when
+     it would otherwise be cut. At 1440x900 and 1920x1080 nothing moves. */
+  position:absolute;left:6.3vw;top:min(calc(54.5vh + .05em),calc(96vh - 3.17em));bottom:auto;max-width:92vw;color:#fff;
   /* 7.29vw is 140/1920, so the cap is reached at exactly the frame it was drawn on.
      The floor stays at the 3rem it has always been: the spec is for the wide screen,
      and letting it set the phone's size too would have shrunk the headline there
      from 48px to 35px, which is not what was asked for. */
-  font-size:clamp(3rem,7.29vw,8.75rem);
+  /* 20vh is the third term and it only binds below a 700px-tall screen, where
+     even the risen headline would reach the nav. Above that, min() picks the
+     7.29vw/140px pair unchanged. */
+  font-size:clamp(3rem,min(7.29vw,20vh),8.75rem);
   /* 1.03, and this headline is why the number matters. Its lines are the worst
      pair on either page: "customers to power" puts a p under nothing much, but
      "your business." brings a y and a b up under that p, and that pair's ink
@@ -1058,7 +1074,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
             <span class="biz-chip biz-chip-dark"  style="left:31.17%;top:43.04%">Nutritional facts</span>
             <div class="biz-ben-copy">
               <h3>Products enriched with data</h3>
-              <p>Enrich your products and services with data, turning every SKU into a traceable digital asset with product level data ownership and richer context with every transaction.</p>
+              <p>Enrich your products and services with data, turning every SKU into a digitally traceable product, with ownership attached at the product level and richer context with every transaction.</p>
             </div>
           </article>
 
@@ -1082,7 +1098,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
             </div>
             <div class="biz-ben-copy">
               <h3>A new revenue stream</h3>
-              <p>Turn the data your business already generates into a managed asset you can save, value, and monetize.</p>
+              <p>Turn the data your business already generates into a managed source of value you can save, value, and monetize.</p>
             </div>
           </article>
 

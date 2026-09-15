@@ -680,7 +680,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      it off both however tall the window is.
      Full width so it sets as one line wherever there is room for one; it wraps
      to two on a narrow window, which the band still takes. */
-  .age-scene .age-note{position:absolute;left:0;right:0;font-size:11px;
+  .age-scene .age-note{position:absolute;left:0;right:0;font-size:13px;
     bottom:calc(-1 * (clamp(64px,11.57vh,125px) - clamp(20px,3.9vh,42px) - 26px))}
 }
 
@@ -1261,7 +1261,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      on the phone it is the last thing in the block, and choosing High lifts the
      block by its height. That movement is the price of not permanently spending
      photograph on a note that is usually not shown. */
-  .age-scene .age-note{font-size:10px;margin-top:14px}
+  .age-scene .age-note{font-size:12px;margin-top:14px}
   /* THE PICKER IS ITS OWN GROUPING — and this is the second attempt at it, so
      it is worth writing down why the first one did not take.
      I only moved the gap: 20 -> 32. But a group does not read from the size of
@@ -3746,20 +3746,32 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   //
   // It is a hold rather than a pause: the page is pinned either way, so nothing
   // stops responding. What stops is the timeline, which has finished.
-  const AGE_SEG_SHARE = [16, 16, 10, 10, 10, 8, 10, 8, 14];
-  // SHORTER AGAIN, because the snap changed what length is FOR.
+  const AGE_SEG_SHARE = [15, 15, 10, 10, 10, 9, 10, 9, 12];
+  // FLATTER, AND LONGER AGAIN - 3200 to 4600.
   //
-  // The pin grew three times - 2400, 2800, 3400, 5800 - each time to stop a
-  // flick crossing a photograph. Snap solved that outright: wherever a gesture
-  // lands, it settles on a picture. Once that was true the length stopped
-  // buying anything and started costing - reported, correctly, as "way too many
-  // scrolls to scroll past the timeline section", because someone scrolling
-  // continuously rather than in flicks has to travel every one of those pixels.
+  // Snap settles every gesture on a photograph, so nothing lands BETWEEN two
+  // pictures any more. What it does not do is stop a gesture crossing several
+  // at once: it settles on the picture the flick reached, and the ones the
+  // flick flew over are never seen. That is "it still feels like I am missing
+  // stuff", and the number that governs it is not the length of the pin, it is
+  // the length of the SHORTEST stretch between two photographs.
   //
-  // 3200 and 600. Mean stretch between photographs is 356px, the opening 502,
-  // and the whole section is 3800 - just over four screens for ten
-  // photographs, where it was nearly eight.
-  const AGE_RUN_PX  = 3200;   // the years
+  // That was 251px - 32-36 and 45-52, the two narrowest gaps in the story.
+  // A gentle 400px flick crossed one and a half of them. Now it is 414px, so
+  // the same flick no longer clears one, and the shares are flatter (16/8 was
+  // a 2:1 spread, 15/9 is 1.7:1) because the spread is what created stretches
+  // short enough to fly over in the first place.
+  //
+  // The opening is still the longest - 690px each for newborn and toddler,
+  // which is what "don't let it jump to teenage years so quickly" asked for.
+  //
+  // The cost is the one already reported once: someone scrolling continuously
+  // travels every one of those pixels. It is a smaller cost than it was, for
+  // two reasons built since. Touching the picker releases the pin, so one
+  // scroll clears the whole section; and the skip control below the figure
+  // jumps straight to the next section. Neither existed at 5800, which is why
+  // 5800 read as a trap and this does not.
+  const AGE_RUN_PX  = 4600;   // the years
   // NO HOLD. There was 600px of it at age 70 and it was the last of the bounce.
   // Measured: stopping anywhere inside that stretch left the reader 200px short
   // of the snap point at its far side, and snap dragged them the rest of the way
