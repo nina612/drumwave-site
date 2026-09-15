@@ -1157,7 +1157,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      the right, which is what you get when content authored at 387 is pasted onto
      a 393 artboard; centred is what it means. */
   .age-scene .age-lower{left:24px;right:24px;bottom:36px}
-  .age-scene .age-row{display:flex;flex-direction:column;gap:48px;margin-bottom:20px}
+  /* 40 and 16 rather than the frame's 48 and 20 — taking the offer to shift
+     everything down. With the 17 from the ticks that is 29px more photograph,
+     and the block's top goes 422 -> 451. Nothing else about the frame moves. */
+  .age-scene .age-row{display:flex;flex-direction:column;gap:40px;margin-bottom:16px}
   .age-scene .age-contrib-cap{font-size:14px}
   /* 291 of the column's 339, not full bleed. Every number here is the
      component's own times 0.845, which is the ratio 4406:29779 scales it by -
@@ -1225,10 +1228,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      starting anywhere in this band scrolling the page rather than being eaten —
      the mistake the note by .ctl records from the last time this area grew. */
   .age-scene .track{z-index:2}
-  .age-scene .track::before{content:"";position:absolute;left:0;right:0;top:-12px;bottom:-6px}
-  /* the last tick lands on the right edge now: 4360:63768 runs 72 of them
-     across the full 338, where 4045:23023 stopped its ruler 4.7 short */
-  .age-scene .track .ticks{right:0}
+  /* NO TICK MARKS HERE, asked for, and the space they leave goes to the
+     photograph. The ruler was 5 of tick, 12 of air and the hairline — 18 tall.
+     Without the ticks it is just the hairline, so the track IS the rail: 1px,
+     everything on top:0, and the 16 down to the labels is the base's, unchanged.
+     That is 17px the block no longer needs, and it is anchored to the bottom, so
+     the 17 comes off the TOP — which is where the picture is.
+     The tap target has to be rebuilt around the new box: -12/-6 was measured
+     against a 44px track with the rail 17 down it. 22 either side of a 1px track
+     is a 45px band centred on the dot, which is what that was. */
+  .age-scene .track{height:1px;margin-bottom:0}
+  .age-scene .track .ticks{display:none}
+  .age-scene .track .rail,.age-scene .track .fill,.age-scene .track .handle{top:0}
+  .age-scene .track::before{content:"";position:absolute;left:0;right:0;top:-22px;bottom:-22px}
   /* THE SCRIM MOVED UP WITH THE COPY. 4406:29779 runs its wash from 405 of 844
      — a hair under halfway — to the bottom, holding at half black rather than
      the .7 the old one closed on. It has to: the picker's caption now starts at
@@ -3674,13 +3686,51 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   //
   // The handle still wins outright: ageTaken is the same latch the clock uses,
   // so the first drag hands the screen over and the scroll stops writing to it.
+  // SCROLL IS NOT SPENT EVENLY ACROSS THE YEARS.
+  //
+  // It was, and that is why the opening went past before it could be seen.
+  // progress x 70 buys each photograph scroll in proportion to the YEARS it
+  // covers, and the first stretch covers three: at 2400px of pin the baby got
+  // 103px, which is one notch of a wheel, and the toddler began dissolving 41
+  // of them in. Meanwhile the end of a life got 617px for being long rather
+  // than for having more to show.
+  //
+  // So each of the nine stretches between the ten photographs takes a SHARE of
+  // the pin instead, front-loaded - asked for: slower while the reader works
+  // out what the screen is, quicker once they have. Read them as ratios.
+  //
+  //            0-3  3-13  13-18  18-23  23-32  32-36  36-45  45-52  52-70
+  // now @2800  252   392    280    280    308    252    308    252    476
+  // was @2400  103   343    171    171    309    137    309    240    617
+  //
+  // 2.4x on the opening, 0.8x on the tail, the middle left alone. Per year that
+  // is 84px at the start against 26px at the end.
+  //
+  // The pin goes 2400 -> 2800 so the opening is bought with new scroll rather
+  // than taken off the end. The end still gets quicker, just not as sharply as
+  // it would have had to.
+  const AGE_SEG_SHARE = [9, 14, 10, 10, 11, 9, 11, 9, 17];
+  const AGE_SEG_SUM = AGE_SEG_SHARE.reduce((a, b) => a + b, 0);
+  const AGE_SEG_CUM = AGE_SEG_SHARE.reduce((acc, w) => {
+    acc.push(acc[acc.length - 1] + w / AGE_SEG_SUM); return acc; }, [0]);
+  // progress through the pin -> the age it stands for
+  function ageFromScroll(p){
+    p = clamp(p, 0, 1);
+    for(let i = 0; i < AGE_SEG_SHARE.length; i++){
+      if(p <= AGE_SEG_CUM[i + 1] || i === AGE_SEG_SHARE.length - 1){
+        const u = clamp((p - AGE_SEG_CUM[i]) / (AGE_SEG_CUM[i + 1] - AGE_SEG_CUM[i]), 0, 1);
+        return AGES[i] + u * (AGES[i + 1] - AGES[i]);
+      }
+    }
+    return AGE_MAX;
+  }
   gsap.matchMedia().add('(min-width:761px)', () => {
     const scrubST = ScrollTrigger.create({
-      trigger:'#ages', start:'top top', end:'+=2400',
+      trigger:'#ages', start:'top top', end:'+=2800',
       pin:true, pinSpacing:true, scrub:.8, invalidateOnRefresh:true,
       onUpdate: self => {
         if(ageDragging || ageTaken) return;
-        renderAge(AGE_MIN + self.progress * (AGE_MAX - AGE_MIN));
+        renderAge(ageFromScroll(self.progress));
       }
     });
     return () => scrubST.kill();
