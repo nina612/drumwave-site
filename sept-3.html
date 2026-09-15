@@ -537,10 +537,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .age-scene .age-contrib-cap::before,
 .age-scene .ctl-cap::before,
 .age-scene .age-cap::before{
-  content:"";position:absolute;inset:-18px -26px;z-index:-1;pointer-events:none;
-  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
-  -webkit-mask-image:radial-gradient(ellipse 64% 58% at 50% 50%,#000 0%,rgba(0,0,0,.9) 38%,rgba(0,0,0,.45) 62%,transparent 84%);
-          mask-image:radial-gradient(ellipse 64% 58% at 50% 50%,#000 0%,rgba(0,0,0,.9) 38%,rgba(0,0,0,.45) 62%,transparent 84%)}
+  content:"";position:absolute;inset:-30px -46px;z-index:-1;pointer-events:none;
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  /* More dispersed, asked for, and it is the MASK that disperses rather than the
+     blur radius. The reach roughly doubles — -30/-46 against -18/-26 — and the
+     falloff starts much earlier and ends much later: full strength only at the
+     very centre, half of it gone by 52%, and nothing left by 96%. A gradient
+     with most of its length spent fading is what reads as atmosphere; one that
+     holds and then drops is what reads as a shape. */
+  -webkit-mask-image:radial-gradient(ellipse 74% 68% at 50% 50%,#000 0%,rgba(0,0,0,.82) 24%,rgba(0,0,0,.5) 44%,rgba(0,0,0,.22) 66%,rgba(0,0,0,.07) 82%,transparent 96%);
+          mask-image:radial-gradient(ellipse 74% 68% at 50% 50%,#000 0%,rgba(0,0,0,.82) 24%,rgba(0,0,0,.5) 44%,rgba(0,0,0,.22) 66%,rgba(0,0,0,.07) 82%,transparent 96%)}
 
 /* ============ AGE PICKER, WIDE FRAME — Figma 4349:36344 ============
    The instrument redrawn: a contribution picker on the left, the age in a pill
@@ -3759,8 +3765,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   }
   // true while the tween below is driving the scroll itself
   let ageGliding = false;
-  // armed by taking the handle, spent by the one scroll that answers it
-  let ageReleaseArmed = false;
+
   // Set by a real input - a wheel, a touch drag, a scrolling key. NOT by the
   // scroll position changing, which is the distinction the whole thing turns
   // on: snap settling and momentum both move the scroll without the reader
@@ -3807,7 +3812,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         // stopped when I touched it" hardening into "it is permanently dead":
         // come back to the timeline later and it scrubs again, which is what
         // anybody arriving at it fresh would expect.
-        ageTaken = false; ageReleaseArmed = false;
+        ageTaken = false; ageUserScrolled = false;
       }});
   }
   const glideToSolution = () => glideTo('#solution', false);
@@ -3857,11 +3862,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         // their own gesture carrying on into the next section at its own speed.
         // Nothing takes the scroll away from them.
         //
-        // One shot. This ran on every update once, which made the section a
-        // trampoline - touched once, it threw the reader out from either side
-        // for the rest of the visit, and they could never be inside it again.
+        // EVERY DELIBERATE SCROLL, not just the first one. This was one-shot
+        // for a while, and the one shot was spent by whichever direction the
+        // reader happened to go first: interfere with the timeline, scroll up,
+        // then scroll down again, and the release had already been used - so
+        // the way out cost the whole pin with a timeline that was not even
+        // moving. Reported, and right.
+        //
+        // It was one-shot because it used to be a trampoline, firing on every
+        // update including the ones snap and momentum produce. The input gate
+        // below is what actually fixed that, and it fixes it for every scroll
+        // equally, so the shot does not need rationing any more.
         if(ageTaken){
-          if(!ageReleaseArmed) return;
           // WAIT FOR A SCROLL THEY ACTUALLY MADE.
           //
           // Letting go of the dot does not leave the page still: the snap may
@@ -3882,7 +3894,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
           if(!ageUserScrolled) return;
           const to = self.direction === 1 ? self.end : self.start;
           if(Math.abs(window.scrollY - to) > 2){
-            ageReleaseArmed = false;
+            // spent by this scroll; the next release needs a new one, so the
+            // momentum still arriving from this gesture cannot fire it again
+            ageUserScrolled = false;
             window.scrollTo(0, Math.round(to));
           }
           return;
@@ -3921,7 +3935,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const r = ageTrack.getBoundingClientRect();
     return clamp((e.clientX - r.left)/r.width, 0, 1);
   }
-  const ageTake = () => { ageTaken = true; ageReleaseArmed = true; ageUserScrolled = false; };
+  const ageTake = () => { ageTaken = true; ageUserScrolled = false; };
   let ageHinted = false;
   // the age first, the capture after it and inside a guard: capture is the one
   // call here that can throw (it does whenever the pointer is not one the browser
