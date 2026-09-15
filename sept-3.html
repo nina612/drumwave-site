@@ -3695,7 +3695,30 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       snap:{snapTo:AGE_SNAP(), directional:true,
             duration:{min:.25, max:.6}, delay:.12, ease:'power2.inOut'},
       onUpdate: self => {
-        if(ageDragging || ageTaken) return;
+        if(ageDragging) return;
+        // ONCE THE HANDLE HAS BEEN TAKEN, THE PIN STOPS SPENDING THEIR SCROLL.
+        //
+        // ageTaken already stopped the scrub writing to the age - the reader
+        // owns it - but the pin was still 7000px long, so a reader who had set
+        // the age where they wanted it then had to scroll through the rest of a
+        // timeline that was no longer moving before the page would go on. Asked
+        // for: one scroll, and they are into the next section.
+        //
+        // So the pin hands the scroll straight to whichever end they are
+        // heading for. It is invisible while it happens: the section is PINNED,
+        // so its content is fixed and does not move when the scroll position
+        // jumps - all that changes is that the pin is now at its edge, and the
+        // gesture that started it carries on out of the section.
+        //
+        // Both directions, because the argument is symmetrical: going back up,
+        // a timeline the reader has already taken should not charge them 7000px
+        // for leaving either. And the two ends are snap points already, so snap
+        // settles where this puts them rather than fighting it.
+        if(ageTaken){
+          const to = self.direction === 1 ? self.end : self.start;
+          if(Math.abs(self.scroll() - to) > 2) self.scroll(to);
+          return;
+        }
         renderAge(ageFromScroll(self.progress));
       }
     });
