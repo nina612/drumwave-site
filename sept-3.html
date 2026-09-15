@@ -3737,6 +3737,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   }
   // true while the tween below is driving the scroll itself
   let ageGliding = false;
+  // armed by taking the handle, spent by the one glide that answers it
+  let ageReleaseArmed = false;
+  // where the scrub had reached a frame before the reader left the pin, and
+  // when the reader came into it — together these say whether the years were
+  // travelled or flown over
+  let ageLastProgress = 0, ageEnteredAt = 0;
   // ONE MOVE FROM THE TIMELINE TO THE PLAN, however it is asked for — the skip
   // control, a reader who has taken the handle, or simply arriving at the end
   // of the seventy years. Three routes out of this screen and one way of making
@@ -3763,7 +3769,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const at = {y: window.scrollY};
     gsap.to(at, {y: to, duration:.7, ease:'power2.inOut', overwrite:true,
       onUpdate:   () => window.scrollTo(0, at.y),
-      onComplete: () => { ageGliding = false; }});
+      onComplete: () => {
+        ageGliding = false;
+        // Out of the section now. Letting ageTaken go here is what stops "it
+        // stopped when I touched it" hardening into "it is permanently dead":
+        // come back to the timeline later and it scrubs again, which is what
+        // anybody arriving at it fresh would expect.
+        ageTaken = false; ageReleaseArmed = false;
+      }});
   }
   const glideToSolution = () => glideTo('#solution', false);
   gsap.matchMedia().add('(min-width:761px)', () => {
@@ -3778,63 +3791,52 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // moment the scroll passes the pin's end going down, which is exactly
       // when #solution is sitting on the fold — so the glide from here is the
       // one visible viewport and nothing else.
-      onLeave: () => glideToSolution(),
+      // THE END OF THE TIMELINE — but only if the reader actually got there.
+      // onLeave fires whenever the scroll passes the pin's end going down, and
+      // that includes one hard flick from the section above carrying clean
+      // through. Gliding on THAT is one of the ways the timeline "keeps
+      // accidentally getting skipped": it takes a reader who never saw the
+      // years and hurries them past them. ageLastProgress is where the scrub
+      // had really reached a frame earlier — past .9 they travelled it, well
+      // short of it they flew over it and are left where their gesture put them.
+      onEnter:     () => { ageEnteredAt = performance.now(); },
+      onEnterBack: () => { ageEnteredAt = performance.now(); },
+      onLeave: () => {
+        // TWO tests, because one was not enough. Progress alone said the reader
+        // had reached the end — but a single gesture that crosses the whole pin
+        // sets progress to 1 on the way through, so it passed, and the flick
+        // that had already skipped the timeline got hurried onward as well.
+        // Time in the section cannot be faked the same way: travelling 3800px
+        // of scrub takes seconds, and crossing it in one throw takes a few
+        // hundred milliseconds. Both must hold.
+        if(ageLastProgress > .9 && performance.now() - ageEnteredAt > 900) glideToSolution();
+      },
       onUpdate: self => {
         if(ageDragging) return;
-        // ONCE THE HANDLE HAS BEEN TAKEN, THE PIN STOPS SPENDING THEIR SCROLL.
+        // The glide drives the scroll itself. Nothing in here may answer the
+        // scroll it is producing, or every frame starts another one.
+        if(ageGliding) return;
+        ageLastProgress = self.progress;
+
+        // ---- THE READER HAS TAKEN THE HANDLE ----
         //
-        // ageTaken already stopped the scrub writing to the age - the reader
-        // owns it - but the pin was still 7000px long, so a reader who had set
-        // the age where they wanted it then had to scroll through the rest of a
-        // timeline that was no longer moving before the page would go on. Asked
-        // for: one scroll, and they are into the next section.
+        // ageTaken stops the scrub writing to the age — it is theirs — and the
+        // next scroll takes them out of a pin that has nothing left to show
+        // them: down to the plan, up to "how much is your data worth".
         //
-        // So the pin hands the scroll straight to whichever end they are
-        // heading for. It is invisible while it happens: the section is PINNED,
-        // so its content is fixed and does not move when the scroll position
-        // jumps - all that changes is that the pin is now at its edge, and the
-        // gesture that started it carries on out of the section.
-        //
-        // Both directions, because the argument is symmetrical: going back up,
-        // a timeline the reader has already taken should not charge them 7000px
-        // for leaving either. And the two ends are snap points already, so snap
-        // settles where this puts them rather than fighting it.
+        // ONE SHOT, and that is the whole correction here. This used to run on
+        // every update while ageTaken, which turned the section into a
+        // trampoline: having touched the slider once, arriving from ABOVE
+        // glided the reader straight down to the plan and arriving from BELOW
+        // glided them up to #worth, so they could never be inside the timeline
+        // again. That is the "weird bouncy effect before and after", and it is
+        // the other way the section was getting skipped. A release answers one
+        // gesture; it is not a standing instruction.
         if(ageTaken){
-          // DOWN GOES TO THE NEXT SECTION, not to the end of this one. self.end
-          // is where the pin lets go, which leaves #solution's top exactly on
-          // the fold - measured, a 600px flick finished at 7000 of 7000 with
-          // the next section at 900 on a 900 viewport, still the age screen.
-          // Asking where #solution STARTS is the same fix #ageSkip needed, and
-          // it makes the two behave identically, which they should.
-          //
-          // AND IT TRAVELS RATHER THAN CUTS. Setting the scroll outright moved
-          // thousands of pixels in one frame, which is not a transition, it is
-          // a jump - reported as "so quickly it almost feels like a glitch",
-          // and rightly. Nothing about a page that has just spent 7000px on
-          // ten photographs should end by teleporting.
-          //
-          // So it is tweened: .7s on power2.inOut, which reads as the page
-          // moving on rather than being replaced. The guard matters as much as
-          // the tween - this callback fires on every frame of the scroll the
-          // tween is producing, and without it each frame would start another.
-          if(ageGliding) return;
-          // UP GOES TO THE SECTION ABOVE, not to the top of this one. It used
-          // to stop at self.start, which is the top of the age screen - so a
-          // reader who had taken the handle and wanted to go back still had to
-          // scroll a further viewport by hand to reach "how much is your data
-          // worth". Asked for: up or down, they get taken to the respective
-          // section. #worth is that section, and it is the exact mirror of
-          // #solution below.
-          if(self.direction !== 1){ glideTo('#worth', true); return; }
-          // DOWN is two distances, and only the second one is visible. From here
-          // to self.end the section is still pinned and nothing moves; from
-          // self.end to #solution's top the section actually travels up the
-          // screen. Tweening BOTH spends most of the duration on a static
-          // screen and then throws the visible 900px past in the last fraction —
-          // measured that way first, and it was still a cut with a pause in
-          // front of it. So the invisible part goes in one frame and the whole
-          // .7s is spent on the part the reader can see.
-          glideToSolution();
+          if(!ageReleaseArmed) return;
+          ageReleaseArmed = false;
+          if(self.direction !== 1) glideTo('#worth', true);
+          else                     glideToSolution();
           return;
         }
         renderAge(ageFromScroll(self.progress));
@@ -3871,7 +3873,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     const r = ageTrack.getBoundingClientRect();
     return clamp((e.clientX - r.left)/r.width, 0, 1);
   }
-  const ageTake = () => { ageTaken = true; };
+  const ageTake = () => { ageTaken = true; ageReleaseArmed = true; };
   let ageHinted = false;
   // the age first, the capture after it and inside a guard: capture is the one
   // call here that can throw (it does whenever the pointer is not one the browser
