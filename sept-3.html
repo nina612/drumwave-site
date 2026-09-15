@@ -630,12 +630,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    rather than letting the row collide is what the frame's own proportion does
    anyway; these are the two widths where it stops fitting. */
 @media (min-width:761px) and (max-width:1500px){
-  .age-scene .bignum{font-size:min(13vw,220px)}
+  /* +20%, asked for: 13vw/220 becomes 15.6vw/264. The third term is what keeps
+     it honest at the narrow end of the band. The figure runs 3.64x its own
+     font-size at eight glyphs and the room beside the 343 picker is
+     0.877 x width - 383, so 15.6vw stops fitting below about 1239 and would
+     have pushed "$403,020" into the picker. 24vw - 110px is that limit with a
+     margin, so the increase is the full 20% wherever there is room for it and
+     tapers only where there is not. */
+  .age-scene .bignum{font-size:min(15.6vw, 24vw - 110px, 264px)}
   .age-scene .age-badge{font-size:20px;--pill-inset:15.6px}
   .age-scene .age-cap{margin-top:12px}
 }
 @media (min-width:761px) and (max-width:1120px){
-  .age-scene .bignum{font-size:min(11.5vw,150px)}
+  /* the same +20% and the same guard, against this band's 280 picker */
+  .age-scene .bignum{font-size:min(13.8vw, 24vw - 92px, 180px)}
   .age-scene .age-tabs{width:280px}
   .age-scene .age-badge{font-size:16px;letter-spacing:.04em;--pill-inset:13.05px}
   .age-scene .age-cap{margin-top:12px}
@@ -3688,6 +3696,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     }
     return AGE_MAX;
   }
+  // true while the release tween is driving the scroll itself
+  let ageGliding = false;
   gsap.matchMedia().add('(min-width:761px)', () => {
     const scrubST = ScrollTrigger.create({
       trigger:'#ages', start:'top top', end:'+=' + AGE_PIN_PX,
@@ -3715,24 +3725,56 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         // for leaving either. And the two ends are snap points already, so snap
         // settles where this puts them rather than fighting it.
         if(ageTaken){
-          // DOWN GOES TO THE NEXT SECTION, not to the end of this one.
+          // DOWN GOES TO THE NEXT SECTION, not to the end of this one. self.end
+          // is where the pin lets go, which leaves #solution's top exactly on
+          // the fold - measured, a 600px flick finished at 7000 of 7000 with
+          // the next section at 900 on a 900 viewport, still the age screen.
+          // Asking where #solution STARTS is the same fix #ageSkip needed, and
+          // it makes the two behave identically, which they should.
           //
-          // It went to self.end first, and self.end is where the pin lets go -
-          // which leaves #solution's top exactly on the fold. Measured: after
-          // taking the handle, even a 600px flick finished at 7000 of 7000 with
-          // the next section at 900 on a 900 viewport. Still the age screen.
-          // The scroll was spent reaching the release point and there was none
-          // left to travel with.
+          // AND IT TRAVELS RATHER THAN CUTS. Setting the scroll outright moved
+          // thousands of pixels in one frame, which is not a transition, it is
+          // a jump - reported as "so quickly it almost feels like a glitch",
+          // and rightly. Nothing about a page that has just spent 7000px on
+          // ten photographs should end by teleporting.
           //
-          // The same mistake #ageSkip made twice, and the same fix: ask where
-          // #solution STARTS rather than where #ages stops. It also means the
-          // two now do exactly the same thing, which they should - "I am done
-          // here" is one intention however it is expressed.
+          // So it is tweened: .7s on power2.inOut, which reads as the page
+          // moving on rather than being replaced. The guard matters as much as
+          // the tween - this callback fires on every frame of the scroll the
+          // tween is producing, and without it each frame would start another.
+          if(ageGliding) return;
+          // UP is all invisible: everything between here and the pin's start is
+          // covered by pinned, fixed content, so crossing it takes one frame and
+          // shows nothing. The reader's own scroll then reveals what is above.
+          if(self.direction !== 1){
+            if(Math.abs(window.scrollY - self.start) > 2) window.scrollTo(0, Math.round(self.start));
+            return;
+          }
+          // DOWN is two distances, and only the second one is visible. From here
+          // to self.end the section is still pinned and nothing moves; from
+          // self.end to #solution's top the section actually travels up the
+          // screen. Tweening BOTH spends most of the duration on a static
+          // screen and then throws the visible 900px past in the last fraction —
+          // measured that way first, and it was still a cut with a pause in
+          // front of it. So the invisible part goes in one frame and the whole
+          // .7s is spent on the part the reader can see.
           const sol = document.querySelector('#solution');
-          const to = self.direction === 1
-            ? Math.round(sol.getBoundingClientRect().top + window.scrollY)
-            : self.start;
-          if(Math.abs(window.scrollY - to) > 2) self.scroll(to);
+          const to = Math.round(sol.getBoundingClientRect().top + window.scrollY);
+          if(Math.abs(window.scrollY - to) > 2){
+            ageGliding = true;
+            // Cross the invisible part to the exact scroll where #solution sits
+            // ON the fold — its top at the bottom edge — rather than to the
+            // pin's end. They should be the same pixel and they were 185 apart,
+            // which showed up as the next section popping a sliver into view
+            // before the travel began. Defining it by what the reader sees
+            // cannot drift; defining it by the pin's end depends on the pin.
+            // Math.max so this never scrolls anybody backwards.
+            window.scrollTo(0, Math.max(window.scrollY, to - window.innerHeight));
+            const at = {y: window.scrollY};
+            gsap.to(at, {y: to, duration:.7, ease:'power2.inOut', overwrite:true,
+              onUpdate:   () => window.scrollTo(0, at.y),
+              onComplete: () => { ageGliding = false; }});
+          }
           return;
         }
         renderAge(ageFromScroll(self.progress));
@@ -3758,8 +3800,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // is one expression that is right at both breakpoints - with a pin and
   // without one - because it reads the layout rather than reasoning about it.
   $('#ageSkip').addEventListener('click', () => {
+    // Travels, for the same reason the release above does: this is a control on
+    // a marketing page, not a jump-to-anchor. Same destination, same .7s.
     const sol = document.querySelector('#solution');
-    window.scrollTo(0, Math.round(sol.getBoundingClientRect().top + window.scrollY));
+    const at = {y: window.scrollY};
+    gsap.to(at, {y: Math.round(sol.getBoundingClientRect().top + window.scrollY),
+      duration:.7, ease:'power2.inOut', overwrite:true,
+      onUpdate: () => window.scrollTo(0, at.y)});
   });
 
   // Drag: the handle owns the age directly. It used to move the scrollbar and let
