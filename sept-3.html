@@ -570,8 +570,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      16 of caption is the 381 that puts the row's top on the 457 the frame
      draws it at. */
   .age-scene .age-readout{align-items:flex-end;text-align:right}
+  /* MORE TRANSPARENT HERE THAN ON THE PHONE, to look like the phone.
+     The two were already the same number - .72 at both, from one base rule, no
+     override - so "the same level of transparent as mobile" could not be met by
+     matching the value. What differs is what is BEHIND the pill.
+     The phone's scrim starts just under halfway down and the pill sits at about
+     64% of the screen, so it is over darkened photograph and the blue sits close
+     to its backdrop in luminance: it reads as tinted glass. The wide frame's
+     scrim does not begin until 60% down and the pill sits at 42%, on raw bright
+     photograph, where a saturated blue reads as a solid chip laid on top.
+     So the wide pill has to go further to arrive at the same place. .64.
+     That is as far as it goes: white on this pill, composited over every
+     photograph at the pill's real position with the scrim credited honestly at
+     zero up there, measures 3.99 at .72, 3.66 at .68, 3.35 at .64, and 3.08 at
+     .60 - and its 24px type needs 3:1. .60 lands on the line and .56 is 2.83,
+     already under. .64 keeps a third of a stop in hand. */
   .age-scene .age-badge{display:block;margin-bottom:0;font-size:24px;letter-spacing:.05em;
-    --pill-inset:19.1px}
+    --pill-inset:19.1px;background:rgba(0,76,204,.64)}
   .age-scene .age-cap{display:block;margin:12px 0 0;font-family:'Open Sans',sans-serif;
     font-weight:600;font-size:16px;line-height:.99;letter-spacing:.1em;
     text-transform:uppercase;color:#fff;text-align:right}
