@@ -2035,6 +2035,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // reads is inside the PHONE build — phraseFrames drives play() and nothing
   // else, so the wide layout cannot see any of this.
   const HERO_V = /(?:^|[?&#])hero=1(?:[&#]|$)/.test(location.search + location.hash) ? 1 : 2;
+  // V2 HOLDS STILL — asked for: "make version 2 not auto animate at all".
+  //
+  // The two places the phone's run moves itself are startAuto, which walks the
+  // statements, and play, which walks the photographs under whichever statement
+  // is up. This switches both off, so v2 comes to rest on the opening statement
+  // over the opening photograph and stays there.
+  //
+  // Only the phone. buildRunPin returns for the wide layout before either of
+  // those exists — it scrubs tl1 off its own pin — so nothing here can reach it,
+  // which is the same reason the v1 image swap had to be scoped by hand.
+  const HERO_AUTO = HERO_V !== 2;
   if(HERO_V === 1){
     document.documentElement.classList.add('hero-v1');
     // The delivery frame carries the photograph before it, so its cut is
@@ -3031,6 +3042,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     };
     const startAuto = () => {
       if(auto) auto.kill();
+      auto = null;
+      // v2: no clock, so the statement that toFirst put up is the one that stays
+      if(!HERO_AUTO) return;
 
       // Reduced motion: the run still tells its three statements — it is the
       // page's opening argument, not decoration — but each one cuts into place
@@ -3073,6 +3087,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       // it, so the first photograph is already whole when the hold begins.
       const marks = phraseFrames[i];
       tl1.pause(Math.min(marks[0] + cutAt(marks[0]), tl1.duration()));
+      // The playhead is placed either way, so the right photograph is up and
+      // whole. What v2 does not get is the chain that walks it on from there.
+      if(!HERO_AUTO) return;
       const chain = gsap.timeline();
       // The first statement gets a beat to itself before anything moves.
       if(i === 0 && HEAD_LEAD) chain.to({}, {duration:HEAD_LEAD});
