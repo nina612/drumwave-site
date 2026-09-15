@@ -1043,7 +1043,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   /* the age track's photographs, cropped the same way and for the same reason */
   #ages .frame[data-age="3"] img{object-position:47% 50%}   /* the toddler */
   #ages .frame[data-age="23"] img{object-position:32% 50%}  /* her, and the box */
-  #ages .frame[data-age="36"] img{object-position:66% 50%}  /* between the two faces */
+  /* THE CHILD CENTRED, asked for. 66% was "between the two faces", which is a
+     wide-frame idea: the phone only ever sees 513 of this photograph's 1920
+     px — 27% of it — and 66% put that window on 928-1442, which is the
+     mother's outstretched arm and the back of the child's hair. Neither face.
+     The child's head runs 1230-1900 and centres on 1570, so the window has to
+     sit at 1294-1807, which is 93%.
+     It does mean the mother leaves the phone's frame entirely: her face is at
+     850 and the window starts 444px to the right of it. At 27% of the width
+     there is no position that holds both — they are 720px apart in a 513px
+     window — so centring the child is choosing the child. */
+  #ages .frame[data-age="36"] img{object-position:93% 50%}
   #ages .frame[data-age="45"] img{object-position:27% 50%}  /* her, not the building */
   #ages .frame[data-age="52"] img{object-position:92% 50%}  /* her face whole, clear of the edge */
   /* The newborn is the one frame asked to sit wider. It cannot: cover fits the
@@ -1166,10 +1176,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      where svh is not understood. */
   #ages{height:115vh;height:115svh}
   .age-scene .age-lower{left:24px;right:24px;bottom:36px}
-  /* 40 and 16 rather than the frame's 48 and 20 — taking the offer to shift
-     everything down. With the 17 from the ticks that is 29px more photograph,
-     and the block's top goes 422 -> 451. Nothing else about the frame moves. */
-  .age-scene .age-row{display:flex;flex-direction:column;gap:40px;margin-bottom:16px}
+  /* EQUIDISTANT GROUPS, asked for. There are three things stacked here — the
+     picker, the readout, and the ruler — and the air between them was 40 and
+     16, which is why the picker read as set apart from the rest. Both are 20
+     now, so the picker comes half its old distance closer and the two gaps
+     match.
+     The 8 between the pill and the figure is deliberately NOT part of this: it
+     is what makes those two read as one object rather than two, and it is the
+     frame's own number. The groups are equidistant; the pair inside one of them
+     is still a pair.
+     Net effect on the block is -16, which the bottom anchor turns into 16px
+     more photograph on top of the 29 from the tick marks. */
+  .age-scene .age-row{display:flex;flex-direction:column;gap:20px;margin-bottom:20px}
   .age-scene .age-contrib-cap{font-size:14px}
   /* 291 of the column's 339, not full bleed. Every number here is the
      component's own times 0.845, which is the ratio 4406:29779 scales it by -
