@@ -352,35 +352,27 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* AGE SCENES (Age 0, Age 2, ...) */
 .age-scene .frames{position:absolute;inset:0}
 .age-scene .frame::after{background:linear-gradient(180deg,rgba(7,7,7,0) 60%,rgba(7,7,7,.55) 85%,rgba(7,7,7,.7) 100%)}
-/* Figma 3361:82763 — the figure keeps the same 5.16vw margin as the picker
-   below it, and the "potential value accumulated" tag it used to carry is now
-   the caption at the head of that picker instead. */
-.age-scene .num-wrap{position:absolute;left:5.156vw;bottom:23.24vh;z-index:5;pointer-events:none}
+/* In flow now, inside .age-readout, at BOTH sizes — 4349:36344 and 4360:63768
+   stack the same four pieces and only disagree about the direction. The figure
+   used to be placed absolutely against the section and the two frames have it
+   under a pill whose height changes with the breakpoint, so it is measured from
+   its neighbours rather than from the screen. */
+.age-scene .num-wrap{pointer-events:none}
 .age-scene .num-wrap .lab{display:none}
 /* 200 rather than the 300 .display carries — asked for. The weight is already
    in the family this page loads, so it needs nothing else. */
 .age-scene .bignum{color:#fff;font-weight:200;font-size:min(15.625vw,300px);letter-spacing:-.03em;line-height:.99;font-variant-numeric:tabular-nums}
-.age-scene .stage-tag{position:absolute;right:5.2vw;top:6.2vh;text-align:right;z-index:6}
-.age-scene .stage-tag .age{font-size:min(6.997vw,134.343px);letter-spacing:-.05em;line-height:.99;color:#fff;font-variant-numeric:tabular-nums}
-/* the two stack flush: at line-height .99 the age's box ends exactly where the
-   design starts the caption */
-.age-scene .stage-tag .cap{margin-top:0;font-weight:600;font-size:16px;line-height:.99;letter-spacing:.1em;color:#fff;opacity:1}
-/* The readout keeps the frame's 6.2vh only while the nav leaves it room. The
-   nav is min(1200px,94vw) centred, so its right end reaches further into the
-   corner the narrower the window gets, while this sits a fixed 5.2vw in — the
-   two meet below about 1593px, and at 1440 the "69" of the last age sat on top
-   of the account button. Under the nav from there down: 12 of top offset, 84 of
-   pill and 16 clear of it. At the 1920 the frame is drawn at there is 260px
-   between them and the drawn position stands. */
-@media (max-width:1600px){
-  .age-scene .stage-tag{top:112px}
-}
-
+/* THE TOP-RIGHT AGE READOUT IS RETIRED. Both frames put the age in the pill over
+   the figure instead — 4360:63768 leaves this pair sitting at x=1754 in the wide
+   frame's old coordinates, i.e. off its own canvas. The elements stay because
+   renderAge still writes them and they are what the pill's text is built from;
+   nothing draws them. */
+.age-scene .stage-tag{display:none}
 /* AGE PICKER — Figma 3361:82763 (desktop) and 3898:98620 (phone) draw the same
    instrument at two sizes: a caption, a 5px tick ruler over a hairline, then
    the milestone row. Only the sizes and the phone's extras differ, so the
    design lives here and the 760px block below only says what changes. */
-.age-scene .ctl{position:absolute;left:5.156vw;right:5.156vw;bottom:8vh;z-index:7;user-select:none}
+.age-scene .ctl{user-select:none}
 /* touch-action is decided by the whole ancestor chain, not by the element the
    finger lands on - so `none` here applied to the caption and the 0/70 labels
    as well as the ruler, and made a 345x116 block across the lower half of a
@@ -443,14 +435,36 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    pointing on toward what comes next instead of up the page */
 .age-scene .age-skip-arrow{display:block;width:9px;height:8px;transform:rotate(90deg)}
 
-/* The wide frame's four new pieces, off by default. The base of this stylesheet
-   is the PHONE's layout — every rule above was measured against 4045:23023 —
-   so the new frame is additive and lives entirely in the min-width block below.
-   display:contents on the wrappers, not none: their children (.num-wrap, .ctl)
-   ARE the phone's layout, and contents lets those keep resolving their absolute
-   positions against the section the way they did before there were wrappers. */
-.age-scene .age-lower,.age-scene .age-row,.age-scene .age-readout{display:contents}
-.age-scene .age-contrib,.age-scene .age-badge,.age-scene .age-cap{display:none}
+/* ---- THE PIECES BOTH FRAMES SHARE ----
+   4349:36344 and 4360:63768 draw one instrument at two sizes. The picker, the
+   pill and the figure are the same components in the same order; the wide frame
+   sets the picker beside the readout and the phone sets it above. So everything
+   that does not change lives here, and each breakpoint below says only how the
+   block is placed and how big the type is.
+
+   .age-cap is the exception — the caption belongs under the figure on the wide
+   frame and at the head of the ruler on the phone, which is far enough apart to
+   be two elements. Only ever one of them is drawn. */
+.age-scene .age-lower{position:absolute;z-index:7;user-select:none}
+.age-scene .age-contrib{display:flex;flex-direction:column;gap:16px}
+.age-scene .age-contrib-cap{margin:0;font-family:'Open Sans',sans-serif;font-weight:600;
+  line-height:.99;letter-spacing:.1em;text-transform:uppercase;color:#fff}
+.age-scene .age-tabs{display:flex;height:48px;padding:4px;background:rgba(0,0,0,.4);border-radius:12px}
+.age-scene .age-tab{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;
+  border:1px solid transparent;border-radius:8px;background:none;cursor:pointer;
+  font-family:'Titillium Web',sans-serif;font-weight:600;font-size:16px;line-height:1.5;
+  color:#e2e2e2;transition:background .25s,color .25s,border-color .25s}
+/* the frame's own 4% white border on the selected chip: it is what keeps the
+   white block from cutting a hard edge into the black trough around it */
+.age-scene .age-tab.is-on{background:#fff;border-color:rgba(255,255,255,.04);color:#000}
+.age-scene .age-tab:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.age-scene .age-readout{display:flex;flex-direction:column;min-width:0}
+/* #0060FF under a 20% black wash at 80% opacity, resolved: the wash and the
+   opacity are two layers in the frame and one colour on the screen. */
+.age-scene .age-badge{margin:0;padding:16px 20px;border-radius:100px;background:rgba(0,76,204,.8);
+  font-family:'Open Sans',sans-serif;font-weight:600;line-height:.99;
+  text-transform:uppercase;color:#fff;white-space:nowrap}
+.age-scene .age-cap{display:none}
 
 /* ============ AGE PICKER, WIDE FRAME — Figma 4349:36344 ============
    The instrument redrawn: a contribution picker on the left, the age in a pill
@@ -467,31 +481,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 @media (min-width:761px){
   .age-scene{--age-gut:min(6.15vw,118px);--age-blue:#0060FF}
 
-  /* the age is in the pill now */
-  .age-scene .stage-tag{display:none}
-
-  .age-scene .age-lower{display:block;position:absolute;
-    left:var(--age-gut);right:var(--age-gut);bottom:clamp(64px,11.57vh,125px);
-    z-index:7;user-select:none}
+  .age-scene .age-lower{left:var(--age-gut);right:var(--age-gut);
+    bottom:clamp(64px,11.57vh,125px)}
 
   .age-scene .age-row{display:flex;align-items:flex-end;justify-content:space-between;
     gap:40px;margin-bottom:clamp(28px,4.72vh,51px)}
 
   /* --- left: the contribution picker --- */
-  .age-scene .age-contrib{display:flex;flex-direction:column;gap:16px;flex:0 0 auto}
-  .age-scene .age-contrib-cap{margin:0;font-family:'Open Sans',sans-serif;font-weight:600;
-    font-size:16px;line-height:.99;letter-spacing:.1em;text-transform:uppercase;color:#fff}
-  .age-scene .age-tabs{display:flex;width:343px;max-width:100%;height:48px;padding:4px;
-    background:rgba(0,0,0,.4);border-radius:12px}
-  .age-scene .age-tab{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;
-    border:1px solid transparent;border-radius:8px;background:none;cursor:pointer;
-    font-family:'Titillium Web',sans-serif;font-weight:600;font-size:16px;line-height:1.5;
-    color:#e2e2e2;transition:background .25s,color .25s,border-color .25s}
+  .age-scene .age-contrib{flex:0 0 auto}
+  .age-scene .age-contrib-cap{font-size:16px}
+  .age-scene .age-tabs{width:343px;max-width:100%}
   .age-scene .age-tab:hover{color:#fff}
-  /* the frame's own 4% white border on the selected chip: it is what keeps the
-     white block from cutting a hard edge into the black trough around it */
-  .age-scene .age-tab.is-on{background:#fff;border-color:rgba(255,255,255,.04);color:#000}
-  .age-scene .age-tab:focus-visible{outline:2px solid #fff;outline-offset:2px}
 
   /* --- right: the pill, the figure, the caption --- */
   /* The frame stacks the pill straight onto the figure and gives the caption 12.
@@ -501,15 +501,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      things. The gaps are margins on the two outer pieces rather than a gap on
      the column, because the pair above and the pair below want different room —
      the pill is a solid shape and needs less air than a line of 16px caps. */
-  .age-scene .age-readout{display:flex;flex-direction:column;align-items:flex-end;
-    gap:0;text-align:right;min-width:0}
-  .age-scene .age-badge{display:block;margin:0 0 24px;padding:16px 20px;border-radius:100px;
-    /* #0060FF under a 20% black wash at 80% opacity, resolved: the wash and the
-       opacity are two layers in the frame and one colour on the screen. */
-    background:rgba(0,76,204,.8);
-    font-family:'Open Sans',sans-serif;font-weight:600;font-size:24px;line-height:.99;
-    letter-spacing:.05em;text-transform:uppercase;color:#fff;white-space:nowrap}
-  .age-scene .num-wrap{position:static;left:auto;right:auto;bottom:auto}
+  .age-scene .age-readout{align-items:flex-end;text-align:right}
+  .age-scene .age-badge{display:block;margin-bottom:24px;font-size:24px;letter-spacing:.05em}
   .age-scene .age-cap{display:block;margin:32px 0 0;font-family:'Open Sans',sans-serif;
     font-weight:600;font-size:16px;line-height:.99;letter-spacing:.1em;
     text-transform:uppercase;color:#fff;text-align:right}
@@ -517,7 +510,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .age-scene .ctl-cap{display:none}
 
   /* --- the ruler --- */
-  .age-scene .ctl{position:static;left:auto;right:auto;bottom:auto}
   /* 22 tall exactly: 9 of tick, 12 of air, the hairline. The touch band it used
      to get from being 44 comes back as ::before, which is not its own event
      target - a press on it arrives as a press on .track and the existing
@@ -1071,32 +1063,37 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      scaled to vh so it stays the drawn spacing on a real phone, which is
      shorter than the frame. The extra over 214 is room for the drag line,
      which the frame doesn't carry. */
-  /* 214 now, not 232: the 18 over it was the room the drag line needed, and
-     4045:23023 does not carry that line — so this is the frame's own number.
-     That frame closes on it exactly: 767 above the figure, its own 99 of line,
-     and the 214 makes the 1080. */
-  .age-scene .num-wrap{left:15px;bottom:214px}
-  /* the frame's 100px is drawn against "$150"; 23vw is the most that still
-     fits "$209,763", the figure this actually reaches at 70, inside the
-     margins. It reaches the design's 100 as soon as the screen is wide
-     enough to hold that figure at it. */
-  .age-scene .bignum{font-size:min(23vw,100px)}
-  /* The age readout, asked for on the phone too. It was off here for two
-     reasons: the phone frame does not draw it, and at the top right it ran into
-     the nav pill. The pill is the answer to the second — it is 68 tall at 24
-     from the top, so 108 puts this 16 clear of it — and the first means the
-     size is derived rather than measured: the frame sets the readout at 134.343
-     against a 300 figure, .448 of it, so against this breakpoint's own
-     min(23vw,100px) figure that is min(10.3vw,45px). The label does not follow
-     that ratio — .119 of 45 would be 5px — and takes 12, which keeps it
-     subordinate to the number the way the frame has it while staying legible.
-     15 in, the gutter the figure and the picker below both use, rather than the
-     wide screen's 5.2vw.
-     The skip control stays off: it is off-canvas in the frame and was not part
-     of the ask. */
-  .age-scene .stage-tag{right:15px;top:108px}
-  .age-scene .stage-tag .age{font-size:min(10.3vw,45px)}
-  .age-scene .stage-tag .cap{font-size:12px}
+  /* ---- 4360:63768 ----
+     One block off the bottom holding all four pieces in a column: the picker,
+     the pill, the figure, then the ruler. The frame's 387x1080 gives the
+     numbers - 24 of gutter (not 15 any more), 42 off the bottom, and between
+     the figure's baseline at 895 and the ruler's caption at 924 a gap of 29. */
+  .age-scene .age-lower{left:24px;right:24px;bottom:42px}
+  .age-scene .age-row{display:flex;flex-direction:column;gap:28px;margin-bottom:29px}
+  .age-scene .age-contrib-cap{font-size:14px}
+  .age-scene .age-readout{align-items:flex-start;text-align:left}
+  /* 15 under the pill, and the pill only as wide as its words */
+  .age-scene .age-badge{display:inline-block;align-self:flex-start;
+    margin-bottom:15px;font-size:14px;letter-spacing:.05em}
+  /* Light, not the wide frame's ExtraLight: 4360:63768 draws this one at 300
+     and 4349:36344 draws its own at 200, which is the right way round — a
+     hairline that reads at 300px on a desktop disappears at a third of it.
+     THE SIZE IS THE COLUMN'S, not the frame's. 4360:63768 draws 100px against
+     "$150" — four glyphs. The widest figure this can actually reach is
+     "$734,171", High at 70, and at 100px that measures 390 in a column of 339.
+     Measured: the figure runs 3.897x its own font-size at eight glyphs, and the
+     column is 100vw - 48 of gutter, so the size that always fits is
+     (100vw-48)/3.897, which is the 25.6vw - 13px below. It gives 86 on the
+     frame's own 387 and holds at 375, where a flat 22.5vw would have run 2px
+     past the margin.
+     One size rather than fitting each figure to the width: the count runs from
+     $0 to six digits, and a figure that shrinks a step at every comma is more
+     distracting during the run than 14px of missing height is at rest. */
+  .age-scene .bignum{font-size:min(25.6vw - 13px, 92px);font-weight:300}
+  /* The age readout that used to sit up here, clear of the nav pill, is gone:
+     the blue pill over the figure carries the same age and the same stage, off
+     the same line of renderAge, and 4360:63768 has no second copy of it.
+     The skip control stays off — off-canvas in the frame, as before. */
   .age-scene .age-skip{display:none}
   /* the same 15px margin the figure above it uses, and 42 off the bottom —
      which on the frame's 387 makes the block the 357 it draws, and puts its
@@ -1126,10 +1123,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      the mistake the note by .ctl records from the last time this area grew. */
   .age-scene .track{z-index:2}
   .age-scene .track::before{content:"";position:absolute;left:0;right:0;top:-12px;bottom:-6px}
-  .age-scene .ctl{left:15px;right:15px;bottom:42px}
-  /* the ruler's last tick lands at 352.27 of that 357, not on its right edge;
-     the hairline under it does run the full width, as it does on the frame */
-  .age-scene .track .ticks{right:1.325%}
+  /* the last tick lands on the right edge now: 4360:63768 runs 72 of them
+     across the full 338, where 4045:23023 stopped its ruler 4.7 short */
+  .age-scene .track .ticks{right:0}
   /* the drag line is off here: 4045:23023 is the phone frame for this screen
      and it carries the caption, the ruler and the two labels, nothing else.
      Taking it out is also what returns the figure to the frame's 214 below —
@@ -3349,16 +3345,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   let ageDragging = false;
   let ageTaken    = false;      // the reader has taken the handle
   const ageProxy  = {v: AGE_MIN};
-  // Seconds for the whole seventy years. Six read as hurried, eight still did,
-  // so twelve - 5.8 years a second where it started at 11.7, half the pace.
+  // Seconds for the whole seventy years, and this is the phone's clock alone now
+  // — the wide frame runs off the scroll instead.
+  //
+  // Six read as hurried and twelve was the answer for a while. Thirty, asked
+  // for: "slow it down significantly so the user is not overwhelmed". That is
+  // 2.3 years a second against 5.8, and what it actually buys is the
+  // PHOTOGRAPHS. Ten of them across the run means one every three seconds at
+  // this pace where it was one every 1.2 — long enough to see a life in each
+  // rather than a slideshow going past.
+  //
   // A longer count costs no one any scrolling, which is what makes this a free
   // dial: nothing is pinned on this screen, so the length of the count is not
   // the length of the section. The reader leaves whenever they like and the
-  // clock stops with them. What it does cost is the far end - a reader who
-  // gives the screen five seconds now sees the figure reach about thirty rather
-  // than the whole seventy - so this is as slow as it goes before most people
-  // stop seeing where it lands.
-  const AGE_RUN   = 12;
+  // clock stops with them. What it costs is the far end — five seconds of
+  // attention now reaches about twelve rather than thirty — and against that is
+  // the ruler, which shows the whole seventy at a glance whatever the figure is
+  // doing, and the handle, which is faster than the clock for anyone who wants
+  // the end of it.
+  const AGE_RUN   = 30;
   const ageAuto = gsap.to(ageProxy, {
     v: AGE_MAX, duration: AGE_RUN, ease: 'none', paused: true,
     onUpdate: () => { if(!ageDragging && !ageTaken) renderAge(ageProxy.v); }
@@ -3427,10 +3432,52 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     onLeave:     () => ageAuto.pause(),
     onLeaveBack: () => ageAuto.pause()
   });
+
+  // Held outside the matchMedia because #ageSkip needs to ask it where the pin
+  // lets go; null whenever the phone's layout is the one in force.
+  let ageScrubST = null;
+  // ---- THE WIDE FRAME RUNS OFF THE SCROLL ----
+  //
+  // Asked for: the years advance as the reader scrolls, slowly, and stop when
+  // the reader stops. That is what a scrub IS — progress is a function of
+  // scroll position, so a still page is a still timeline, with no idle timer to
+  // decide when "stopped" has happened.
+  //
+  // It needs scroll to spend, and this screen is one viewport tall, so the pin
+  // buys 2400px of it: seventy years over about two and a half screens of
+  // wheel, roughly a year every 34px. The pin is the phone's old enemy and none
+  // of that applies here — the whole history of glitching was iOS re-measuring
+  // a spacer when its address bar collapsed, and this is created inside a
+  // matchMedia that never runs below 761.
+  //
+  // scrub:.8 rather than true. A raw scrub lands the age on the exact pixel and
+  // a trackpad's inertia then shivers it back and forth; .8s of catch-up turns
+  // the same input into a figure that follows the scroll and comes to rest by
+  // itself a beat after the page does.
+  //
+  // The handle still wins outright: ageTaken is the same latch the clock uses,
+  // so the first drag hands the screen over and the scroll stops writing to it.
+  gsap.matchMedia().add('(min-width:761px)', () => {
+    ageScrubST = ScrollTrigger.create({
+      trigger:'#ages', start:'top top', end:'+=2400',
+      pin:true, pinSpacing:true, scrub:.8, invalidateOnRefresh:true,
+      onUpdate: self => {
+        if(ageDragging || ageTaken) return;
+        renderAge(AGE_MIN + self.progress * (AGE_MAX - AGE_MIN));
+      }
+    });
+    return () => { ageScrubST.kill(); ageScrubST = null; };
+  });
   // Figma 3898:98620/3361:82763 — past the screen in one jump rather than
   // watching all seventy years first. There is no pin to fight any more, so
   // this is simply the bottom of a one-screen section.
   $('#ageSkip').addEventListener('click', () => {
+    // Past the pin, not past the section. Once ScrollTrigger pins #ages it wraps
+    // it in a spacer and becomes its offsetParent, so the section's own
+    // offsetTop reads 0 and the old sum landed one screen down from the top of
+    // the page instead of at the end of this one. The trigger's end IS the
+    // scroll position where the pin lets go, which is the thing being skipped.
+    if(ageScrubST){ window.scrollTo(0, ageScrubST.end); return; }
     const sec = document.querySelector('#ages');
     window.scrollTo(0, sec.offsetTop + sec.offsetHeight);
   });
