@@ -2046,6 +2046,35 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // those exists — it scrubs tl1 off its own pin — so nothing here can reach it,
   // which is the same reason the v1 image swap had to be scoped by hand.
   const HERO_AUTO = HERO_V !== 2;
+  // ---- WHICH VERSION AM I ACTUALLY LOOKING AT? ----
+  //
+  // "They both look the same" has now been reported three times over three
+  // different causes, and every time the code measured correct here and on the
+  // live site. The thing that keeps costing days is that the question is
+  // unanswerable from a photograph of a phone: v1 and v2 differ only in TIMING,
+  // so a still frame of the right version and a still frame of a stale cached
+  // one are the same picture.
+  //
+  // So the page says so itself. Only when the link carries hero= — which the
+  // two test stubs always do and the real site never does — so nothing shows
+  // for a reader.
+  //
+  // document.lastModified is the point of it. It is the Last-Modified of the
+  // response THIS document came from, so a phone serving a cached copy prints
+  // the old file's time while a fresh one prints the new. A stale build stops
+  // being invisible and becomes a timestamp that disagrees with mine.
+  if(/(?:^|[?&#])hero=/.test(location.search + location.hash)){
+    addEventListener('DOMContentLoaded', () => {
+      const tag = document.createElement('div');
+      tag.setAttribute('style', 'position:fixed;z-index:99998;left:10px;bottom:10px;' +
+        'padding:7px 11px;border-radius:999px;background:rgba(0,0,0,.78);color:#fff;' +
+        'font:600 12px/1 -apple-system,system-ui,sans-serif;letter-spacing:.08em;' +
+        'pointer-events:none;border:1px solid rgba(255,255,255,.22)');
+      const t = document.lastModified.replace(/:\d\d$/, '').replace(/\/\d{4}/, '');
+      tag.textContent = 'V' + HERO_V + ' \u00b7 ' + (HERO_AUTO ? 'AUTO' : 'STILL') + ' \u00b7 ' + t;
+      document.body.appendChild(tag);
+    });
+  }
   if(HERO_V === 1){
     document.documentElement.classList.add('hero-v1');
     // The delivery frame carries the photograph before it, so its cut is
