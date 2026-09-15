@@ -4351,36 +4351,43 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     // back (see the cue's onLeaveBack). That is the trade this line asks for and
     // it is the right way round for a screen carrying the offer.
     //
-    // THE RUSH IS A SPEED, NOT A POSITION — and that is the fix for "make the
-    // offer arrive the way the statement does".
+    // THE RUSH IS A POSITION AGAIN — because on a phone the speed caught
+    // everybody, which is the "it should be switching in" this was reported as.
     //
-    // The two headlines have always been authored identically: both are
-    // fromTo(yPercent SOL_OUT -> 0, duration .3, stagger .08, power3.out). The
-    // reason the offer did not LOOK like the statement is that it was almost
-    // never animating. The rush was a position, .15, and the handover fires at
-    // LINE+EDGE = .14 — a window one per cent of the travel wide. Any reader
-    // crossing .14 was past .15 a frame or two later, so solRender killed the
-    // tween in flight and snapped the words into place. Measured: the statement
-    // arrives over five sampled frames, 72 -> [17,61] -> 0 on rising light,
-    // while the offer went 72 -> 0 between two samples with no cascade at all.
+    // History first, since this rule has now been both things. It was a position,
+    // .15, and the handover fires at LINE+EDGE = .14 — a window one per cent of
+    // the travel wide, so any reader crossing the line was past .15 a frame later
+    // and the tween was killed in flight. The conclusion drawn then was that
+    // position is the wrong discriminator and speed is the right one. That was
+    // the wrong conclusion from a real measurement: .15 was the wrong NUMBER, not
+    // position the wrong idea.
     //
-    // Position was the wrong discriminator. What the rush is FOR is a reader who
-    // was thrown past the line rather than crossing it at reading speed, and the
-    // thing that distinguishes those is how fast they are moving. So it asks the
-    // trigger: reading-speed scrolling runs a few hundred px/s, a phone flick
-    // two to four thousand. Below the threshold the entrance plays in full;
-    // above it, or if they are somehow already half way through the section, the
-    // offer is simply there.
-    const SOL_LINE = .06, SOL_EDGE = .08, SOL_RUSH = .5, SOL_FAST = 1800;
-    const solRender = (pr, v) => {
-      const thrown = v > SOL_FAST || pr > SOL_RUSH;
+    // Speed had the same failure in a different costume. SOL_FAST was 1800px/s,
+    // and this branch only ever runs on a phone, where an ordinary flick is two
+    // to four thousand. So the entrance played at reading speed and nowhere else.
+    // Measured at 375, counting frames where the offer's lines are mid-travel:
+    //
+    //   slow   ~1000px/s   7 frames   115,156,156 -> 29,115,156 -> 6,39,142 -> 0,10,54
+    //   brisk  ~3000px/s   0 frames   it pops
+    //   flick  ~7500px/s   0 frames   it pops
+    //
+    // So: position, and far enough from the line to mean something. .5 is 585px
+    // of travel past .14 rather than the 16px .15 was. What the guard is FOR is a
+    // reader who is ALREADY deep in the section when the line trips — for them
+    // the offer should simply be there. It is not for a reader who is merely
+    // moving quickly; that reader is exactly who the entrance is for.
+    //
+    // The in-flight kill moves out to .85 for the same reason. At .5 a brisk
+    // flick arrives about 200ms into an 800ms tween, so killing there was most of
+    // why "brisk" scored zero above. At .85 the reader is about to leave the
+    // section and finishing the words outright is right; and if they leave
+    // mid-entrance anyway, onLeave below already puts the offer up whole.
+    const SOL_LINE = .06, SOL_EDGE = .08, SOL_RUSH = .5, SOL_LATE = .85;
+    const solRender = (pr) => {
       const want = solIdx === 0 ? (pr > SOL_LINE + SOL_EDGE ? 1 : 0)
                                 : (pr < SOL_LINE - SOL_EDGE ? 0 : 1);
-      if(want !== solIdx){ solGo(want, want === 1 && thrown); return; }
-      // Past halfway with the handover still running means the reader was thrown
-      // past the line rather than crossing it at reading speed, and the .55 it
-      // takes is .55 they may not have. From there it is simply finished.
-      if(want === 1 && thrown && solTween && solTween.isActive()){
+      if(want !== solIdx){ solGo(want, want === 1 && pr > SOL_RUSH); return; }
+      if(want === 1 && pr > SOL_LATE && solTween && solTween.isActive()){
         solTween.kill(); solTween = null; tl.pause(SOL_AT[1]);
       }
     };
@@ -4398,7 +4405,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       onLeaveBack: () => solGo(0, true)});
     const trig = ScrollTrigger.create({
       trigger:'#solution', start:'top top', end:'bottom bottom',
-      onUpdate: self => { solArrive(); solRender(self.progress, Math.abs(self.getVelocity())); },
+      onUpdate: self => { solArrive(); solRender(self.progress); },
       // The floor. If the screen is left going FORWARD with the statement still
       // up, the reader crossed the whole section faster than anything could be
       // read — so the screen is put on the offer outright, with no transition.
@@ -4408,7 +4415,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       onLeave: () => { if(solIdx === 0) solGo(1, true); }
     });
     tl.pause(0);
-    if(trig.isActive){ solArrive(); solRender(trig.progress, 0); }
+    if(trig.isActive){ solArrive(); solRender(trig.progress); }
 
     return () => {
       if(solTween) solTween.kill();
