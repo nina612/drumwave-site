@@ -491,7 +491,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .age-scene .age-contrib{flex:0 0 auto}
   .age-scene .age-contrib-cap{font-size:16px}
   .age-scene .age-tabs{width:343px;max-width:100%}
-  .age-scene .age-tab:hover{color:#fff}
+  /* :not(.is-on), and behind a real-hover query. Written as a bare
+     .age-tab:hover this was specificity 0,3,0 — exactly what .age-tab.is-on
+     carries — and it sat later in the sheet, so it WON: the moment you clicked
+     a chip the cursor was still on it, colour went to #fff over the chip's
+     white, and the label you had just chosen disappeared. On a touch screen it
+     is worse, because iOS leaves :hover stuck on the last thing tapped until
+     you tap somewhere else, so it stayed gone.
+     Excluding the selected chip is the fix that cannot come back: there is no
+     longer a rule that can paint white on white, whatever order the sheet ends
+     up in. The hover query is the second half of it — a device with no pointer
+     to hover with should not be running hover styles at all. */
+  @media (hover:hover) and (pointer:fine){
+    .age-scene .age-tab:not(.is-on):hover{color:#fff}
+  }
 
   /* --- right: the pill, the figure, the caption --- */
   /* The frame stacks the pill straight onto the figure and gives the caption 12.
@@ -3348,12 +3361,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // Seconds for the whole seventy years, and this is the phone's clock alone now
   // — the wide frame runs off the scroll instead.
   //
-  // Six read as hurried and twelve was the answer for a while. Thirty, asked
-  // for: "slow it down significantly so the user is not overwhelmed". That is
-  // 2.3 years a second against 5.8, and what it actually buys is the
-  // PHOTOGRAPHS. Ten of them across the run means one every three seconds at
-  // this pace where it was one every 1.2 — long enough to see a life in each
-  // rather than a slideshow going past.
+  // Six read as hurried, twelve was the answer for a while, thirty was the
+  // answer to "slow it down significantly", and forty-five is the answer to
+  // being asked again. 1.6 years a second against the 5.8 it started at.
+  //
+  // What it buys is the PHOTOGRAPHS. Ten of them across the run means one every
+  // four and a half seconds at this pace, where it was one every 1.2 — long
+  // enough to see a life in each rather than a slideshow going past. What it
+  // costs is the far end, and the answer to that is now in the reader's hand
+  // rather than in this number: the dot stops the run on a press, so anyone who
+  // wants the end of it can take the dot and go there themselves.
   //
   // A longer count costs no one any scrolling, which is what makes this a free
   // dial: nothing is pinned on this screen, so the length of the count is not
@@ -3363,7 +3380,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // the ruler, which shows the whole seventy at a glance whatever the figure is
   // doing, and the handle, which is faster than the clock for anyone who wants
   // the end of it.
-  const AGE_RUN   = 30;
+  const AGE_RUN   = 45;
   const ageAuto = gsap.to(ageProxy, {
     v: AGE_MAX, duration: AGE_RUN, ease: 'none', paused: true,
     onUpdate: () => { if(!ageDragging && !ageTaken) renderAge(ageProxy.v); }
@@ -3509,9 +3526,31 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // which is what "it will not autoplay" looked like. So a touch is held pending
   // until it moves, and only a move that is decidedly sideways takes the handle.
   // A mouse has no such ambiguity and still commits at once.
+  //
+  // THE DOT ITSELF IS THE EXCEPTION, asked for: "the user can stop it at any
+  // time by pressing on the dot". Pressing the dot is not ambiguous — it is the
+  // one place on this screen that means exactly one thing — so a touch that
+  // lands within 24px of its centre commits on the spot and the run stops
+  // there, with no sideways movement required. Everywhere ELSE on the ruler
+  // stays pending, which is what keeps a thumb that came to scroll from
+  // hijacking the page.
+  //
+  // 24 against an 18px dot: a 48px target, which is the size a finger wants,
+  // and it is measured from the dot's live box so it follows it along the
+  // ruler. The touch may still be taken away afterwards — touch-action:pan-y
+  // means a press that turns into a vertical swipe becomes the page's, and the
+  // browser sends pointercancel — but ageTaken has already latched by then, so
+  // the run stays stopped either way. Pressing the dot stops the clock even if
+  // you then decide to scroll.
+  const AGE_DOT_GRAB = 24;
+  const onTheDot = e => {
+    const h = ageHandle.getBoundingClientRect();
+    return Math.hypot(e.clientX - (h.left + h.width/2),
+                      e.clientY - (h.top  + h.height/2)) <= AGE_DOT_GRAB;
+  };
   let agePend = null;
   ageTrack.addEventListener('pointerdown', e => {
-    if(e.pointerType === 'mouse'){ ageGrab(e, ageTFromEvent(e)); return; }
+    if(e.pointerType === 'mouse' || onTheDot(e)){ ageGrab(e, ageTFromEvent(e)); return; }
     agePend = {id:e.pointerId, x:e.clientX, y:e.clientY};
   });
   ageTrack.addEventListener('pointermove', e => {
