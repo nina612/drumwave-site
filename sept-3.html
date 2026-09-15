@@ -3326,26 +3326,42 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   if(!SCROLL_RUN) loopWhileHere(tl1, restartRun);
 
   /* ---------- ACT 4 : AGE TRACK ---------- */
-  // The published table, matched to the source chart. Four of these moved: the
-  // figure at birth is 150 rather than nothing, and three of the ages shifted —
-  // 2 to 3, 25 to 23, 58 to 52. The values at those three did not move with
-  // them, so each is the same figure reached at a different age.
+  // THE PUBLISHED BALANCE, YEAR BY YEAR — the Low contribution scenario.
+  // One figure per age, indexed by age, so the balance is a LOOKUP rather than
+  // a curve fitted through ten points. It used to be the latter, and a fitted
+  // curve is only ever right at the points it was fitted to: between them it
+  // invented figures that were plausible and wrong. Age 35 read $22,495 where
+  // the table says $22,355.
+  const AGE_BALANCE = [
+    150,    312,    487,    675,    877,    1093,   1326,   1576,   1844,   2131,
+    2439,   2768,   3120,   3497,   3900,   4330,   4790,   5281,   5805,   6364,
+    6961,   7597,   8276,   8999,   9769,   10590,  11465,  12396,  13387,  14443,
+    15566,  16761,  18033,  19386,  20824,  22355,  23982,  25711,  27550,  29504,
+    31582,  33789,  36134,  38626,  41273,  44085,  47071,  50243,  53612,  57189,
+    60987,  65019,  69300,  73845,  78670,  83791,  89227,  94996,  101119, 107616,
+    114512, 121829, 129593, 137831, 146571, 155845, 165684, 176121, 186689, 197890,
+    209763
+  ];
+  // The milestones, which are now only about what is on SCREEN: where the
+  // photograph changes and what the stage is called. The figures they used to
+  // carry are all in AGE_BALANCE at the same ages and agree to the dollar, so
+  // holding them here as well would be two sources for one number.
   //
-  // data-age on the frames below carries the same numbers, because the
-  // stylesheet crops three of those photographs by it. The FILENAMES still say
-  // age-2, age-25 and age-58; they are names, not data, and renaming a file
-  // that four other things point at to gain nothing is not worth the risk.
+  // data-age on the frames below repeats these ages, because the stylesheet
+  // crops three of those photographs by it. The FILENAMES still say age-2,
+  // age-25 and age-58; they are names, not data, and renaming a file that four
+  // other things point at to gain nothing is not worth the risk.
   const AGE_DATA = [
-    {age:0,  val:150,    label:'Newborn'},
-    {age:3,  val:675,    label:'Toddler'},
-    {age:13, val:3497,   label:'Teenage years'},
-    {age:18, val:5805,   label:'College'},
-    {age:23, val:8999,   label:'First apartment'},
-    {age:32, val:18033,  label:'Building a life'},
-    {age:36, val:23982,  label:'Family'},
-    {age:45, val:44085,  label:'Career'},
-    {age:52, val:69300,  label:'Enjoying life'},
-    {age:70, val:209763, label:'Retirement'}
+    {age:0,  label:'Newborn'},
+    {age:3,  label:'Toddler'},
+    {age:13, label:'Teenage years'},
+    {age:18, label:'College'},
+    {age:23, label:'First apartment'},
+    {age:32, label:'Building a life'},
+    {age:36, label:'Family'},
+    {age:45, label:'Career'},
+    {age:52, label:'Enjoying life'},
+    {age:70, label:'Retirement'}
   ];
   const AGES = AGE_DATA.map(d => d.age);
   // YOUR DATA CONTRIBUTION — Figma 4349:36344.
@@ -3395,14 +3411,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   const ageLabelSpans = $$('#ageLabels span');
   let ageCurrent = AGE_MIN;
 
+  // THE TABLE'S OWN FIGURE FOR THE AGE THAT IS SHOWING — asked for: "the
+  // balance displayed at each age matches the following values exactly". So the
+  // age is rounded once, here, and the row is read. AGE 13 and $3,497 can now
+  // only ever appear together.
+  //
+  // This is the fix for something already on the record as a footnote. The age
+  // arrives as a fraction — on the wide frame it comes from scroll position,
+  // and a pin of 2400px across seventy years makes one pixel about 0.03 of a
+  // year — so interpolating at the exact fractional age put $3,501 under a pill
+  // reading AGE 13. Rounding for the FIGURE costs nothing anywhere else: the
+  // photographs and their crossfades are still computed from the continuous
+  // age a few lines above, so the picture stays smooth. Only the figure moves a
+  // year at a time, which is what the ruler beneath it has always done — one
+  // tick, one year.
   function ageValueAt(age){
-    for(let i=0;i<AGE_DATA.length-1;i++){
-      if(age <= AGE_DATA[i+1].age){
-        const u = (age-AGE_DATA[i].age)/(AGE_DATA[i+1].age-AGE_DATA[i].age);
-        return AGE_DATA[i].val + (AGE_DATA[i+1].val-AGE_DATA[i].val)*u;
-      }
-    }
-    return AGE_DATA[AGE_DATA.length-1].val;
+    return AGE_BALANCE[clamp(Math.round(age), AGE_MIN, AGE_MAX)];
   }
   const smooth = u => u*u*u*(u*(u*6-15)+10);
   function renderAge(age){
