@@ -1175,19 +1175,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      where svh is not understood. */
   #ages{height:115vh;height:115svh}
   .age-scene .age-lower{left:24px;right:24px;bottom:36px}
-  /* THE PICKER IS ITS OWN GROUPING. Three passes on this gap, and the last two
-     were both right about different things:
-       48 — the frame's number, and too far: the picker read as unrelated.
-       20 — equidistant with the gap below, and too close: with the same air
-            above and below it, the picker joined the readout and the ruler into
-            one undifferentiated stack.
-       32 — asked for, and the point of it: more than the 20 that holds the age
-            to the timeline, less than the 48 that cut the picker adrift. The
-            picker is one thing; the age and the timeline are another.
+  /* THE PICKER IS ITS OWN GROUPING — and this is the second attempt at it, so
+     it is worth writing down why the first one did not take.
+     I only moved the gap: 20 -> 32. But a group does not read from the size of
+     the space around it, it reads from the CONTRAST between that space and the
+     spaces inside it. 32 against a 20 below is 1.6x, and 1.6x is not a grouping,
+     it is a slightly bigger gap.
+     So both numbers move this time, in opposite directions. 40 above the pill —
+     still under the frame's own 48 — and 16 rather than 20 between the figure
+     and the ruler, which pulls the age and the timeline together. The picker's
+     air is now 2.5x the air holding the other two, and 2.5x reads.
+       48  the frame's, too far: the picker looked unrelated
+       20  equidistant, too close: picker, readout and ruler became one stack
+       32  bigger, but the same relationship
+       40 over 16  a group, and a pair below it
      The 8 between the pill and the figure still is not part of this. It is what
-     makes those two read as one object rather than two, and it is the frame's
-     own number. */
-  .age-scene .age-row{display:flex;flex-direction:column;gap:32px;margin-bottom:20px}
+     makes those two one object rather than two, and it is the frame's number. */
+  .age-scene .age-row{display:flex;flex-direction:column;gap:40px;margin-bottom:16px}
   .age-scene .age-contrib-cap{font-size:14px}
   /* 291 of the column's 339, not full bleed. Every number here is the
      component's own times 0.845, which is the ratio 4406:29779 scales it by -
