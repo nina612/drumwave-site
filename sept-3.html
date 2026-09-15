@@ -515,6 +515,33 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   text-transform:uppercase;color:#fff;white-space:nowrap}
 .age-scene .age-cap{display:none}
 
+/* A HAZE BEHIND THE CAPTIONS, not a bar.
+   These three lines are the only type on this screen with nothing between them
+   and the photograph — the picker and the pill have their own frosted surfaces,
+   and the figure is big enough to carry itself.
+   backdrop-filter on the TEXT ELEMENT was the first answer and it is what makes
+   a rectangle: the filter stops dead at the element's box, so a 14px line of
+   type gets a 14px-tall band of blur with four corners. Asked for something
+   dispersed instead, which means two changes of kind, not of degree:
+     - the blur moves to a pseudo-element BEHIND the text, so it can be much
+       larger than the type without touching it. inset is negative all round, so
+       it reaches well past the glyphs.
+     - and it is MASKED with a radial gradient, so the filter fades out instead
+       of ending. That is what removes the edges: there is no box any more, just
+       blur that is strongest under the words and gone by the time it reaches
+       anything else.
+   z-index:-1 puts it behind the text but still inside .age-lower's stacking
+   context, so it sits over the photograph and under the words, which is exactly
+   the one layer it needs to be on. */
+.age-scene .age-contrib-cap,.age-scene .ctl-cap,.age-scene .age-cap{position:relative}
+.age-scene .age-contrib-cap::before,
+.age-scene .ctl-cap::before,
+.age-scene .age-cap::before{
+  content:"";position:absolute;inset:-18px -26px;z-index:-1;pointer-events:none;
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  -webkit-mask-image:radial-gradient(ellipse 64% 58% at 50% 50%,#000 0%,rgba(0,0,0,.9) 38%,rgba(0,0,0,.45) 62%,transparent 84%);
+          mask-image:radial-gradient(ellipse 64% 58% at 50% 50%,#000 0%,rgba(0,0,0,.9) 38%,rgba(0,0,0,.45) 62%,transparent 84%)}
+
 /* ============ AGE PICKER, WIDE FRAME — Figma 4349:36344 ============
    The instrument redrawn: a contribution picker on the left, the age in a pill
    over the figure on the right, and a ruler beneath both whose own ticks carry
@@ -538,15 +565,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   /* --- left: the contribution picker --- */
   .age-scene .age-contrib{flex:0 0 auto}
-  /* The same frosting the phone's captions got, and for the same reason: these
-     two are the only type on this screen with nothing between them and the
-     photograph. 2.96px here rather than 2.5 — the wide frame's blur, so the
-     picker, the pill and these read as one material at each size.
-     Padding grows the blurred box past the glyphs; an equal negative margin
-     gives the space straight back, so the type does not move. */
-  .age-scene .age-contrib-cap{font-size:16px;
-    padding:4px 10px;margin:-4px -10px;border-radius:8px;
-    -webkit-backdrop-filter:blur(2.96px);backdrop-filter:blur(2.96px)}
+  .age-scene .age-contrib-cap{font-size:16px}
   /* 343. The component's own content box measures 346.035 and overhangs its
      frame by three — 4349:36453 is 343 wide and that is what the screen shows. */
   .age-scene .age-tabs{width:343px;max-width:100%}
@@ -595,11 +614,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      already under. .64 keeps a third of a stop in hand. */
   .age-scene .age-badge{display:block;margin-bottom:0;font-size:24px;letter-spacing:.05em;
     --pill-inset:19.1px;background:rgba(0,76,204,.64)}
-  /* 8 of margin plus 4 of padding is the 12 this had, so the caption still sits
-     12 below the figure */
-  .age-scene .age-cap{display:block;margin:8px -10px -4px;padding:4px 10px;
-    border-radius:8px;-webkit-backdrop-filter:blur(2.96px);backdrop-filter:blur(2.96px);
-    font-family:'Open Sans',sans-serif;
+  .age-scene .age-cap{display:block;margin:12px 0 0;font-family:'Open Sans',sans-serif;
     font-weight:600;font-size:16px;line-height:.99;letter-spacing:.1em;
     text-transform:uppercase;color:#fff;text-align:right}
   /* the phone's copy of the same sentence */
@@ -651,14 +666,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      tapers only where there is not. */
   .age-scene .bignum{font-size:min(15.6vw, 24vw - 110px, 264px)}
   .age-scene .age-badge{font-size:20px;--pill-inset:15.6px}
-  .age-scene .age-cap{margin-top:8px}   /* 8 + the 4 of padding is the 12 the type keeps */
+  .age-scene .age-cap{margin-top:12px}
 }
 @media (min-width:761px) and (max-width:1120px){
   /* the same +20% and the same guard, against this band's 280 picker */
   .age-scene .bignum{font-size:min(13.8vw, 24vw - 92px, 180px)}
   .age-scene .age-tabs{width:280px}
   .age-scene .age-badge{font-size:16px;letter-spacing:.04em;--pill-inset:13.05px}
-  .age-scene .age-cap{margin-top:8px}   /* 8 + the 4 of padding is the 12 the type keeps */
+  .age-scene .age-cap{margin-top:12px}
   .age-scene .age-contrib-cap,.age-scene .age-cap{font-size:13px}
 }
 
@@ -1223,18 +1238,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      The 8 between the pill and the figure still is not part of this. It is what
      makes those two one object rather than two, and it is the frame's number. */
   .age-scene .age-row{display:flex;flex-direction:column;gap:40px;margin-bottom:16px}
-  /* A SLIGHT BLUR BEHIND THE TWO CAPTIONS, asked for. These are the only two
-     pieces of type on this screen with nothing between them and the photograph
-     — the picker and the pill both sit on their own frosted surface, and the
-     figure is large enough to carry itself. 2.5px, the same blur the picker
-     uses, so the screen has one frosted material rather than two.
-     The padding and the equal negative margin are what keep it honest: the
-     padding grows the blurred BOX past the glyphs so its edges do not cut
-     through them, and the negative margin takes the same amount back off the
-     layout, so the text does not move by a pixel. */
-  .age-scene .age-contrib-cap{font-size:14px;
-    padding:4px 8px;margin:-4px -8px;border-radius:7px;
-    -webkit-backdrop-filter:blur(2.5px);backdrop-filter:blur(2.5px)}
+  .age-scene .age-contrib-cap{font-size:14px}
   /* 291 of the column's 339, not full bleed. Every number here is the
      component's own times 0.845, which is the ratio 4406:29779 scales it by -
      41.204/49, 10.301/12.196, 3.434/4.065, 13.735/16.261 all agree on it. The
@@ -1333,11 +1337,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .age-scene .ctl-cap br{display:block}
   /* 14/1.2 and 24 of air under it, against the 16/1.06 and 32 of the frame
      before — the shorter screen buys its room back here */
-  /* the same treatment, and the bottom margin carries the 4px of padding so the
-     24 to the ruler below is still 24 */
-  .age-scene .ctl-cap{font-size:14px;line-height:1.2;
-    padding:4px 8px;margin:-4px -8px 20px;border-radius:7px;
-    -webkit-backdrop-filter:blur(2.5px);backdrop-filter:blur(2.5px)}
+  .age-scene .ctl-cap{font-size:14px;line-height:1.2;margin-bottom:24px}
   .age-scene .ctl .ages span:not(:first-child):not(:last-child){display:none}
   /* asked for: no blue cast behind these three on the phone — 3870:45302 sets
      all of them on flat black. The introducing screen's pair is tweened open
