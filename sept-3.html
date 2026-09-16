@@ -410,6 +410,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* the export is a flat ruler — one static frame can't show a position — so the
    scrubbed-past ticks keep the design's 5px and only go white */
 .age-scene .track .ticks i.hit{background:#fff}
+/* ?pill=2's pill. Off everywhere by default — the phone block below is the only
+   place it is ever shown. */
+.age-scene .age-pin{display:none}
 /* the labels are absolutely placed, so the row needs its own height or it
    measures zero and the block's box stops above them — which drops them below
    wherever the block is anchored from the bottom */
@@ -1417,6 +1420,50 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .age-scene .track .ticks{display:none}
   .age-scene .track .rail,.age-scene .track .fill,.age-scene .track .handle{top:0}
   .age-scene .track::before{content:"";position:absolute;left:0;right:0;top:-22px;bottom:-22px}
+
+  /* ---- ?pill=2 : THE AGE RIDES THE DOT ----
+     A version, not a replacement. Default is untouched; everything here is
+     behind .pill-on-dot and inside the phone block, so the wide layout and the
+     current phone layout cannot see any of it.
+     The pill leaves the block above and becomes a marker on the track: it sits
+     over the dot, carries a caret down to it, and travels with it. So the age
+     is read where the age is being changed rather than a third of a screen
+     away, and the number rising is attached to the thing being dragged. */
+  .age-scene.pill-on-dot .age-badge{display:none}
+  /* LESS CHUNKY, asked for. The block's pill is 14px type in 17.8 of inset on
+     every side — deliberately, it was a standalone object in a column. Riding
+     the dot it is a label on an instrument, so: 12px, and 5/10 of padding
+     instead of 17.8 all round. It keeps the fill, the blur and the 100px
+     radius, so it still reads as the same component, just at marker scale. */
+  .age-scene.pill-on-dot .age-pin{display:block;position:absolute;bottom:13px;
+    transform:translateX(-50%);margin:0;white-space:nowrap;pointer-events:none;
+    padding:5px 10px;border-radius:100px;background:rgba(0,76,204,.82);
+    -webkit-backdrop-filter:blur(2.5px);backdrop-filter:blur(2.5px);
+    font-family:'Open Sans',sans-serif;font-weight:600;font-size:12px;
+    letter-spacing:.05em;text-transform:uppercase;color:#fff;
+    text-shadow:0 1px 3px rgba(0,0,0,.35)}
+  /* The caret. --caret is how far the dot is from the pill's centre, which is
+     zero everywhere except the two ends: there the pill is held inside the
+     track by the clamp in renderAge and the caret walks across it instead, so
+     it keeps pointing AT the dot rather than at where the pill wishes it were.
+     Sized 6 tall so its tip lands just above the dot's 18px circle. */
+  .age-scene.pill-on-dot .age-pin::after{content:"";position:absolute;
+    top:100%;left:calc(50% + var(--caret,0px));transform:translateX(-50%);
+    width:0;height:0;border:5px solid transparent;border-bottom:0;
+    border-top:6px solid rgba(0,76,204,.82)}
+  /* The air has to open between the CAPTION and the TRACK, not above .ctl: the
+     caption is inside .ctl and the track is under it, so padding the container
+     moved both down together and left the pill sitting on the caption exactly
+     as before. The track is what the pill is positioned against, so the track
+     is what has to come down.
+     52, and measured rather than reasoned: the caption sits hard against the
+     track by default — 0px between them — so the margin has to carry the whole
+     of the pill, not the difference. 13 of offset + 26 of pill = 39 above the
+     rail, and 13 of air over the caption. 34 was the first guess and left an
+     8px overlap; this is that measurement plus the clearance.
+     Net cost to the block is 20px: the 52 less the 32 that hiding .age-badge
+     above gave back (24 of type, 8 of margin). */
+  .age-scene.pill-on-dot .track{margin-top:52px}
   /* THE SCRIM MOVED UP WITH THE COPY. 4406:29779 runs its wash from 405 of 844
      — a hair under halfway — to the bottom, holding at half black rather than
      the .7 the old one closed on. It has to: the picker's caption now starts at
@@ -1889,6 +1936,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       <div class="rail"></div>
       <div class="fill" id="ageFill"></div>
       <div class="ticks" id="ageTicks"></div>
+      <!-- ?pill=2 only, and phone only. The age rides the dot here instead of
+           standing in the block above it. aria-hidden because the track is the
+           slider and already carries aria-valuenow — this is the same number
+           drawn, and announcing it twice would be worse than not at all. The
+           block's own #ageBadge is what a screen reader still reads in the
+           default version. -->
+      <p class="age-pin" id="agePin" aria-hidden="true">Age 0</p>
       <div class="handle" id="ageHandle"></div>
     </div>
     <div class="ages mono" id="ageLabels"></div>
@@ -3614,6 +3668,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   const AGE_MIN = AGES[0], AGE_MAX = AGES[AGES.length-1];
 
   const ageTrack = $('#ageTrack'), ageFill = $('#ageFill'), ageHandle = $('#ageHandle');
+  // ?pill=2 — the age rides the dot instead of standing in the block above it.
+  // A version to look at beside the default, so the switch only ADDS a class and
+  // every rule it turns on is scoped under it; nothing here changes the page
+  // that loads without it.
+  const AGE_PILL_V2 = /(?:^|[?&#])pill=2(?:[&#]|$)/.test(location.search + location.hash);
+  const agePin = $('#agePin');
+  if(AGE_PILL_V2) document.querySelector('.age-scene').classList.add('pill-on-dot');
+  // The pill's own width, re-read only when the text it holds changes — which is
+  // at most twice over the whole run, "Age 9" to "Age 10". renderAge is called on
+  // every frame of a scrub, and offsetWidth forces layout, so reading it there
+  // unconditionally would be a layout per frame for a number that barely moves.
+  let agePinTxt = '', agePinW = 0;
   const ageTicksEl = $('#ageTicks'), ageLabelsEl = $('#ageLabels');
   // ONE TICK A YEAR, AT BOTH SIZES.
   //
@@ -3684,6 +3750,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     ageFill.style.width = (t*100)+'%';
     ageHandle.style.left = (t*100)+'%';
     ageTrack.setAttribute('aria-valuenow', Math.round(age));
+    // ?pill=2: put the pill over the dot, and keep it inside the track at the
+    // ends. A tooltip that runs off its own rail is worse than one that stops,
+    // so past the halfway point of its own width the PILL holds still and the
+    // CARET carries on — which is what keeps it pointing at the dot at age 0 and
+    // age 70 rather than at the gutter.
+    if(AGE_PILL_V2 && agePin.offsetParent){
+      const txt = 'Age ' + Math.round(age);
+      if(txt !== agePinTxt){ agePin.textContent = txt; agePinTxt = txt; agePinW = agePin.offsetWidth; }
+      const w = ageTrack.clientWidth;
+      if(w && agePinW){
+        const half = agePinW / 2, dotX = t * w;
+        const cx = Math.min(Math.max(dotX, half), w - half);
+        agePin.style.left = cx.toFixed(1) + 'px';
+        agePin.style.setProperty('--caret', (dotX - cx).toFixed(1) + 'px');
+      }
+    }
     ageTicks.forEach((tk,i)=> tk.classList.toggle('hit', AGE_MIN + i/(ageTicks.length-1)*(AGE_MAX-AGE_MIN) <= Math.round(age) && t > 0));
     ageLabelSpans.forEach((l,i)=> l.classList.toggle('cur', age >= AGE_LABELS[i]));
   }
