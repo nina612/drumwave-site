@@ -1462,7 +1462,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      the dot it is a label on an instrument, so: 12px, and 5/10 of padding
      instead of 17.8 all round. It keeps the fill, the blur and the 100px
      radius, so it still reads as the same component, just at marker scale. */
-  .age-scene.pill-on-dot .age-pin{display:block;position:absolute;bottom:13px;
+  .age-scene.pill-on-dot .age-pin{display:block;position:absolute;bottom:22px;
     transform:translateX(-50%);margin:0;white-space:nowrap;pointer-events:none;
     padding:5px 10px;border-radius:100px;background:rgba(0,76,204,.82);
     -webkit-backdrop-filter:blur(2.5px);backdrop-filter:blur(2.5px);
@@ -1473,7 +1473,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      zero everywhere except the two ends: there the pill is held inside the
      track by the clamp in renderAge and the caret walks across it instead, so
      it keeps pointing AT the dot rather than at where the pill wishes it were.
-     Sized 6 tall so its tip lands just above the dot's 18px circle. */
+     Sized 6 tall, and the pill's 22 of offset is what holds the tip OFF the
+     dot rather than on it. 13 put the tip 3px inside the circle, and since the
+     caret and the dot are the same cobalt it simply disappeared into it, which
+     is "it's hard to see it". The dot's top edge is 9 above the rail, the tip is
+     now 16 above it, so it floats 7px clear and reads as pointing AT the dot
+     instead of being part of it. */
   .age-scene.pill-on-dot .age-pin::after{content:"";position:absolute;
     top:100%;left:calc(50% + var(--caret,0px));transform:translateX(-50%);
     width:0;height:0;border:5px solid transparent;border-bottom:0;
@@ -1487,13 +1492,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      track by default — 0px between them — so the margin has to carry the whole
      of the pill, not the difference. 13 of offset + 26 of pill = 39 above the
      rail; 34 was the first guess and left an 8px overlap, 52 cleared it by 13.
-     70 is that plus the air asked for after seeing it — 31 over the caption
+     70 was that plus the air asked for after seeing it — 31 over the caption
      rather than 13, which is what "move the timeline down a bit so the text
      does not feel cramped" wants, since in a bottom-anchored block the way to
      move the ruler down THE TEXT is to open the gap above it.
-     Net cost to the block is 38px: the 70 less the 32 that hiding .age-badge
+     79 now, because the pill was lifted 9 to float its caret clear of the dot
+     and this carries that 9 so the caption keeps the same 31.
+     Net cost to the block is 47px: the 79 less the 32 that hiding .age-badge
      above gave back (24 of type, 8 of margin). */
-  .age-scene.pill-on-dot .track{margin-top:70px}
+  .age-scene.pill-on-dot .track{margin-top:79px}
   /* THE SCRIM MOVED UP WITH THE COPY. 4406:29779 runs its wash from 405 of 844
      — a hair under halfway — to the bottom, holding at half black rather than
      the .7 the old one closed on. It has to: the picker's caption now starts at
