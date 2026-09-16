@@ -1244,7 +1244,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      the ken-burns alone walks it 34px between 1.06 and 1.00 — so the edges would
      not line up while a frame was easing. Anchored at the top, a scale grows
      downward and the edge cannot move. */
-  .age-scene .frame img{transform-origin:50% 0%}
+  .age-scene .frame img{transform-origin:50% 0%;width:104%;margin-left:-2%}
+  /* THE 4% OF OVERSCAN IS NOT DECORATION. The ken-burns drifts the picture
+     sideways, -1.5% to +1.5%, and at 375 that is 5.6px — so a settled frame sat
+     6px right of its box with a 6px strip of nothing down its left edge. It was
+     invisible for as long as another photograph was showing through underneath;
+     painting the frames opaque turned it into a black sliver on seven of the ten.
+     104% wide pulled back 2% covers the whole ±1.5% of travel with margin.
+     It also fixes the direction of the fix for a picture that sits too LOW: the
+     transform scales the ELEMENT, so a zoom under 1 shrinks it and opens bars
+     down both sides — measured, 28px each at 0.85 on the newborn. Up is a
+     NEGATIVE drop instead, which slides the picture up without resizing it, and
+     is safe to -300 because the box has that much spare below (1356 against the
+     section's 1056). The top edge goes above the section and is clipped, so it
+     stays invisible and nothing overlaps. */
   /* A TALLER BOX INSTEAD OF A DROP, and the direction is the whole thing.
      Moving a picture DOWN inside its box opens a band above it, and that band is
      what one photograph was showing through another. Making the BOX taller at the
@@ -2071,7 +2084,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 <!-- ACT 4 : AGE TRACK -->
 <section class="act age-scene" id="ages" aria-label="How your value grows as you age">
   <div class="frames" id="ageFrames">
-    <div class="frame" data-kb="0" data-age="0" data-zoom="1" data-dy="0"><img decoding="async" src="assets/img/age-0-newborn.jpg" alt="A mother's hand gently touching her newborn baby lying in a crib"></div>
+    <div class="frame" data-kb="0" data-age="0" data-zoom="1" data-dy="-9"><img decoding="async" src="assets/img/age-0-newborn.jpg" alt="A mother's hand gently touching her newborn baby lying in a crib"></div>
     <div class="frame" data-age="3" data-zoom="1.25" data-dy="0"><img decoding="async" src="assets/img/age-2-toddler.jpg" alt="A toddler smiling while riding a pink tricycle on a sidewalk"></div>
     <div class="frame" data-age="13" data-zoom="1" data-dy="0"><img decoding="async" src="assets/img/age-13-teenageyears.jpg" alt="A teenage girl browsing lip gloss at a beauty store"></div>
     <div class="frame" data-age="18" data-zoom="1" data-dy="0"><img decoding="async" src="assets/img/age-18-college.jpg" alt="A college student writing on a tablet with a stylus at her desk"></div>
