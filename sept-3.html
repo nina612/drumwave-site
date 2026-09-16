@@ -1395,14 +1395,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      the question shows. On the wide build a pin covers that stretch and the copy
      plays into it; on the phone there is no pin (see the matchMedia branch), so
      it is just black.
-     62svh rather than the .act 100: the question keeps its 9.6vh off the bottom
-     and the black above it falls 570 -> 261. The section still holds the
-     question with air around it; it no longer holds most of a screen of nothing.
+     844px, asked for — the phone artboard's own height, so the section is one
+     frame tall rather than one viewport tall. It went 100vh, then 62svh to cut
+     the black, and now to the frame's number. The question keeps its 9.6vh off
+     the bottom. Note this is a fixed height, so on a screen shorter than 844 the
+     section runs slightly past the fold and on a taller one it stops short of
+     it; that is what asking for a frame height rather than a screen height
+     means.
      This cannot reach the timeline's crops. Every one of those is inside #ages,
      measured against ITS box — .frames is inset:0 of .age-scene and #ages sets
      its own 130svh — so nothing in the crop maths reads this section at all.
      Verified either side of the change. */
-  #worth{height:62vh;height:62svh}
+  #worth{height:844px}
   #worth .worth{left:min(5.9vw,25px);bottom:9.6vh;width:min(88.5vw,381px)}
   /* Figma 3898:98612 — the phone break, three short lines instead of the
      desktop's two */
