@@ -431,14 +431,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   /* asked for: more visible. White rather than #E3E3E3, .85 rather than .5, and
      a shadow under it — it sits over the lower corner of a photograph, and the
      scrim there is doing the work for the ruler above it rather than for this. */
-  color:#fff;font-family:'Open Sans',sans-serif;font-weight:600;font-size:16px;
+  color:#fff;font-family:'Open Sans',sans-serif;font-weight:700;font-size:16px;
   letter-spacing:.1em;text-transform:uppercase;opacity:.95;
   text-shadow:0 1px 4px rgba(0,0,0,.55);transition:opacity .25s}
+/* AND THE LABEL HAS TO BE TOLD, because none of the rule above was reaching it.
+   The span carries .mono, which sets font-size, weight, tracking and colour
+   directly on the element the reader actually looks at — a one-class rule on the
+   child, so nothing inherited from the button can beat it. Measured: the button
+   computed white/600/16px while the label computed #8A8A86/400/11px, which is
+   what was on screen. So the previous pass at "make it more visible" changed the
+   colour of an <img> and a text-shadow, and left the words grey and 11px.
+   Two classes beats .mono's one. Everything comes from the button now, so the
+   control is styled in the one place it reads as being styled. */
+.age-scene .age-skip-label{font-size:inherit;font-weight:inherit;color:inherit;
+  letter-spacing:inherit}
 .age-scene .age-skip:hover{opacity:1}
 /* the source glyph is two stacked up-chevrons; a half turn points them down the
    page, which is the direction the control actually goes — asked for. A quarter
    turn had them pointing sideways at nothing. */
-.age-scene .age-skip-arrow{display:block;width:10px;height:9px;transform:rotate(180deg)}
+.age-scene .age-skip-arrow{display:block;width:12px;height:11px;transform:rotate(180deg)}
 
 /* ---- THE PIECES BOTH FRAMES SHARE ----
    4349:36344 and 4360:63768 draw one instrument at two sizes. The picker, the
@@ -670,14 +681,35 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .age-scene .ctl .ages span{font-size:16px;letter-spacing:.01em;color:#999}
   .age-scene .ctl .ages span.cur{color:#fff}
 
-  /* 42 off the frame's 1080 */
-  .age-scene .age-skip{bottom:clamp(20px,3.9vh,42px)}
+  /* 42 off the frame's 1080, less the 7 the control grew when its label went
+     from an 11px span to 16/700. Both it and the note are anchored to the
+     bottom, so without this the extra height is spent UPWARD, into the note's
+     band and then into the decade labels. Giving it back below leaves the
+     control's top edge exactly where it was and everything above it untouched;
+     the only change is 7px less air under it, 35 rather than 42 at 1080.
+     And the RIGHT edge is the gutter, not the 4.53vw the base rule carries, so
+     it lines up with the caption above it. .age-cap is text-align:right inside
+     .age-lower, so "...to retirement*" ends exactly on the block's right edge —
+     measured 1351 at 1440, where the skip's own edge was 1375, hanging 24px
+     out past everything else on the screen. var(--age-gut) is that same edge,
+     so the two track each other at every width rather than at one.
+     Declared here rather than in the base rule because --age-gut is defined in
+     this block; below 761 the control is display:none anyway. */
+  .age-scene .age-skip{bottom:calc(clamp(20px,3.9vh,42px) - 7px);right:var(--age-gut)}
 
   /* There is a band between the ruler's labels and the skip control — measured,
      69px at 1080 and 41px at 715 — and the note lives in it, so nothing else on
      the screen moves when it appears. Its offset is derived rather than picked:
      the block's own bottom, less the skip's, less 26 of clearance, which keeps
      it off both however tall the window is.
+     26 is unchanged, deliberately. The skip grew 14px tall to 21 in this pass,
+     and since this clearance is measured from the skip's BOTTOM, a taller
+     control eats the gap from below - it fell 12 -> 5. Raising the clearance to
+     33 restored that gap but pushed the note 7px further up, and on a short
+     window the note is already tight against the decade labels: measured at
+     800x700, where it wraps to two lines and the band is only 54px, it overlaps
+     them by 10 before this pass and would have gone to 17. So the note stays
+     where it was and the SKIP gives back the 7 instead (see its rule above).
      Full width so it sets as one line wherever there is room for one; it wraps
      to two on a narrow window, which the band still takes. */
   .age-scene .age-note{position:absolute;left:0;right:0;font-size:13px;
