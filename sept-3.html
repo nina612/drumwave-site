@@ -1321,13 +1321,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   #ages .frame[data-age="36"] img{object-position:61% 50%}
   #ages .frame[data-age="45"] img{object-position:27% 50%}  /* her, not the building */
   /* 92% held her alone at the right edge; 76% centred the strip on the pair.
-     80% now — asked for, more of her and a little less of him. The strip is 493
-     wide, so at 80% it runs 1142..1635: her face, at about natural x 1490-1690,
-     gains the room it was losing on the right, and his, at 1030-1200, keeps the
-     58px of himself that reads as a second person without holding a third of the
-     frame. Sliding right is the only lever — they are side by side, so what is
-     in shot is decided here and not by the zoom. */
-  #ages .frame[data-age="52"] img{object-position:80% 50%}
+     80% gave her more but at a 493 strip it could not give her ALL of her: her
+     face is about 1490-1690, which is 200 wide, and holding all 200 left only 3px
+     of him. Sliding could not fix that — the strip was simply too narrow to hold
+     her whole face and any of him at once.
+     So the zoom does the work and the slide follows it: 0.67 widens the strip to
+     552, and 83% runs it 1138..1690 — her face whole for the first time, with
+     62px of him at the left edge. The drop goes to 34 because the zoom needs it
+     (a picture must still reach the bottom, so zoom >= 1 - dy). */
+  #ages .frame[data-age="52"] img{object-position:83% 50%}
   /* The newborn and the family frame are the two asked to sit wider. They
      cannot: cover fits the height of a 4:3 photograph on a portrait screen
      exactly, so there is no slack to give back and anything wider letterboxes.
@@ -2124,7 +2126,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <div class="frame" data-age="32" data-zoom="1" data-dy="14"><img decoding="async" src="assets/img/age-32-buildingalife.jpg" alt="A woman running on a beach while holding someone's hand" loading="lazy"></div>
     <div class="frame" data-kb="0" data-age="36" data-zoom="0.7" data-dy="31"><img decoding="async" src="assets/img/age-36-family.jpg" alt="A mother laughing with her young son on the living room floor" loading="lazy"></div>
     <div class="frame" data-age="45" data-zoom="0.9" data-dy="14"><img decoding="async" src="assets/img/age-45-career.jpg" alt="A woman with a shoulder bag walking past a glass office building" loading="lazy"></div>
-    <div class="frame" data-age="52" data-zoom="0.75" data-dy="26"><img decoding="async" src="assets/img/age-58-enjoyinglife.jpg" alt="A couple relaxing in a pool at a tropical resort" loading="lazy"></div>
+    <div class="frame" data-age="52" data-zoom="0.67" data-dy="34"><img decoding="async" src="assets/img/age-58-enjoyinglife.jpg" alt="A couple relaxing in a pool at a tropical resort" loading="lazy"></div>
     <div class="frame" data-age="70" data-zoom="0.8" data-dy="22"><img decoding="async" src="assets/img/age-70-retirement.jpg" alt="A group of friends laughing together at an outdoor dinner table" loading="lazy"></div>
   </div>
 
