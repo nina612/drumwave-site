@@ -1527,14 +1527,28 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      ageTFromEvent reads a drag against, so its 24 a side is what holds age 0 at
      48 and age 70 at 327. The rail is just the line drawn through it, so it can
      be given back the 24 at each end and run 24..351 without moving a single
-     age. The cobalt fill is deliberately NOT extended: it starts where age 0
-     starts, and a fill that began before the scale did would be claiming
-     progress that has not happened.
+     age. The cobalt fill IS extended, at both ends, and not by the same means —
+     asked for, because neither stub should read as empty track.
+     The LEFT one is before age 0 rather than ahead of it: there is no unreached
+     time out there, so it is blue from the start. The fill gets the 24 back as
+     left:-24px plus 24 of PADDING, which the background paints and which the
+     inline width JS sets adds to rather than eats — box-sizing:content-box is
+     doing that and is NOT optional here, because the sheet sets border-box on
+     everything at line 20. Measured with it inherited: the fill stopped 24px
+     short of the dot at every age, which is the padding being eaten. At
+     t=0 that renders 24px of blue from the margin up to the dot, and at every
+     other t the fill's right edge still lands exactly on the dot.
+     The RIGHT one is the opposite case — it IS ahead, until the reader reaches
+     70 — so it stays grey and completes only when the age does. .is-max adds the
+     matching padding-right, off the same rounding the label uses, so the end
+     fills on the frame the number reads 70.
      The hit band gets the same 24 back, so a thumb landing on the line's plain
      ends still does something — ageTFromEvent clamps to 0..1, so they read as
      age 0 and age 70 rather than as dead strip. */
   .age-scene.pill-on-dot .track .rail,
   .age-scene.pill-on-dot .track::before{left:-24px;right:-24px}
+  .age-scene.pill-on-dot .track .fill{left:-24px;padding-left:24px;box-sizing:content-box}
+  .age-scene.pill-on-dot .track.is-max .fill{padding-right:24px}
   /* LESS CHUNKY, asked for. The block's pill is 14px type in 17.8 of inset on
      every side — deliberately, it was a standalone object in a column. Riding
      the dot it is a label on an instrument, so: 12px, and 5/10 of padding
@@ -1976,7 +1990,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 <section class="act age-scene" id="ages" aria-label="How your value grows as you age">
   <div class="frames" id="ageFrames">
     <div class="frame" data-age="0"><img decoding="async" src="assets/img/age-0-newborn.jpg" alt="A mother's hand gently touching her newborn baby lying in a crib"></div>
-    <div class="frame" data-age="3" data-zoom="1.22" data-dy="8"><img decoding="async" src="assets/img/age-2-toddler.jpg" alt="A toddler smiling while riding a pink tricycle on a sidewalk"></div>
+    <div class="frame" data-age="3" data-zoom="1.35" data-dy="12.5"><img decoding="async" src="assets/img/age-2-toddler.jpg" alt="A toddler smiling while riding a pink tricycle on a sidewalk"></div>
     <div class="frame" data-age="13"><img decoding="async" src="assets/img/age-13-teenageyears.jpg" alt="A teenage girl browsing lip gloss at a beauty store"></div>
     <div class="frame" data-age="18"><img decoding="async" src="assets/img/age-18-college.jpg" alt="A college student writing on a tablet with a stylus at her desk"></div>
     <div class="frame" data-age="23"><img decoding="async" src="assets/img/age-23-firstapartment.jpg" alt="A woman in a blue shirt carrying a large cardboard box down a stairwell"></div>
@@ -3889,6 +3903,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     ageFill.style.width = (t*100)+'%';
     ageHandle.style.left = (t*100)+'%';
     ageTrack.setAttribute('aria-valuenow', Math.round(age));
+    // ?pill=2's right-hand stub completes when the age does — see the .fill rules.
+    // Same rounding the label uses, so the two agree on screen.
+    ageTrack.classList.toggle('is-max', Math.round(age) >= AGE_MAX);
     // ?pill=2: put the pill over the dot, and keep it inside the track at the
     // ends. A tooltip that runs off its own rail is worse than one that stops,
     // so past the halfway point of its own width the PILL holds still and the
