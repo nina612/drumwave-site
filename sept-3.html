@@ -1256,12 +1256,25 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      Both units, in the .act order: svh is the right one and vh is what answers
      where svh is not understood. */
   #ages{height:115vh;height:115svh}
-  .age-scene .age-lower{left:24px;right:24px;bottom:36px}
-  /* No band to put it in here — the labels already sit on the frame's 36 — so
-     on the phone it is the last thing in the block, and choosing High lifts the
-     block by its height. That movement is the price of not permanently spending
-     photograph on a note that is usually not shown. */
-  .age-scene .age-note{font-size:12px;margin-top:14px}
+  /* 76 rather than the frame's 36, and the note is why — see below. */
+  .age-scene .age-lower{left:24px;right:24px;bottom:76px}
+  /* THE NOTE IS OUT OF THE BLOCK'S FLOW, so choosing High cannot move the block.
+     It used to be the last thing in it, and the block is anchored to the bottom,
+     so its 52px and its 14px of margin pushed the picker, the pill and the
+     figure up by 66 every time High was chosen. Written down at the time as the
+     price of not permanently spending photograph on a note usually not shown;
+     asked for now the other way round, which is the right way round - a control
+     that moves under the thumb that is reaching for it is worse than 40px of
+     photograph.
+     So it is absolute, and anchored to the SECTION's bottom edge rather than to
+     the block: -66 against the block's 76 puts its last line 10px off the
+     bottom, which is the "super close to the bottom edge" this asks for. It
+     grows UPWARD from there, so a wrap can never be clipped by the section.
+     The block then sits at 76 = 10 + the note's 52 + the same 14 of air it used
+     to have. That 40px is the whole permanent cost, paid at every tier, and it
+     buys a picker that never moves. */
+  .age-scene .age-note{position:absolute;left:0;right:0;bottom:-66px;
+    font-size:12px;margin:0}
   /* THE PICKER IS ITS OWN GROUPING — and this is the second attempt at it, so
      it is worth writing down why the first one did not take.
      I only moved the gap: 20 -> 32. But a group does not read from the size of
@@ -1313,7 +1326,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      4406:29779 draws 86 against "$403,020" — eight glyphs, the real worst case —
      so the cap is the frame's own number now and the vw term only takes over
      below about 386 of screen, where 86 would not fit. */
-  .age-scene .bignum{font-size:min(25.6vw - 13px, 86px);font-weight:300}
+  /* THE FIGURE'S BOX DOES NOT CHANGE WITH THE TIER, ONLY ITS GLYPHS.
+     High sets a smaller size below, because ten glyphs need one. line-height is
+     a RATIO, so a smaller size is also a shorter box - measured at 375, 83px
+     against 71.5px, an 11px difference - and in a block anchored to the bottom
+     of the section a shorter box lifts everything above it. That is half of the
+     jump between Medium and High; the note below is the other half.
+     So the line height is computed from the NON-high size and left alone by the
+     High rule. Both tiers get the same box and the smaller figure simply centres
+     in it, which is the one thing here that should move when the tier changes. */
+  .age-scene{--age-fig:min(25.6vw - 13px, 86px)}
+  .age-scene .bignum{font-size:var(--age-fig);font-weight:300;
+    line-height:calc(var(--age-fig) * .99)}
   /* ten glyphs in a column of 100vw - 48: (100vw-48)/4.32, with a margin */
   .age-scene.tier-high .bignum{font-size:min(22.8vw - 14px, 86px)}
   /* The age readout that used to sit up here, clear of the nav pill, is gone:
@@ -1568,6 +1592,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      label, which the width has taken over from. 65 above it, not 12vw (47 at
      390). */
   .closing-cta{margin-top:65px;padding:16px 24px;font-size:18px;width:min(88vw,378px)}
+}
+/* THE NOTE WRAPS TO A FOURTH LINE BELOW ABOUT 350 OF SCREEN, and the block's 76
+   is sized for three. Measured: 3 lines and 52px at 360 and everything above it,
+   4 lines and 70px at 320, where the extra 18 ate the 14 of air and overlapped
+   the decade labels by 4. Everything else about the arrangement holds, so this
+   only moves the two numbers that depend on the note's height: the block clears
+   70 + 14 instead of 52 + 14, and the note keeps its 10 off the bottom edge. */
+@media (max-width:349px){
+  .age-scene .age-lower{bottom:94px}
+  .age-scene .age-note{bottom:-84px}
 }
 /* The 440px rule that used to hide the rule/wordmark here is gone: it existed
    because the nav carried its full CTA down to that width and the label
