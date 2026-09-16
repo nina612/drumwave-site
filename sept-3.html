@@ -1344,6 +1344,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      phone is 104 rather than 81. The 88.5vw measure is the frame's 345 (23 left,
      22 right); as with the run's statements it only governs wrapping, and all
      three of these lines are far inside it. */
+  /* THE BLACK BEFORE THE QUESTION. Asked for: take out the black stretch
+     between this screen and the timeline.
+     Measured first, because the phrasing and the geometry point at different
+     things. The question is anchored 9.6vh off the section's bottom, so there is
+     only 78px between it and the timeline — what there is, is 570px of empty
+     black ABOVE it, which is most of a screen the reader travels through before
+     the question shows. On the wide build a pin covers that stretch and the copy
+     plays into it; on the phone there is no pin (see the matchMedia branch), so
+     it is just black.
+     62svh rather than the .act 100: the question keeps its 9.6vh off the bottom
+     and the black above it falls 570 -> 261. The section still holds the
+     question with air around it; it no longer holds most of a screen of nothing.
+     This cannot reach the timeline's crops. Every one of those is inside #ages,
+     measured against ITS box — .frames is inset:0 of .age-scene and #ages sets
+     its own 130svh — so nothing in the crop maths reads this section at all.
+     Verified either side of the change. */
+  #worth{height:62vh;height:62svh}
   #worth .worth{left:min(5.9vw,25px);bottom:9.6vh;width:min(88.5vw,381px)}
   /* Figma 3898:98612 — the phone break, three short lines instead of the
      desktop's two */
