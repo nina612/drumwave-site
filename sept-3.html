@@ -1199,6 +1199,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   #act1 .act-layer .frame[data-i="5"] img{object-position:77% 50%}  /* the lit charge port */
   #act1 .act-layer .frame[data-i="7"] img{object-position:62% 50%}  /* the mother and her son */
   /* the age track's photographs, cropped the same way and for the same reason */
+  /* THE TODDLER, and the Y in object-position here has never done anything.
+     The source is 1920x1079 landscape in a 397x1119 portrait box, so cover fills
+     it by HEIGHT — measured, 1594px of horizontal slack and 0 vertical. Only the
+     47% has ever been read.
+     Asked for: drop the face so the nav stops cutting it. A re-crop cannot do it
+     either — the child's hair already touches the top edge of the photograph, so
+     there is no headroom in the picture to reveal. The only lever is a zoom, and
+     it CANNOT live here: renderAge writes img.style.transform on every frame for
+     the ken-burns, and an inline style beats this rule. Tried it, and the only
+     thing that landed was the transform-origin, which re-anchored the ken-burns
+     to the top and made the crop worse. So the zoom and the drop are data-zoom
+     and data-dy on the frame, folded into that one transform. */
   #ages .frame[data-age="3"] img{object-position:47% 50%}   /* the toddler */
   #ages .frame[data-age="23"] img{object-position:32% 50%}  /* her, and the box */
   /* THE MOTHER, SHOWCASED — asked for, and it is a straight swap of one face
@@ -1508,6 +1520,21 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      the caret and the age all follow the new length without a number here. */
   .age-scene.pill-on-dot .track,
   .age-scene.pill-on-dot .ctl .ages{margin-inline:24px}
+  /* THE LINE REACHES THE MARGINS, THE TRAVEL DOES NOT — asked for: extend the
+     timeline to the margin, but leave age 0 where it is.
+     Those are two different things and only one of them is the track. The track
+     is the SCALE: its box is what renderAge maps 0..70 onto and what
+     ageTFromEvent reads a drag against, so its 24 a side is what holds age 0 at
+     48 and age 70 at 327. The rail is just the line drawn through it, so it can
+     be given back the 24 at each end and run 24..351 without moving a single
+     age. The cobalt fill is deliberately NOT extended: it starts where age 0
+     starts, and a fill that began before the scale did would be claiming
+     progress that has not happened.
+     The hit band gets the same 24 back, so a thumb landing on the line's plain
+     ends still does something — ageTFromEvent clamps to 0..1, so they read as
+     age 0 and age 70 rather than as dead strip. */
+  .age-scene.pill-on-dot .track .rail,
+  .age-scene.pill-on-dot .track::before{left:-24px;right:-24px}
   /* LESS CHUNKY, asked for. The block's pill is 14px type in 17.8 of inset on
      every side — deliberately, it was a standalone object in a column. Riding
      the dot it is a label on an instrument, so: 12px, and 5/10 of padding
@@ -1949,7 +1976,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 <section class="act age-scene" id="ages" aria-label="How your value grows as you age">
   <div class="frames" id="ageFrames">
     <div class="frame" data-age="0"><img decoding="async" src="assets/img/age-0-newborn.jpg" alt="A mother's hand gently touching her newborn baby lying in a crib"></div>
-    <div class="frame" data-age="3"><img decoding="async" src="assets/img/age-2-toddler.jpg" alt="A toddler smiling while riding a pink tricycle on a sidewalk"></div>
+    <div class="frame" data-age="3" data-zoom="1.22" data-dy="8"><img decoding="async" src="assets/img/age-2-toddler.jpg" alt="A toddler smiling while riding a pink tricycle on a sidewalk"></div>
     <div class="frame" data-age="13"><img decoding="async" src="assets/img/age-13-teenageyears.jpg" alt="A teenage girl browsing lip gloss at a beauty store"></div>
     <div class="frame" data-age="18"><img decoding="async" src="assets/img/age-18-college.jpg" alt="A college student writing on a tablet with a stylus at her desk"></div>
     <div class="frame" data-age="23"><img decoding="async" src="assets/img/age-23-firstapartment.jpg" alt="A woman in a blue shirt carrying a large cardboard box down a stairwell"></div>
@@ -3760,6 +3787,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   ];
   let ageTier = 0;
   const ageFrames = $$('#ageFrames .frame');
+  // Per-photograph crop rescue, read once. A frame can ask for a zoom and a
+  // downward shift when the phone's tall box crops it badly — see the toddler,
+  // whose face the nav was cutting. PHONE ONLY: the wide frame's box is a
+  // different shape and crops these pictures differently, so it keeps them as
+  // drawn. Cached rather than read per frame, because this runs on every frame
+  // of a drag.
+  const ageZoom = ageFrames.map(f => +(f.dataset.zoom || 1));
+  const ageDy   = ageFrames.map(f => +(f.dataset.dy   || 0));
+  const agePhoneMQ = window.matchMedia('(max-width:760px)');
+  let agePhone = agePhoneMQ.matches;
+  agePhoneMQ.addEventListener('change', e => { agePhone = e.matches; renderAge(ageCurrent); });
   const ageBigVal = $('#ageBigVal'), ageNumVal = $('#ageNumVal'), ageCapVal = $('#ageCapVal');
   const ageBadge = $('#ageBadge');
   const AGE_MIN = AGES[0], AGE_MAX = AGES[AGES.length-1];
@@ -3834,7 +3872,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       f.style.opacity = o;
       const img = f.firstElementChild;
       const local = i===si ? u : (i===si+1 ? 0 : 1);
-      img.style.transform = `scale(${1.06 - 0.06*local}) translateX(${(-1.5 + 3*local)}%)`;
+      // translate stays AFTER scale, as it always was, so the existing X drift is
+      // unchanged; a frame with no zoom and no dy produces the identical string.
+      const z = agePhone ? ageZoom[i] : 1, dy = agePhone ? ageDy[i] : 0;
+      img.style.transform =
+        `scale(${(1.06 - 0.06*local) * z}) translate(${(-1.5 + 3*local)}%, ${dy}%)`;
     });
     ageBigVal.textContent = '$' + ageValueAt(age).toLocaleString('en-US');
     const stage = (next && x > .5) ? AGE_DATA[si+1].label : AGE_DATA[si].label;
