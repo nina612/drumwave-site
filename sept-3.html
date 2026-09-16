@@ -1997,8 +1997,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
        is a plain horizontal row — the glyph is a stacked double up-chevron
        that one turn reads as pointing on toward what comes next, not the
        vertical column two stacked turns would suggest. -->
-  <button class="age-skip" id="ageSkip" type="button" aria-label="Skip to next section">
-    <span class="age-skip-label mono">Skip to next section</span>
+  <!-- The label names the destination rather than the act: this scrolls to
+       #solution, which IS "Introducing the Data Savings Plan", so the control now
+       says what the reader gets instead of what it does to the page.
+       aria-label changes with it. A visible label and an accessible name that
+       disagree break WCAG 2.5.3 (Label in Name) and, more practically, leave
+       anyone using voice control saying words that are not on the screen. -->
+  <button class="age-skip" id="ageSkip" type="button" aria-label="Learn about data savings">
+    <span class="age-skip-label mono">Learn about data savings</span>
     <img class="age-skip-arrow" src="assets/img/sept3-icon-skip-arrow.svg" alt="" width="7" height="8">
   </button>
 
