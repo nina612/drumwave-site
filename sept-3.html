@@ -1244,13 +1244,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      the ken-burns alone walks it 34px between 1.06 and 1.00 — so the edges would
      not line up while a frame was easing. Anchored at the top, a scale grows
      downward and the edge cannot move. */
-  .age-scene .frame img{transform-origin:50% 0%;width:130%;margin-left:-15%}
+  .age-scene .frame img{transform-origin:50% 0%;width:150%;margin-left:-25%}
   /* THE 4% OF OVERSCAN IS NOT DECORATION. The ken-burns drifts the picture
      sideways, -1.5% to +1.5%, and at 375 that is 5.6px — so a settled frame sat
      6px right of its box with a 6px strip of nothing down its left edge. It was
      invisible for as long as another photograph was showing through underneath;
      painting the frames opaque turned it into a black sliver on seven of the ten.
-     130% wide pulled back 15% covers the whole ±1.5% of travel with margin — and
+     150% wide pulled back 25% covers the whole ±1.5% of travel with margin — and
      the extra over the 104 it started at is what makes ZOOMING OUT possible at
      all. A picture may not shrink below the width of the screen without opening
      bars, so the element's own width is the floor: at 104% nothing could go
@@ -1309,9 +1309,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      x 1090, and a 50% strip ends at 1120, cutting her nose and mouth off the
      edge. 58% centres the strip on her face: (1090 - 160) / (1920 - 321). */
   #ages .frame[data-age="32"] img{object-position:58% 50%}
-  #ages .frame[data-age="36"] img{object-position:42% 50%}
+  /* 42% centred her alone. The child sits at about natural x 1500 against her
+     face at 850, so the pair spans ~650 of the 1920 — and the phone's strip only
+     reaches that at zoom 0.70. 67% puts the strip at 852..1500, which is the two
+     of them edge to edge with nothing to spare. */
+  #ages .frame[data-age="36"] img{object-position:67% 50%}
   #ages .frame[data-age="45"] img{object-position:27% 50%}  /* her, not the building */
-  #ages .frame[data-age="52"] img{object-position:92% 50%}  /* her face whole, clear of the edge */
+  /* 92% held her alone at the right edge. He is at about natural x 1100 and she
+     at 1570, so 76% centres the strip on the pair instead. */
+  #ages .frame[data-age="52"] img{object-position:76% 50%}
   /* The newborn and the family frame are the two asked to sit wider. They
      cannot: cover fits the height of a 4:3 photograph on a portrait screen
      exactly, so there is no slack to give back and anything wider letterboxes.
@@ -2106,9 +2112,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <div class="frame" data-age="18" data-zoom="0.9" data-dy="14"><img decoding="async" src="assets/img/age-18-college.jpg" alt="A college student writing on a tablet with a stylus at her desk"></div>
     <div class="frame" data-age="23" data-zoom="1" data-dy="14"><img decoding="async" src="assets/img/age-23-firstapartment.jpg" alt="A woman in a blue shirt carrying a large cardboard box down a stairwell"></div>
     <div class="frame" data-age="32" data-zoom="1" data-dy="14"><img decoding="async" src="assets/img/age-32-buildingalife.jpg" alt="A woman running on a beach while holding someone's hand" loading="lazy"></div>
-    <div class="frame" data-kb="0" data-age="36" data-zoom="0.85" data-dy="17"><img decoding="async" src="assets/img/age-36-family.jpg" alt="A mother laughing with her young son on the living room floor" loading="lazy"></div>
+    <div class="frame" data-kb="0" data-age="36" data-zoom="0.7" data-dy="31"><img decoding="async" src="assets/img/age-36-family.jpg" alt="A mother laughing with her young son on the living room floor" loading="lazy"></div>
     <div class="frame" data-age="45" data-zoom="0.9" data-dy="14"><img decoding="async" src="assets/img/age-45-career.jpg" alt="A woman with a shoulder bag walking past a glass office building" loading="lazy"></div>
-    <div class="frame" data-age="52" data-zoom="0.85" data-dy="17"><img decoding="async" src="assets/img/age-58-enjoyinglife.jpg" alt="A couple relaxing in a pool at a tropical resort" loading="lazy"></div>
+    <div class="frame" data-age="52" data-zoom="0.75" data-dy="26"><img decoding="async" src="assets/img/age-58-enjoyinglife.jpg" alt="A couple relaxing in a pool at a tropical resort" loading="lazy"></div>
     <div class="frame" data-age="70" data-zoom="0.8" data-dy="22"><img decoding="async" src="assets/img/age-70-retirement.jpg" alt="A group of friends laughing together at an outdoor dinner table" loading="lazy"></div>
   </div>
 
