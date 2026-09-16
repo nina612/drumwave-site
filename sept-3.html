@@ -1205,13 +1205,33 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      47% has ever been read.
      Asked for: drop the face so the nav stops cutting it. A re-crop cannot do it
      either — the child's hair already touches the top edge of the photograph, so
-     there is no headroom in the picture to reveal. The only lever is a zoom, and
-     it CANNOT live here: renderAge writes img.style.transform on every frame for
-     the ken-burns, and an inline style beats this rule. Tried it, and the only
-     thing that landed was the transform-origin, which re-anchored the ken-burns
-     to the top and made the crop worse. So the zoom and the drop are data-zoom
-     and data-dy on the frame, folded into that one transform. */
-  #ages .frame[data-age="3"] img{object-position:47% 50%}   /* the toddler */
+     there is no headroom in the picture to reveal.
+
+     THE FADE IS WHAT LETS THE ZOOM GO AWAY, and it is the better answer by a
+     distance. The drop used to be capped by the zoom: moving the picture down
+     opens a gap above it, so the gap had to be covered by magnifying the picture
+     until it overflowed, which is how this reached 1.35 — a tight crop, and a
+     rasterisation cost, to hide an edge. Fade that edge into the background
+     instead and the cap disappears: the picture drops as far as it likes and the
+     top fourteen per cent goes to transparent, over black, so there is no edge
+     to hide. So the zoom is back to 1 — the ken-burns' own 1.06 -> 1.00 and
+     nothing on top — and the drop is 17%, which is far more than the 1.35 could
+     ever have bought: 9% still left her eyes behind the nav, and with the cap
+     gone there was nothing stopping it going further.
+
+     The gap only ever shows on the way IN, while the section's top is on screen;
+     at the reading position it sits above the viewport. The mask is on the IMG,
+     so it travels with the transform and stays over her head wherever the
+     picture is.
+
+     The drop itself still has to go through data-dy rather than CSS, because
+     renderAge writes img.style.transform every frame for the ken-burns and an
+     inline style beats this rule — measured, the only thing a CSS transform here
+     landed was its transform-origin, which re-anchored the ken-burns and made
+     the crop worse. */
+  #ages .frame[data-age="3"] img{object-position:47% 50%;
+    -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 14%);
+            mask-image:linear-gradient(to bottom,transparent 0,#000 14%)}
   #ages .frame[data-age="23"] img{object-position:32% 50%}  /* her, and the box */
   /* THE MOTHER, SHOWCASED — asked for, and it is a straight swap of one face
      for the other rather than a compromise, because the geometry does not allow
@@ -1990,7 +2010,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 <section class="act age-scene" id="ages" aria-label="How your value grows as you age">
   <div class="frames" id="ageFrames">
     <div class="frame" data-age="0"><img decoding="async" src="assets/img/age-0-newborn.jpg" alt="A mother's hand gently touching her newborn baby lying in a crib"></div>
-    <div class="frame" data-age="3" data-zoom="1.35" data-dy="12.5"><img decoding="async" src="assets/img/age-2-toddler.jpg" alt="A toddler smiling while riding a pink tricycle on a sidewalk"></div>
+    <div class="frame" data-age="3" data-zoom="1" data-dy="17"><img decoding="async" src="assets/img/age-2-toddler.jpg" alt="A toddler smiling while riding a pink tricycle on a sidewalk"></div>
     <div class="frame" data-age="13"><img decoding="async" src="assets/img/age-13-teenageyears.jpg" alt="A teenage girl browsing lip gloss at a beauty store"></div>
     <div class="frame" data-age="18"><img decoding="async" src="assets/img/age-18-college.jpg" alt="A college student writing on a tablet with a stylus at her desk"></div>
     <div class="frame" data-age="23"><img decoding="async" src="assets/img/age-23-firstapartment.jpg" alt="A woman in a blue shirt carrying a large cardboard box down a stairwell"></div>
