@@ -582,10 +582,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    The phone is untouched by all of this: every rule here is inside min-width
    761, and the 760 block that follows is unchanged. */
 @media (min-width:761px){
-  .age-scene{--age-gut:min(6.15vw,118px);--age-blue:#0060FF}
+  /* --age-block-bottom is how far the instrument sits off the bottom of the
+     screen, and it is a VARIABLE because two things are measured from it: the
+     block itself, and the note that hangs BELOW the block (see .age-note). Those
+     two have to move together — raising the block alone just carries the note up
+     with it and changes nothing between them, which is exactly the wrong turn
+     the first attempt at the 1024 overlap took. */
+  .age-scene{--age-gut:min(6.15vw,118px);--age-blue:#0060FF;
+    --age-block-bottom:clamp(64px,11.57vh,125px)}
 
   .age-scene .age-lower{left:var(--age-gut);right:var(--age-gut);
-    bottom:clamp(64px,11.57vh,125px)}
+    bottom:var(--age-block-bottom)}
   /* HIGH IS TWO GLYPHS LONGER THAN EVERY OTHER SCENARIO, and that is a size
      question, not a rounding one. Low tops out at $209,763 and Medium at
      $306,392 — eight glyphs, which is what every figure measurement on this
@@ -716,7 +723,41 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      Full width so it sets as one line wherever there is room for one; it wraps
      to two on a narrow window, which the band still takes. */
   .age-scene .age-note{position:absolute;left:0;right:0;font-size:13px;
-    bottom:calc(-1 * (clamp(64px,11.57vh,125px) - clamp(20px,3.9vh,42px) - 26px))}
+    bottom:calc(-1 * (var(--age-block-bottom) - clamp(20px,3.9vh,42px) - 26px))}
+}
+
+/* THE BAND IS SIZED FOR A ONE-LINE NOTE, AND BELOW 1076 OF WIDTH IT IS NEVER
+   ONE LINE. Reported as the High disclaimer being messed up on desktop, and it
+   is: measured at 1024x768 it wraps to two lines and runs 5px INTO the decade
+   labels above it.
+
+   The two numbers that meet here:
+     the note wants 944px of ink on one line at 13px, and the block is only that
+     wide at a 1076px viewport, so under that it is always two lines - 37.7px
+     rather than 19;
+     the band it lives in is the block's bottom less the skip's, which works out
+     at 7.67vh + 7 — 61 at a 700 screen, 66 at 768, 76 at 900, 90 at 1080.
+   Two lines plus the skip's own 21 and workable gaps needs about 81, so the
+   band only holds it above roughly a 965px-tall window. Every window narrower
+   than 1076 and shorter than that is the reported bug.
+
+   Note what does NOT fix it: making the page longer. This section is PINNED on
+   desktop — its 4600px is scroll distance, and the layout is one viewport tall
+   however far the reader travels. The crowding is between the ruler and the
+   bottom edge of the screen, so the only thing that can pay for it is the
+   instrument sitting higher.
+
+   So in that width range --age-block-bottom becomes whatever the note actually
+   needs: the skip's own offset, plus 26 of clearance to it, plus the note's two
+   lines, plus 12 above them = 76 + the skip's clamp. Raising the VARIABLE is
+   what makes this work rather than raising .age-lower — the note hangs off the
+   same number, so the block goes up and the note follows it down by the same
+   amount, opening the gap to the labels and leaving the note's own 12 to the
+   skip untouched. max() with the original, so a tall narrow window keeps the
+   125 it already had rather than being moved down to meet this. */
+@media (min-width:761px) and (max-width:1075px){
+  .age-scene{
+    --age-block-bottom:max(clamp(64px,11.57vh,125px), calc(76px + clamp(20px,3.9vh,42px)))}
 }
 
 /* The figure is the one thing here whose width is its content's. "$734,170" —
