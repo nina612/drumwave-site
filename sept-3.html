@@ -1239,6 +1239,34 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      An opaque frame ends it. Each presents a full-height surface of the page's
      own black, so what sits above a picture is the section's colour rather than
      another photograph. */
+  /* The photographs cover the VIEWPORT, not the section.
+
+     #ages is 130svh, but that extra 30 is scroll travel — only one screenful
+     of it is ever in front of the reader at a time. Sizing the pictures to the
+     whole 130 therefore bought nothing and cost a great deal: these are wide
+     landscape frames, so cover fills them by HEIGHT, and a box 1.3 screens tall
+     magnifies them until the 375 on screen is a 370px slice of a 1920px
+     photograph — 19% of its width. Both people in the pool simply do not fit
+     in a window that narrow, at any object-position.
+
+     Sticking the stack to the top of the viewport at exactly one screen tall
+     drops the scale from 1.014 to 0.78 and opens the window to 481px, which is
+     what the pool crop needs. The picture still covers the screen at every
+     scroll position inside the section, so there is no band and no change in
+     height — the frames simply stop being taller than anyone can see.
+
+     Same shape as #solution above, and for the same reason: .act sets
+     overflow:hidden, an overflow:hidden ancestor IS a scroll container, and a
+     sticky child sticks to ITS scrollport — which never scrolls, so sticky
+     silently does nothing. Measured before this was moved: the box's top went
+     0, -120, -240, -300, -380, scrolling away with the section. So the section
+     goes overflow:visible and the clipping moves onto the sticky box, which is
+     also the box that needs it — the pictures are drawn 150% wide to hide the
+     ken-burns drift and it is that overflow being cut. And `inset:auto` comes
+     BEFORE `top:0`: it is the shorthand, so written second it resets the top. */
+  #ages{overflow:visible}
+  .age-scene .frames{position:sticky;inset:auto;top:0;
+    height:100vh;height:100svh;overflow:hidden}
   .age-scene .frame{background:#070707}
   /* ONE EDGE FOR EVERY PHOTOGRAPH. Scaling about the centre moves the top edge —
      the ken-burns alone walks it 34px between 1.06 and 1.00 — so the edges would
