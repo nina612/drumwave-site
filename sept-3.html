@@ -1289,8 +1289,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      photograph a stretch of its own first, which is the thing a 100svh section
      cannot do.
      Both units, in the .act order: svh is the right one and vh is what answers
-     where svh is not understood. */
-  #ages{height:115vh;height:115svh}
+     where svh is not understood.
+
+     130, up from 115, asked for on the High scenario where the disclaimer is
+     shown. Worth being exact about what this does and does not do, because the
+     block is anchored to the section's BOTTOM: the section's bottom comes to
+     rest on the viewport's bottom, so the block's position on screen is the
+     same at any section height. This buys photograph BEFORE the block arrives,
+     not room inside it. Measured at 375x667 with High, which is the tightest
+     phone this has: the block runs 237..591 and the note 605..657 against a
+     667 screen, so nothing was actually clipped — it clears the section's
+     bottom edge by 10 — but only 145px of photograph is left above the block
+     once the nav's 92 is taken off, and that is the crowding. 130svh gives the
+     photograph 30% of a screen to itself on the way in rather than 15%. */
+  #ages{height:130vh;height:130svh}
   /* 76 rather than the frame's 36, and the note is why — see below. */
   .age-scene .age-lower{left:24px;right:24px;bottom:76px}
   /* THE NOTE IS OUT OF THE BLOCK'S FLOW, so choosing High cannot move the block.
@@ -1456,14 +1468,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      moved both down together and left the pill sitting on the caption exactly
      as before. The track is what the pill is positioned against, so the track
      is what has to come down.
-     52, and measured rather than reasoned: the caption sits hard against the
+     70, and measured rather than reasoned: the caption sits hard against the
      track by default — 0px between them — so the margin has to carry the whole
      of the pill, not the difference. 13 of offset + 26 of pill = 39 above the
-     rail, and 13 of air over the caption. 34 was the first guess and left an
-     8px overlap; this is that measurement plus the clearance.
-     Net cost to the block is 20px: the 52 less the 32 that hiding .age-badge
+     rail; 34 was the first guess and left an 8px overlap, 52 cleared it by 13.
+     70 is that plus the air asked for after seeing it — 31 over the caption
+     rather than 13, which is what "move the timeline down a bit so the text
+     does not feel cramped" wants, since in a bottom-anchored block the way to
+     move the ruler down THE TEXT is to open the gap above it.
+     Net cost to the block is 38px: the 70 less the 32 that hiding .age-badge
      above gave back (24 of type, 8 of margin). */
-  .age-scene.pill-on-dot .track{margin-top:52px}
+  .age-scene.pill-on-dot .track{margin-top:70px}
   /* THE SCRIM MOVED UP WITH THE COPY. 4406:29779 runs its wash from 405 of 844
      — a hair under halfway — to the bottom, holding at half black rather than
      the .7 the old one closed on. It has to: the picker's caption now starts at
@@ -3760,10 +3775,26 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       if(txt !== agePinTxt){ agePin.textContent = txt; agePinTxt = txt; agePinW = agePin.offsetWidth; }
       const w = ageTrack.clientWidth;
       if(w && agePinW){
+        // TWO NUMBERS, AND THEY ARE THE SAME NUMBER ON PURPOSE.
+        //
+        // CORNER is where the pill stops being flat: its radius resolves to half
+        // its height, 13, plus the caret's own 5 of half-width. A caret asked to
+        // sit further out than that rides the curve and stops looking attached,
+        // which is what "the caret is not aligned with the pill" was — at age 0
+        // it wanted 28 of offset on a pill with only 10 of flat to give.
+        //
+        // OVER is how far the pill may hang past the end of the track. The phone
+        // gutter is 24, so 18 still leaves 6px of screen beside it. Setting it
+        // equal to CORNER is what makes the two agree: the furthest the caret
+        // ever has to travel is then exactly the flat it has, so it points at the
+        // dot at every age INCLUDING both ends, and never touches the curve.
+        const OVER = 18, CORNER = 18;
         const half = agePinW / 2, dotX = t * w;
-        const cx = Math.min(Math.max(dotX, half), w - half);
+        const cx = Math.min(Math.max(dotX, half - OVER), w - half + OVER);
+        const lim = Math.max(0, half - CORNER);
+        const caret = Math.min(Math.max(dotX - cx, -lim), lim);
         agePin.style.left = cx.toFixed(1) + 'px';
-        agePin.style.setProperty('--caret', (dotX - cx).toFixed(1) + 'px');
+        agePin.style.setProperty('--caret', caret.toFixed(1) + 'px');
       }
     }
     ageTicks.forEach((tk,i)=> tk.classList.toggle('hit', AGE_MIN + i/(ageTicks.length-1)*(AGE_MAX-AGE_MIN) <= Math.round(age) && t > 0));
