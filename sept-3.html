@@ -1255,18 +1255,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      scroll position inside the section, so there is no band and no change in
      height — the frames simply stop being taller than anyone can see.
 
-     Same shape as #solution above, and for the same reason: .act sets
-     overflow:hidden, an overflow:hidden ancestor IS a scroll container, and a
-     sticky child sticks to ITS scrollport — which never scrolls, so sticky
-     silently does nothing. Measured before this was moved: the box's top went
-     0, -120, -240, -300, -380, scrolling away with the section. So the section
-     goes overflow:visible and the clipping moves onto the sticky box, which is
-     also the box that needs it — the pictures are drawn 150% wide to hide the
-     ken-burns drift and it is that overflow being cut. And `inset:auto` comes
-     BEFORE `top:0`: it is the shorthand, so written second it resets the top. */
-  #ages{overflow:visible}
-  .age-scene .frames{position:sticky;inset:auto;top:0;
-    height:100vh;height:100svh;overflow:hidden}
+     Done by shortening the SECTION rather than by sticking the pictures inside
+     it, and the difference is the whole point. Sticky was the first attempt and
+     it did widen the crop correctly, but it pinned the photographs to the
+     viewport while the picker, the figure and the slider — which are anchored
+     to the section's BOTTOM — went on scrolling over them. The scene used to
+     move as one thing; that turned it into two sliding against each other.
+     A section exactly one screen tall has no travel for anything to slide
+     through, so the pictures are back to plain inset:0 of a box that is simply
+     the right size, and the whole scene holds still together. The height itself
+     is declared once, further down where its reasoning already lives. */
   .age-scene .frame{background:#070707}
   /* ONE EDGE FOR EVERY PHOTOGRAPH. Scaling about the centre moves the top edge —
      the ken-burns alone walks it 34px between 1.06 and 1.00 — so the edges would
@@ -1513,8 +1511,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      667 screen, so nothing was actually clipped — it clears the section's
      bottom edge by 10 — but only 145px of photograph is left above the block
      once the nav's 92 is taken off, and that is the crowding. 130svh gives the
-     photograph 30% of a screen to itself on the way in rather than 15%. */
-  #ages{height:130vh;height:130svh}
+     photograph 30% of a screen to itself on the way in rather than 15%.
+
+     BACK TO 100, and what that costs is worth stating plainly, because the 130
+     was asked for. The section's height sets the photographs' crop: they are
+     wide landscape frames, cover fills them by HEIGHT, and the box is as tall
+     as the section — so 130svh magnified them to a 370px slice of a 1920px
+     photograph and 100svh opens that to 481px, which is what it takes to hold
+     both people in the pool. The two cannot both be had: a picture that always
+     fills the screen without sliding against the block must be at least as tall
+     as the section, so the crop is whatever the section's height makes it.
+     What is lost is only the pre-roll — the photograph's 30% of a screen on the
+     way IN. The composition at rest is untouched, and the note above says why:
+     the block is anchored to the section's bottom, the section's bottom comes
+     to rest on the viewport's bottom, so the block lands in the same place on
+     screen at any section height. The crowding that 130 was answering is the
+     same as it was, and a crop showing 30% more of each scene answers it from
+     the other side. */
+  #ages{height:100vh;height:100svh}
   /* 76 rather than the frame's 36, and the note is why — see below. */
   .age-scene .age-lower{left:24px;right:24px;bottom:76px}
   /* THE NOTE IS OUT OF THE BLOCK'S FLOW, so choosing High cannot move the block.
