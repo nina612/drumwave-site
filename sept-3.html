@@ -1230,11 +1230,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      landed was its transform-origin, which re-anchored the ken-burns and made
      the crop worse. */
   #ages .frame[data-age="3"] img{object-position:47% 50%}
-  /* Keyed off the attribute rather than the age, so a frame that asks for a drop
-     gets the fade that pays for it and there is no second place to forget. */
-  #ages .frame[data-dy] img{
-    -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 14%);
-            mask-image:linear-gradient(to bottom,transparent 0,#000 14%)}
+  /* THE FADE IS GONE, the positions stay. Asked for, and the reason it had to go
+     is that it was not only covering the gap above each picture: 14% of the box
+     is 157px, the pictures start around 185..250 into it, and the reading
+     position shows the box from about 244 — so the ramp ran on into the visible
+     photograph and darkened its top hundred pixels. That read as a dark gradient
+     over every screen, which is what it was.
+     What it was covering is now an uncovered edge, above the fold at the reading
+     position and visible on the way in. If that edge reads badly, the fade comes
+     back SHORTER — long enough to soften the edge, short enough to finish before
+     the photograph is on screen — rather than at 14%. */
   #ages .frame[data-age="23"] img{object-position:32% 50%}  /* her, and the box */
   /* THE MOTHER, SHOWCASED — asked for, and it is a straight swap of one face
      for the other rather than a compromise, because the geometry does not allow
