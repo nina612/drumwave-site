@@ -3936,6 +3936,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   // every rule it turns on is scoped under it; nothing here changes the page
   // that loads without it.
   const AGE_PILL_V2 = /(?:^|[?&#])pill=2(?:[&#]|$)/.test(location.search + location.hash);
+  // ?band=0 — a version with no black above the photographs. The drop is what
+  // makes that band, so this simply refuses the drop and the zoom that goes with
+  // it: every picture fills its box from the section's top edge, exactly as it
+  // did before any of the crop work. It has to take the zoom too, because a
+  // zoom under 1 only had room to shrink while the drop was pushing the picture
+  // down — with dy at 0 the same 0.9 would leave 106px of nothing at the bottom.
+  // Nothing is scoped in CSS: both numbers are read here, so the default build
+  // is untouched by this existing.
+  const AGE_NO_BAND = /(?:^|[?&#])band=0(?:[&#]|$)/.test(location.search + location.hash);
   const agePin = $('#agePin');
   if(AGE_PILL_V2) document.querySelector('.age-scene').classList.add('pill-on-dot');
   // The pill's own width, re-read only when the text it holds changes — which is
@@ -4002,7 +4011,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       const local = i===si ? u : (i===si+1 ? 0 : 1);
       // translate stays AFTER scale, as it always was, so the existing X drift is
       // unchanged; a frame with no zoom and no dy produces the identical string.
-      const z = agePhone ? ageZoom[i] : 1, dy = agePhone ? ageDy[i] : 0;
+      const z  = agePhone ? (AGE_NO_BAND ? 1 : ageZoom[i]) : 1;
+      const dy = agePhone ? (AGE_NO_BAND ? 0 : ageDy[i])   : 0;
       // data-kb is a PHONE instruction, like the zoom and the drop beside it: the
       // rule it replaced lived in the 760 block, so the wide layout has always
       // had the ken-burns on these two frames and still does.
