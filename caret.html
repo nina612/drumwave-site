@@ -1,0 +1,48 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dWallet — age pill on the dot</title>
+<!-- A STUB, NOT A COPY. sept-3.html is not touched by this file existing, and
+     nothing here changes what the plain link serves: the version is the same
+     ?pill=2 that is already live, chosen HERE by script rather than carried in
+     the link. Same reasoning as v1/v2 next door — a query string is the one part
+     of a URL that does not reliably survive the trip to a phone, because a chat
+     or notes app can strip it and Safari caches per-URL, and both failures look
+     identical from the outside since the two versions render from one file.
+     The timestamp defeats the cache.
+
+     AND IT IS A PHONE VERSION. Everything the pill does is inside the 760px
+     block, so opening this on a laptop shows the ordinary desktop timeline and
+     looks like the link did nothing. Rather than let that read as a bug, a wide
+     screen is told what it is looking at and can still go on if it wants. -->
+<meta name="robots" content="noindex">
+<style>
+ html{background:#070707;color:#8A8A86;
+   font:14px/1.5 'Open Sans',-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+ body{margin:0;display:flex;align-items:center;justify-content:center;
+   min-height:100vh;min-height:100svh;padding:24px;box-sizing:border-box}
+ .card{max-width:340px;text-align:center}
+ h1{margin:0 0 10px;font-size:17px;font-weight:600;color:#fff;letter-spacing:-.01em}
+ p{margin:0 0 20px}
+ a{display:inline-block;color:#fff;text-decoration:none;font-weight:600;font-size:13px;
+   letter-spacing:.08em;text-transform:uppercase;
+   padding:11px 18px;border:1px solid rgba(237,240,242,.25);border-radius:100px}
+ a:hover{border-color:rgba(237,240,242,.5)}
+ .wait{color:#8A8A86}
+</style>
+</head><body>
+<div class="card" id="card"><p class="wait">Loading&hellip;</p></div>
+<script>
+  var url = 'sept-3.html?pill=2&cb=' + Date.now();
+  if (window.matchMedia('(max-width:760px)').matches) {
+    location.replace(url);
+  } else {
+    document.getElementById('card').innerHTML =
+      '<h1>This one is for a phone</h1>' +
+      '<p>The age pill rides the timeline dot on phone widths only — on a ' +
+      'desktop the timeline is unchanged, so this link will look like it did ' +
+      'nothing. Open it on a phone, or narrow this window under 760px.</p>' +
+      '<a href="' + url + '">Open it anyway</a>';
+  }
+</script>
+<noscript><a href="sept-3.html?pill=2">Continue</a></noscript>
+</body></html>
