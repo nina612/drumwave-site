@@ -1267,11 +1267,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      fraction f of the photograph moves f*N.
      Downward, not upward. Extending the top would fill the band too, but it moves
      content the wrong way: -N + f(H+N) is UP for any f under 1.
-     300 against a 1056 box, so 1.28. The cost is that magnification, and it is
-     the same cost the old zoom had — the difference is that this one buys a
-     clean edge as well as the movement. The section clips the overflow (.act is
-     overflow:hidden), so nothing below the fold changes. */
-  .age-scene .frames{bottom:-300px}
+     THE BOX IS BACK TO THE SECTION'S OWN HEIGHT. Asked for: bring the black
+     block back, because it helped the images — and it does, measurably. The
+     taller box did the drop's job by MAGNIFYING every frame 1.28x, and
+     magnification is exactly what was making these photographs soft: they only
+     carry 300-500 real pixels across the screen as it is. A drop costs nothing
+     of that. So the movement goes back to a drop and the band above it comes
+     back with it.
+     The band is not a seam now the way it was before. .frame paints #070707,
+     which is the page's own colour and #worth's above it, so the band reads as
+     one continuous black running out of the question and into the timeline
+     rather than as a strip belonging to the photograph. */
   /* THE FADE IS GONE, the positions stay. Asked for, and the reason it had to go
      is that it was not only covering the gap above each picture: 14% of the box
      is 157px, the pictures start around 185..250 into it, and the reading
@@ -2088,16 +2094,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 <!-- ACT 4 : AGE TRACK -->
 <section class="act age-scene" id="ages" aria-label="How your value grows as you age">
   <div class="frames" id="ageFrames">
-    <div class="frame" data-kb="0" data-age="0" data-zoom="1" data-dy="-9"><img decoding="async" src="assets/img/age-0-newborn.jpg" alt="A mother's hand gently touching her newborn baby lying in a crib"></div>
-    <div class="frame" data-age="3" data-zoom="1.12" data-dy="0"><img decoding="async" src="assets/img/age-2-toddler.jpg" alt="A toddler smiling while riding a pink tricycle on a sidewalk"></div>
-    <div class="frame" data-age="13" data-zoom="1" data-dy="0"><img decoding="async" src="assets/img/age-13-teenageyears.jpg" alt="A teenage girl browsing lip gloss at a beauty store"></div>
-    <div class="frame" data-age="18" data-zoom="1" data-dy="0"><img decoding="async" src="assets/img/age-18-college.jpg" alt="A college student writing on a tablet with a stylus at her desk"></div>
-    <div class="frame" data-age="23" data-zoom="1" data-dy="0"><img decoding="async" src="assets/img/age-23-firstapartment.jpg" alt="A woman in a blue shirt carrying a large cardboard box down a stairwell"></div>
-    <div class="frame" data-age="32" data-zoom="1" data-dy="0"><img decoding="async" src="assets/img/age-32-buildingalife.jpg" alt="A woman running on a beach while holding someone's hand" loading="lazy"></div>
-    <div class="frame" data-kb="0" data-age="36" data-zoom="1" data-dy="0"><img decoding="async" src="assets/img/age-36-family.jpg" alt="A mother laughing with her young son on the living room floor" loading="lazy"></div>
-    <div class="frame" data-age="45" data-zoom="1" data-dy="0"><img decoding="async" src="assets/img/age-45-career.jpg" alt="A woman with a shoulder bag walking past a glass office building" loading="lazy"></div>
-    <div class="frame" data-age="52" data-zoom="1" data-dy="0"><img decoding="async" src="assets/img/age-58-enjoyinglife.jpg" alt="A couple relaxing in a pool at a tropical resort" loading="lazy"></div>
-    <div class="frame" data-age="70" data-zoom="1" data-dy="0"><img decoding="async" src="assets/img/age-70-retirement.jpg" alt="A group of friends laughing together at an outdoor dinner table" loading="lazy"></div>
+    <div class="frame" data-kb="0" data-age="0" data-zoom="1" data-dy="5"><img decoding="async" src="assets/img/age-0-newborn.jpg" alt="A mother's hand gently touching her newborn baby lying in a crib"></div>
+    <div class="frame" data-age="3" data-zoom="1.12" data-dy="14"><img decoding="async" src="assets/img/age-2-toddler.jpg" alt="A toddler smiling while riding a pink tricycle on a sidewalk"></div>
+    <div class="frame" data-age="13" data-zoom="1" data-dy="14"><img decoding="async" src="assets/img/age-13-teenageyears.jpg" alt="A teenage girl browsing lip gloss at a beauty store"></div>
+    <div class="frame" data-age="18" data-zoom="1" data-dy="14"><img decoding="async" src="assets/img/age-18-college.jpg" alt="A college student writing on a tablet with a stylus at her desk"></div>
+    <div class="frame" data-age="23" data-zoom="1" data-dy="14"><img decoding="async" src="assets/img/age-23-firstapartment.jpg" alt="A woman in a blue shirt carrying a large cardboard box down a stairwell"></div>
+    <div class="frame" data-age="32" data-zoom="1" data-dy="14"><img decoding="async" src="assets/img/age-32-buildingalife.jpg" alt="A woman running on a beach while holding someone's hand" loading="lazy"></div>
+    <div class="frame" data-kb="0" data-age="36" data-zoom="1" data-dy="14"><img decoding="async" src="assets/img/age-36-family.jpg" alt="A mother laughing with her young son on the living room floor" loading="lazy"></div>
+    <div class="frame" data-age="45" data-zoom="1" data-dy="14"><img decoding="async" src="assets/img/age-45-career.jpg" alt="A woman with a shoulder bag walking past a glass office building" loading="lazy"></div>
+    <div class="frame" data-age="52" data-zoom="1" data-dy="14"><img decoding="async" src="assets/img/age-58-enjoyinglife.jpg" alt="A couple relaxing in a pool at a tropical resort" loading="lazy"></div>
+    <div class="frame" data-age="70" data-zoom="1" data-dy="14"><img decoding="async" src="assets/img/age-70-retirement.jpg" alt="A group of friends laughing together at an outdoor dinner table" loading="lazy"></div>
   </div>
 
   <!-- The top-right age readout is the PHONE's now. On the wide frame the age
