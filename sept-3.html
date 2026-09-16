@@ -1500,13 +1500,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .age-scene.pill-on-dot .age-badge{display:none}
   /* THE RULER RUNS SHORTER — asked for. The labels are inset with it, because
      .ctl .ages is a space-between row across the block and "0" and "70" are only
-     meaningful sitting under the rail's own ends. 30 a side takes the track from
-     327 to 267 at a 375 screen — 18 first, then this.
+     meaningful sitting under the rail's own ends. 24 a side takes the track from
+     327 to 279 at a 375 screen. It went 18, then 30, then back to here — 30 was
+     a step too far and this splits them.
      The pill does not need telling: it is positioned inside .track in track
      coordinates, and renderAge reads the track's box every frame, so the dot,
      the caret and the age all follow the new length without a number here. */
   .age-scene.pill-on-dot .track,
-  .age-scene.pill-on-dot .ctl .ages{margin-inline:30px}
+  .age-scene.pill-on-dot .ctl .ages{margin-inline:24px}
   /* LESS CHUNKY, asked for. The block's pill is 14px type in 17.8 of inset on
      every side — deliberately, it was a standalone object in a column. Riding
      the dot it is a label on an instrument, so: 12px, and 5/10 of padding
