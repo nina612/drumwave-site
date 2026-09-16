@@ -1373,20 +1373,35 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      4406:29779 draws 86 against "$403,020" — eight glyphs, the real worst case —
      so the cap is the frame's own number now and the vw term only takes over
      below about 386 of screen, where 86 would not fit. */
-  /* THE FIGURE'S BOX DOES NOT CHANGE WITH THE TIER, ONLY ITS GLYPHS.
-     High sets a smaller size below, because ten glyphs need one. line-height is
-     a RATIO, so a smaller size is also a shorter box - measured at 375, 83px
-     against 71.5px, an 11px difference - and in a block anchored to the bottom
-     of the section a shorter box lifts everything above it. That is half of the
-     jump between Medium and High; the note below is the other half.
-     So the line height is computed from the NON-high size and left alone by the
-     High rule. Both tiers get the same box and the smaller figure simply centres
-     in it, which is the one thing here that should move when the tier changes. */
-  .age-scene{--age-fig:min(25.6vw - 13px, 86px)}
+  /* ONE SIZE FOR EVERY TIER — asked for: the amount must not change size when
+     the scenario does. There was a per-tier size here and it is gone.
+     Worth writing down why it existed, because the request came with a theory
+     that turns out not to be the cause. High was smaller to make room for the
+     DISCLAIMER, the guess went - it is not. It is the two extra glyphs. The
+     widest figure any other scenario reaches is "$734,170", eight of them; High
+     at 70 is "$1,018,268", ten. Measured on the page at 375, in multiples of
+     the font size, so it holds at any size:
+
+       $403,020 / $734,170   3.893x   fits a 327 column at 84.0px
+       $1,018,268            4.606x   fits a 327 column at 71.0px
+
+     So the constraint is the column's WIDTH, and no amount of page length
+     touches it. One size that never changes therefore has to be the size the
+     WIDEST figure can hold, and everything else comes down to meet it: Low and
+     Medium go 83 -> 70 at 375. That is the whole cost of the request, and it is
+     the right way round - a figure that changes size when the reader changes
+     scenario reads as the page correcting itself.
+
+     (100vw - 48)/4.606 is 21.71vw - 10.4px. 21.6 and 11 for a little air, which
+     leaves 4.6px spare in the column at 375 and holds at 320 and 430 too. The
+     86 cap is the frame's own number and now effectively never binds, since it
+     would want a 444px phone.
+     line-height still computes from the variable, so the box is constant for
+     the same reason it was before — which is what keeps the picker still when
+     the tier changes. */
+  .age-scene{--age-fig:min(21.6vw - 11px, 86px)}
   .age-scene .bignum{font-size:var(--age-fig);font-weight:300;
     line-height:calc(var(--age-fig) * .99)}
-  /* ten glyphs in a column of 100vw - 48: (100vw-48)/4.32, with a margin */
-  .age-scene.tier-high .bignum{font-size:min(22.8vw - 14px, 86px)}
   /* The age readout that used to sit up here, clear of the nav pill, is gone:
      the blue pill over the figure carries the same age and the same stage, off
      the same line of renderAge, and 4360:63768 has no second copy of it.
