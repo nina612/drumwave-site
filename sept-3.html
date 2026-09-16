@@ -1230,6 +1230,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
      landed was its transform-origin, which re-anchored the ken-burns and made
      the crop worse. */
   #ages .frame[data-age="3"] img{object-position:47% 50%}
+  /* NO FRAME SHOWS THROUGH ANOTHER. Reported as overlapping, and that is exactly
+     what it was: the drops give each picture its own top edge, those edges do not
+     line up because each photograph needed its own drop, and .frame had no
+     background — so above the incoming picture's edge the reader saw the
+     OUTGOING photograph. Measured mid-crossfade at age 22: two frames up at once,
+     their image tops 91px apart, at -210 and -119.
+     An opaque frame ends it. Each presents a full-height surface of the page's
+     own black, so what sits above a picture is the section's colour rather than
+     another photograph. */
+  .age-scene .frame{background:#070707}
   /* THE FADE IS GONE, the positions stay. Asked for, and the reason it had to go
      is that it was not only covering the gap above each picture: 14% of the box
      is 157px, the pictures start around 185..250 into it, and the reading
